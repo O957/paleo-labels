@@ -1,0 +1,3 @@
+# Making A Label For _Squalicorax Pristodontus_
+
+_The following tutorial demonstrates how to use Paleo Utils to make a label for a specimen from the Late Cretaceous of New Jersey that the author found._
