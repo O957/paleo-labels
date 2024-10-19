@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "paleo-utils"
 version = "0.0.1"
-description = "Tools for the author to faciliate various tasks in paleontological work, including specimen labels, systematics organization, measurement grids, and imaging utilities. "
+description = "Tools for the author to facilitate various tasks in paleontological work, including specimen labels, systematics organization, measurement grids, and imaging utilities. "
 authors = ["AFg6K7h4fhy2 <127630341+AFg6K7h4fhy2@users.noreply.github.com>"]
 readme = "README.md"
 license = "MIT"
-packages = [{include = "paleo_utils"}]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
