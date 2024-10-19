@@ -1,12 +1,12 @@
 ---
 name: General Issue
-about: An issue template for AFg6K7h4fhy2's repositories.
+about: An issue template for the Genetic Evolution Tournament (GET) repository.
 title: ''
 labels: ["general-issue"]
 assignees: ''
 ---
 
-DELETE_ONCE_ISSUE_IS_CREATED: This template serves as rough scheme for the content of issues in the author's repositories. Strict adherence to this template is not necessary; rather, the template acts as a guideline.
+DELETE_ONCE_ISSUE_IS_CREATED: This template serves as rough scheme for the content of issues in the Genetic Evolution Tournament (GET) repository. Strict adherence to this template is not necessary; rather, the template acts as a guideline.
 
 DELETE_ONCE_ISSUE_IS_CREATED: Standards of development have not yet been made, but please keep an eye out for them, given that they'll likely be created by June 2024. Not that everything below contained in `[ ]` ought to be replaced with your issue comments.
 
@@ -24,7 +24,7 @@ DELETE_ONCE_ISSUE_IS_CREATED: Standards of development have not yet been made, b
 
 - [ ] E.g. modify file X to include a paragraph on A, B, and or C.
 
-## Out Of Scope
+## Extra-Scope
 
 - [changes that are beyond the scope of this issue]
 
