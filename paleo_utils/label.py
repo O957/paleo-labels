@@ -1,198 +1,103 @@
-"""
-Classes for creating paleontological labels.
-There are collections labels and specimen (
-individual or group) systematics labels.
-"""
-
 from abc import ABC, abstractmethod
 
+import attrs
 
+
+@attrs.define
 class Label(ABC):
     """
     Abstract base class for a Label.
-    Each Label must contain
-    the following information. All
-    labels have the same save format
-    options All labels
+    Each Label contains shared attributes like
+    formatting, colors, and dimensions.
     """
 
-    def __init__(
-        self,
-        save_path: str,
-        save_format: str,
-        font_path: str,
-        font_size: int,
-        watermark: str,
-        watermark_opacity: float,
-        watermark_position: float,
-        date_format: str,
-        background_color: str,
-        text_color: str,
-        text_alignment: str,
-        margins: float,
-        title_text,
-        title_font,
-        title_font_size,
-        title_color,
-        title_bold,
-        title_alignment,
-        group_color: str,
-        groups_bold: bool,
-        groups_italicized: bool,
-        groups_small_caps: bool,
-        groups_underlined: bool,
-        groups_underline_color: str,
-        group_font_size: str,
-        group_spacing: float,
-        border_color: float,
-        border_width: float,
-        border_style: float,
-        dimensions: tuple[int],
-        dimension_type: str = "metric",
-        image_save_type: str | None = None,
-    ) -> None:
-
-        self.save_path = save_path
-        self.save_format = save_format
-        self.font_path = font_path
-        self.font_size = font_size
-        self.watermark = watermark
-        self.background_color = background_color
-        self.text_color = text_color
-        self.dimensions = dimensions
-        self.dimension_type = dimension_type
-        self.image_save_type = image_save_type
+    save_path: str
+    font_path: str
+    save_format: str = "image"
+    font_size: int = 12
+    watermark: str = ""
+    watermark_opacity: float = 0.3
+    watermark_position: str = "bottom-right"
+    date_format: str = "YYYY-MM-DD"
+    background_color: str = "white"
+    text_color: str = "black"
+    text_alignment: str = "center"
+    margins: float = 10.0
+    title_text: str = "Label Title"
+    title_font: str = "arial.ttf"
+    title_font_size: int = 16
+    title_color: str = "blue"
+    title_bold: bool = True
+    title_alignment: str = "center"
+    group_color: str = "black"
+    groups_bold: bool = True
+    groups_italicized: bool = False
+    groups_small_caps: bool = False
+    groups_underlined: bool = False
+    groups_underline_color: str = "black"
+    group_font_size: int = 12
+    group_spacing: float = 5.0
+    border_color: str = "black"
+    border_width: float = 2.0
+    border_style: str = "none"
+    dimensions: tuple[int] = (400, 200)
+    dimension_type: str = "pixel"
+    image_save_type: str | None = None
 
     @abstractmethod
     def format_label_based_on_dimensions(self) -> str:
         """
-        Abstract method for formatting of label
-        dimensions based on the label type.
-        """
-        pass
-
-    def save_as_plain_text(self):
-        """
-        Save label as plain text.
-        """
-        pass
-
-    def save_as_latex(self):
-        """
-        Save label as plain text.
-        """
-        pass
-
-    def save_as_svg(self):
-        """
-        Save label as svg.
-        """
-        pass
-
-    def save_as_image(self):
-        """
-        Save label as an image.
+        Abstract method for formatting the label content based on the type of label.
         """
         pass
 
     def save(self):
         """
-        Save the label.
+        Save the label based on the specified format.
         """
+        if self.save_format == "plain_text":
+            self.save_as_plain_text()
+        elif self.save_format == "latex":
+            self.save_as_latex()
+        elif self.save_format == "svg":
+            self.save_as_svg()
+        elif self.save_format == "image":
+            self.save_as_image()
+        else:
+            raise ValueError(f"Unknown save format: {self.save_format}")
+
+    def save_as_plain_text(self):
+        """Save label as plain text."""
+        pass
+
+    def save_as_latex(self):
+        """Save label as LaTeX."""
+        pass
+
+    def save_as_svg(self):
+        """Save label as SVG."""
+        pass
+
+    def save_as_image(self):
+        """Save label as an image."""
         pass
 
 
+@attrs.define
 class CollectionsLabel(Label):
+    """
+    A label class for paleontological collections,
+    containing collection-specific details.
+    """
 
-    def __init__(
-        self,
-        save_path: str,
-        save_format: str,
-        font_path: str,
-        font_size: int,
-        watermark: str,
-        watermark_opacity: float,
-        watermark_position: str,
-        date_format: str,
-        background_color: str,
-        text_color: str,
-        text_alignment: str,
-        margins: float,
-        title_text: str,
-        title_font: str,
-        title_font_size: int,
-        title_color: str,
-        title_bold: bool,
-        title_alignment: str,
-        group_color: str,
-        groups_bold: bool,
-        groups_italicized: bool,
-        groups_small_caps: bool,
-        groups_underlined: bool,
-        groups_underline_color: str,
-        group_font_size: int,
-        group_spacing: float,
-        border_color: str,
-        border_width: float,
-        border_style: str,
-        dimensions,
-        dimension_type,
-        image_save_type,
-        general_description,
-        species_names: list[str],
-        species_authors: str,
-        chronostratigraphy: str,
-        formation: str,
-        locale: str,
-        collector: str,
-        date_of_discovery: str,
-    ) -> None:
-
-        # general label parameters
-        super().__init__(
-            save_path,
-            save_format,
-            font_path,
-            font_size,
-            watermark,
-            watermark_opacity,
-            watermark_position,
-            date_format,
-            background_color,
-            text_color,
-            text_alignment,
-            margins,
-            title_text,
-            title_font,
-            title_font_size,
-            title_color,
-            title_bold,
-            title_alignment,
-            group_color,
-            groups_bold,
-            groups_italicized,
-            groups_small_caps,
-            groups_underlined,
-            groups_underline_color,
-            group_font_size,
-            group_spacing,
-            border_color,
-            border_width,
-            border_style,
-            dimensions,
-            dimension_type,
-            image_save_type,
-        )
-
-        # collections label parameters
-        self.general_description = general_description
-        self.species_names = species_names
-        self.species_authors = species_authors
-        self.chronostratigraphy = chronostratigraphy
-        self.formation = formation
-        self.locale = locale
-        self.collector = collector
-        self.date_of_discovery = date_of_discovery
+    general_description: str = "COLLECTIONS LABEL"
+    species_names: list[str] = attrs.Factory(list)
+    species_authors: str = "Unknown"
+    chronostratigraphy: str = "Unknown"
+    formation: str = "Unknown Formation"
+    locale: str = "Unknown Locale"
+    collector: str = "Unknown Collector"
+    date_of_discovery: str = "Unknown Date"
 
     def format_label_based_on_dimensions(self) -> str:
         """
@@ -204,7 +109,6 @@ class CollectionsLabel(Label):
                 for species in self.species_names
             ]
         )
-
         return (
             f"Description: {self.general_description}\n"
             f"Species: {species_info}\n"
@@ -216,119 +120,33 @@ class CollectionsLabel(Label):
         )
 
 
+@attrs.define
 class SystematicsLabel(Label):
+    """
+    A label class for individual or group systematics, containing taxonomic details.
+    """
 
-    def __init__(
-        self,
-        save_path: str,
-        save_format: str,
-        font_path: str,
-        font_size: int,
-        watermark: str,
-        watermark_opacity: float,
-        watermark_position: str,
-        date_format: str,
-        background_color: str,
-        text_color: str,
-        text_alignment: str,
-        margins: float,
-        title_text: str,
-        title_font: str,
-        title_font_size: int,
-        title_color: str,
-        title_bold: bool,
-        title_alignment: str,
-        group_color: str,
-        groups_bold: bool,
-        groups_italicized: bool,
-        groups_small_caps: bool,
-        groups_underlined: bool,
-        groups_underline_color: str,
-        group_font_size: int,
-        group_spacing: float,
-        border_color: str,
-        border_width: float,
-        border_style: str,
-        dimensions: tuple[int],
-        dimension_type: str,
-        image_save_type: str,
-        general_description: str,
-        domain_name: str,
-        domain_author: str,
-        kingdom_name: str,
-        kingdom_author: str,
-        phylum_name: str,
-        phylum_author: str,
-        class_name: str,
-        class_author: str,
-        order_name: str,
-        order_author: str,
-        family_name: str,
-        family_author: str,
-        genus_name: str,
-        genus_author: str,
-        species_name: str,
-        specimen_author: str,
-    ) -> None:
-
-        # general label parameters
-        super().__init__(
-            save_path,
-            save_format,
-            font_path,
-            font_size,
-            watermark,
-            watermark_opacity,
-            watermark_position,
-            date_format,
-            background_color,
-            text_color,
-            text_alignment,
-            margins,
-            title_text,
-            title_font,
-            title_font_size,
-            title_color,
-            title_bold,
-            title_alignment,
-            group_color,
-            groups_bold,
-            groups_italicized,
-            groups_small_caps,
-            groups_underlined,
-            groups_underline_color,
-            group_font_size,
-            group_spacing,
-            border_color,
-            border_width,
-            border_style,
-            dimensions,
-            dimension_type,
-            image_save_type,
-        )
-
-        # Linnaean systematics parameters
-        self.general_description = general_description
-        self.domain_name = domain_name
-        self.domain_author = domain_author
-        self.kingdom_name = kingdom_name
-        self.kingdom_author = kingdom_author
-        self.phylum_name = phylum_name
-        self.phylum_author = phylum_author
-        self.class_name = class_name
-        self.class_author = class_author
-        self.order_name = order_name
-        self.order_author = order_author
-        self.family_name = family_name
-        self.family_author = family_author
-        self.genus_name = genus_name
-        self.genus_author = genus_author
-        self.species_name = species_name
-        self.specimen_author = specimen_author
+    general_description: str = "Fossil specimen."
+    domain_name: str = "Eukarya"
+    domain_author: str = "Linnaeus"
+    kingdom_name: str = "Animalia"
+    kingdom_author: str = "Linnaeus"
+    phylum_name: str = "Chordata"
+    phylum_author: str = "Linnaeus"
+    class_name: str = "Mammalia"
+    class_author: str = "Linnaeus"
+    order_name: str = "Carnivora"
+    order_author: str = "Bowdich"
+    family_name: str = "Felidae"
+    family_author: str = "Fischer"
+    genus_name: str = "Panthera"
+    genus_author: str = "Oken"
+    species_name: str = "Panthera leo"
+    specimen_author: str = "Linnaeus"
 
     def format_label_based_on_dimensions(self) -> str:
         """
-        Formats the label for systematics based on the taxonomic details.
+        Formats the label for systematics based on taxonomic details.
         """
         return (
             f"Description: {self.general_description}\n"
