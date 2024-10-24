@@ -4,7 +4,7 @@ There are collections labels and specimen (
 individual or group) systematics labels.
 """
 
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class Label(ABC):
@@ -22,20 +22,61 @@ class Label(ABC):
         save_format: str,
         font_path: str,
         font_size: int,
-        label_dimensions: tuple[int],
+        watermark: str,
+        background_color: str,
+        text_color: str,
+        dimensions: tuple[int],
         dimension_type: str = "metric",
+        image_save_type: str | None = None,
     ) -> None:
+
         self.save_path = save_path
         self.save_format = save_format
         self.font_path = font_path
         self.font_size = font_size
-        self.label_dimensions = label_dimensions
+        self.watermark = watermark
+        self.background_color = background_color
+        self.text_color = text_color
+        self.dimensions = dimensions
         self.dimension_type = dimension_type
+        self.image_save_type = image_save_type
 
-    def load_label_font(self):
+    @abstractmethod
+    def format_label_based_on_dimensions(self) -> str:
+        """
+        Abstract method for formatting of label
+        dimensions based on the label type.
+        """
         pass
 
-    def save_label(self):
+    def save_as_plain_text(self):
+        """
+        Save label as plain text.
+        """
+        pass
+
+    def save_as_latex(self):
+        """
+        Save label as plain text.
+        """
+        pass
+
+    def save_as_svg(self):
+        """
+        Save label as svg.
+        """
+        pass
+
+    def save_as_image(self):
+        """
+        Save label as an image.
+        """
+        pass
+
+    def save(self):
+        """
+        Save the label.
+        """
         pass
 
 
@@ -47,12 +88,20 @@ class CollectionsLabel(Label):
         save_format: str,
         font_path: str,
         font_size: int,
-        label_dimensions: tuple[int],
+        watermark: str,
+        background_color: str,
+        text_color: str,
+        dimensions: tuple[int],
         dimension_type: str,
-        taxon_rank: str,
+        image_save_type: str,
+        general_description: str,
         scientific_name: str,
-        author_citation: str,
-        discovery_year: str,
+        specimen_author: str,
+        chronostratigraphy: str,
+        formation: str,
+        locale: str,
+        collector: str,
+        date_of_discovery: str,
     ) -> None:
 
         super().__init__(
@@ -60,6 +109,10 @@ class CollectionsLabel(Label):
             save_format,
             font_path,
             font_size,
-            label_dimensions,
+            watermark,
+            background_color,
+            text_color,
+            dimensions,
             dimension_type,
+            image_save_type,
         )
