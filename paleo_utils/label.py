@@ -90,14 +90,14 @@ class CollectionsLabel(Label):
     containing collection-specific details.
     """
 
-    general_description: str = "COLLECTIONS LABEL"
+    general_description: str
+    species_authors: str
+    chronostratigraphy: str
+    formation: str
+    locale: str
+    collector: str
+    date_of_discovery: str
     species_names: list[str] = attrs.Factory(list)
-    species_authors: str = "Unknown"
-    chronostratigraphy: str = "Unknown"
-    formation: str = "Unknown Formation"
-    locale: str = "Unknown Locale"
-    collector: str = "Unknown Collector"
-    date_of_discovery: str = "Unknown Date"
 
     def format_label_based_on_dimensions(self) -> str:
         """
@@ -126,23 +126,23 @@ class SystematicsLabel(Label):
     A label class for individual or group systematics, containing taxonomic details.
     """
 
-    general_description: str = "Fossil specimen."
-    domain_name: str = "Eukarya"
-    domain_author: str = "Linnaeus"
-    kingdom_name: str = "Animalia"
-    kingdom_author: str = "Linnaeus"
-    phylum_name: str = "Chordata"
-    phylum_author: str = "Linnaeus"
-    class_name: str = "Mammalia"
-    class_author: str = "Linnaeus"
-    order_name: str = "Carnivora"
-    order_author: str = "Bowdich"
-    family_name: str = "Felidae"
-    family_author: str = "Fischer"
-    genus_name: str = "Panthera"
-    genus_author: str = "Oken"
-    species_name: str = "Panthera leo"
-    specimen_author: str = "Linnaeus"
+    general_description: str
+    domain_name: str
+    domain_author: str
+    kingdom_name: str
+    kingdom_author: str
+    phylum_name: str
+    phylum_author: str
+    class_name: str
+    class_author: str
+    order_name: str
+    order_author: str
+    family_name: str
+    family_author: str
+    genus_name: str
+    genus_author: str
+    species_name: str
+    specimen_author: str
 
     def format_label_based_on_dimensions(self) -> str:
         """
