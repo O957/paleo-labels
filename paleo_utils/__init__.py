@@ -6,6 +6,14 @@ PEP 420:
 https://peps.python.org/pep-0420/
 """
 
-from .label import Label
+from .label import (
+    CollectionsLabel,
+    Label,
+    SystematicsLabel,
+)
 
-__all__ = ["Label"]
+__all__ = [
+    "Label",
+    "CollectionsLabel",
+    "SystematicsLabel",
+]
