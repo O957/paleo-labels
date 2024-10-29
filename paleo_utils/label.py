@@ -19,83 +19,252 @@ class Label(ABC):
 
     Attributes
     ----------
-    save_path
-        The file location to save the
-        generated label.
-    font_path: str
-    save_format: str = "image"
-    font_size: int = 12
-    watermark: str = ""
-    watermark_opacity: float = attrs.field(validator=attrs.validators.in_(0, 1))
-    watermark_position: str = "bottom-right"
-    date_format: str = "YYYY-MM-DD"
-    background_color: str = "white"
-    text_color: str = "black"
-    text_alignment: str = "center"
-    margins: float = 10.0
-    title_text: str = "Label Title"
-    title_font: str = "arial.ttf"
-    title_font_size: int = 16
-    title_color: str = "blue"
-    title_bold: bool = True
-    title_alignment: str = "center"
-    group_color: str = "black"
-    groups_bold: bool = True
-    groups_italicized: bool = False
-    groups_small_caps: bool = False
-    groups_underlined: bool = False
-    groups_underline_color: str = "black"
-    group_font_size: int = 12
-    group_spacing: float = 5.0
-    border_color: str = "black"
-    border_width: float = 2.0
-    border_style: str = "none"
-    dimensions: tuple[int] = (400, 200)
-    dimension_type: str = "pixel"
-    image_save_type: str | None = None
-    bar_code: str | None = None
+    save_directory
+        The location to save the
+        generated label(s).
 
+    save_as_image
+        Whether to save the label
+        as an image. Defaults to
+        True.
 
+    save_as_text
+        Whether to save the label
+        as plain text. Defaults to
+        False.
 
+    save_as_svg
+        Whether to save the label
+        as an svg. Defaults to
+        False.
 
+    save_as_latex
+        Whether to save the label
+        as latex. Defaults to
+        False.
 
+    font_path
+        The path to the desired font.
+        Can be the name of a pre-loaded
+        font. Defaults to Time News Roman.
+
+    font_size
+        The initially desired size of the
+        font to use. Defaults to 9. Will
+        resize depending on the label
+        dimensions. Overridden if
+        group_font_size and text_font_size
+        are provided. Validated to be
+        between 4 and 20.
+
+    group_font_size
+        The initially desired size of the
+        font for groups (e.g. Collector or
+        Phylum). Defaults to 9. Validated
+        to be between 4 and 20.
+
+    text_font_size
+        The initially desired size of the
+        font for text. Defaults to 9.
+        Validated to be between 4 and 20.
+
+    date_format
+        The format to list dates on
+        labels. Defaults to IS08601
+        formatting, i.e. YYYY-MM-DD
+
+    watermark_text
+        Text indicating the creator
+        of the label. Defaults to
+        empty string.
+
+    watermark_font
+        The font to use for the
+        watermark text. Defaults to
+        Time News Roman.
+
+    watermark_font_style
+        The font size to use for
+        the watermark text. Defaults
+        to 9. Validated to be between
+        4 and 20.
+
+    watermark_font_size
+        The font style to use for
+        the watermark text.
+
+    watermark_color
+        The color of the watermark
+        text. Defaults to black.
+
+    watermark_opacity
+        The opacity of the watermark
+        text. Defaults to 0.5. Validated
+        to be between 0.0 and 1.0.
+
+    watermark_image
+        Image indicating the creator
+        of the label. Negates watermark
+        text, if selected.
+
+    watermark_position
+        The position of the watermark.
+        Options include cross product
+        of top, middle, bottom and left,
+        center, right. Defaults to
+        bottom-left.
+
+    background_color
+        The background color of the
+        label. Defaults to white. Accepts
+        color names or hexcodes.
+
+    color
+        The color to use for all the text.
+        Remains except if groups_colors or
+        text_colors is provided. Defaults to
+        black.
+
+    group_colors : dict[str, str] | str
+        The colors to use for the different
+        groups. If single color, that color
+        is used for all groups. Defaults to
+        black.
+
+    text_colors : dict[str, str] | str
+        The colors to use for the text across
+        different groups. If single color,
+        that color is used for all text. Defaults
+        to black.
+
+    group_styling : dict[str, str] | list[str]
+        Styling to apply to groups. If single list
+        is provided, the styling is applied to all
+        groups. Options include underlining, bold,
+        italicizing, and small-caps. Defaults to
+        bold.
+
+    text_styling : dict[str, str] | list[str]
+        Styling to apply to text. If single list
+        is provided, the styling is applied to all
+        text across groups. Options include underlining,
+        bold, italicizing, and small-caps. Defaults to
+        None.
+
+    text_alignment
+        How to align the label text. Defaults to center.
+        Options include center, right, or left.
+
+    text_flush
+        Whether to have all text corresponding to groups
+        to be flushly aligned. Defaults to False. Only
+        applies to left or right aligned text.
+
+    dimensions
+        The size of the image.
+
+    dimensions_system
+        Which system to use for the dimensions. Options
+        include inches, centimeters, or pixels. Defaults
+        to pixels.
+
+    border_style
+        The style of the border to use. Defaults to None.
+        Options include solid, dashed, and dotted.
+
+    border_color
+        The color of the border, if used.
+        Defaults to black. Accepts hexcodes
+        or color names.
+
+    border_size
+        The thickness of the border.
+
+    hide_group_names
+        Whether to hide group names.
+        Defaults to False.
+
+    qr_code
+        Whether to convert and save the
+        label as a QR code.
+
+    qr_code_size
+        The size of the QR code in pixels.
+
+    qr_code_position
+        The position of the QR code.
+        Options include cross product
+        of top, middle, bottom and left,
+        center, right. Defaults to
+        bottom-left. Cannot conflict with
+        watermark, if selected.
     """
 
-    save_path: str
-    font_path: str
-    save_format: str = "image"
-    font_size: int = 12
-    watermark: str = ""
-    watermark_opacity: float = attrs.field(
-        validator=attrs.validators.in_(0, 1)
+    save_directory: str
+    save_as_image: bool = True
+    save_as_text: bool = False
+    save_as_svg: bool = False
+    save_as_latex: bool = False
+
+    font_path: str = "Times New Roman"
+    font_size: int = attrs.field(
+        default=9,
+        validator=attrs.validators.in_([4, 20]),
     )
-    watermark_position: str = "bottom-right"
+    group_font_size: int = attrs.field(
+        default=9,
+        validator=attrs.validators.in_([4, 20]),
+    )
+    text_font_size: int = attrs.field(
+        default=9,
+        validator=attrs.validators.in_([4, 20]),
+    )
+
     date_format: str = "YYYY-MM-DD"
+
+    watermark_text: str = ""
+    watermark_font: str = "Times New Roman"
+    watermark_font_style: str = "normal"
+    watermark_font_size: int = attrs.field(
+        default=9,
+        validator=attrs.validators.in_([4, 20]),
+    )
+    watermark_color: str = "black"
+    watermark_opacity: float = attrs.field(
+        default=0.5,
+        validator=attrs.validators.in_(0.0, 1.0),
+    )
+    watermark_image: str | None = None
+    watermark_position: str = "bottom-left"
+
     background_color: str = "white"
-    text_color: str = "black"
+    color: str = "black"
+
+    group_colors: dict[str, str] | str = "black"
+    text_colors: dict[str, str] | str = "black"
+
+    group_styling: (
+        dict[str, str] | list[str] | str
+    ) = "bold"
+    text_styling: dict[str, str] | list[str] = (
+        attrs.Factory(list)
+    )
+
     text_alignment: str = "center"
-    margins: float = 10.0
-    title_text: str = "Label Title"
-    title_font: str = "arial.ttf"
-    title_font_size: int = 16
-    title_color: str = "blue"
-    title_bold: bool = True
-    title_alignment: str = "center"
-    group_color: str = "black"
-    groups_bold: bool = True
-    groups_italicized: bool = False
-    groups_small_caps: bool = False
-    groups_underlined: bool = False
-    groups_underline_color: str = "black"
-    group_font_size: int = 12
-    group_spacing: float = 5.0
-    border_color: str = "black"
-    border_width: float = 2.0
+    text_flush: bool = False
+
+    dimensions: tuple[int, int] = (400, 200)
+    dimensions_system: str = "pixels"
+
     border_style: str = "none"
-    dimensions: tuple[int] = (400, 200)
-    dimension_type: str = "pixel"
-    image_save_type: str | None = None
-    bar_code: str | None = None
+    border_color: str = "black"
+    border_size: int = 1
+
+    hide_group_names: bool = False
+
+    qr_code: bool = False
+    qr_code_size: int = 100
+    qr_code_position: str = "bottom-left"
 
     @abstractmethod
     def format_label_based_on_dimensions(
@@ -176,6 +345,33 @@ class CollectionsLabel(Label):
     """
     A label class for paleontological collections,
     containing collection-specific details.
+
+    Attributes
+    ----------
+    common_name
+        The common name of the specimen.
+    collector
+        Who collected the specimen.
+    species
+        The species of the specimen. Can
+        be a list of species.
+    author
+        The author of the species. Can be
+        a list of authors.
+    location
+        Where the fossil was found.
+    date
+        When the fossil was discovered.
+    formation
+        Which formation the fossil came from.
+    dimensions
+        The size and weight of the specimen.
+    repository
+        Which repository the specimen is located in.
+    id
+        The repository ID of the specimen.
+    age
+        The chronostratigraphic age of the specimen.
     """
 
     general_description: str
