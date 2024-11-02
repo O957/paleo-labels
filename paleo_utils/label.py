@@ -282,8 +282,16 @@ class Label(ABC):
     qr_code_position: str = "bottom-left"
 
     image_path: str | None = None
-    image_dimensions: float = 1.0
-    image_dpi: float = 150
+    image_dimensions: float = attrs.field(
+        default=1.0,
+        validator=attrs.validators.in_(
+            [0.25, 1.0]
+        ),
+    )
+    image_dpi: float = attrs.field(
+        default=150,
+        validator=attrs.validators.in_([50, 500]),
+    )
     override_size_w_image: bool = True
 
     def save(self):
@@ -362,75 +370,186 @@ class CollectionsLabel(Label):
 
     Attributes
     ----------
+    group_ordering
+        The ordering of the groups in the
+        label.
+
     collection
         The name of the collection housing
         the specimen.
+
+    collection_title
+        The name of the collection group
+        on the label. Defaults to
+        "Collection".
+
+    id_number
+        The ID number of the specimen in the
+        housing collection.
+
+    id_number_title
+        The name of the ID number group
+        on the label. Defaults to "ID".
 
     collector
         The name of the collector, if this
         information is known.
 
+    collector_title
+        The name of the collector group
+        on the label. Defaults to
+        "Found By".
+
     species
         The scientific name of the species
         that the label is associated with.
+
+    species_title
+        The name of the species group
+        on the label. Defaults to
+        "Species".
 
     species_author
         The author of the scientific name of
         the species that the label is
         associated with.
 
+    species_author_title
+        The name of the species author group
+        on the label. Defaults to
+        "Author".
+
+    species_author_separate
+        Whether to place the species author
+        separate from the species.
+
     common_name
         The common name of the species
         that the label is associated with.
+
+    common_name_title
+        The name of the common name group
+        on the label. Defaults to "Name".
 
     location
         The geographical name of the location
         where the specimen was retrieved.
 
-    date
-        When the fossil was discovered.
+    location_title
+        The name of the location group
+        on the label. Defaults to "Location".
+
+    coordinates
+        The coordinates of the geographical
+        location where the specimen was retrieved.
+
+    coordinates_separate
+        Whether to have the coordinates listed
+        as their own line.
+
+    coordinates_title
+        The name of the coordinates group
+        on the label. Defaults to "Coordinates".
+
+    date_found
+        The date the specimen was found.
+
+    date_found_title
+        The name of the date group
+        on the label. Defaults to
+        "Date Found".
+
+    date_cataloged
+        The date the specimen was cataloged.
+
+    date_cataloged_title
+        The name of the date cataloged group
+        on the label. Defaults to
+        "Date Cataloged".
+
     formation
-        Which formation the fossil came from.
-    dimensions
+        The formation in which the specimen
+        was found.
+
+    formation_title
+        The name of the formation group
+        on the label. Defaults to
+        "Formation".
+
+    formation_author
+        The author of the formation in which
+        the specimen was found. Defaults to
+        same placement.
+
+    chrono_age
+        The chronostratigraphic age of the
+        specimen.
+
+    chrono_age_title
+        The name of the chronostratigraphic
+        age group on the label. Defaults to
+        "Age".
+
+    chrono_age_author
+        The author of the chronostratigraphic
+        age of the specimen. Defaults to
+        same placement.
+
+    size
         The size and weight of the specimen.
-    repository
-        Which repository the specimen is located in.
-    id
-        The repository ID of the specimen.
-    age
-        The chronostratigraphic age of the specimen.
+
+    size_title
+        The name of the size group on the label.
+        Defaults to "Size".
+
+    link
+        A URL to the specimen online.
+
+    link_title
+        The name of the link group on the label.
+        Defaults to "Link".
     """
 
-    general_description: str
-    species_authors: str
-    chronostratigraphy: str
-    formation: str
-    locale: str
-    collector: str
-    date_of_discovery: str
-    species_names: list[str] = attrs.Factory(list)
+    group_ordering: list[str] | None = None
+    collection: str | None = None
+    id_number: str | None = None
+    collector: str | None = None
+    species: str | None = None
+    species_author: str | None = None
+    common_name: str | None = None
+    location: str | None = None
+    coordinates: tuple[float, float] | None = None
+    coordinates_separate: bool = False
+    date_found: str | None = None
+    date_cataloged: str | None = None
+    formation: str | None = None
+    formation_author: str | None = None
+    chrono_age: str | None = None
+    chrono_age_author: str | None = None
+    size_and_weight: str | None = None
+    link: str | None = None
 
-    def format_label_based_on_dimensions(
-        self,
-    ) -> str:
-        """
-        Formats the label content for the collection details.
-        """
-        species_info = "\n".join(
-            [
-                f"{species} (Author: {self.species_authors})"
-                for species in self.species_names
-            ]
-        )
-        return (
-            f"Description: {self.general_description}\n"
-            f"Species: {species_info}\n"
-            f"Chronostratigraphy: {self.chronostratigraphy}\n"
-            f"Formation: {self.formation}\n"
-            f"Locale: {self.locale}\n"
-            f"Collector: {self.collector}\n"
-            f"Date of Discovery: {self.date_of_discovery}"
-        )
+    # def format_label_based_on_dimensions(
+    #     self,
+    # ) -> str:
+    #     """
+    #     Formats the label content for the collection details.
+    #     """
+    #     species_info = "\n".join(
+    #         [
+    #             f"{species} (Author: {self.species_authors})"
+    #             for species in self.species_names
+    #         ]
+    #     )
+    #     return (
+    #         f"Description: {self.general_description}\n"
+    #         f"Species: {species_info}\n"
+    #         f"Chronostratigraphy: {self.chronostratigraphy}\n"
+    #         f"Formation: {self.formation}\n"
+    #         f"Locale: {self.locale}\n"
+    #         f"Collector: {self.collector}\n"
+    #         f"Date of Discovery: {self.date_of_discovery}"
+    #     )
 
     # def summarize_species_info(self):
     #     """Summarize species information."""
@@ -444,7 +563,10 @@ class CollectionsLabel(Label):
 @attrs.define
 class SystematicsLabel(Label):
     """
-    A label class for individual or group systematics, containing taxonomic details.
+    A label class for individual or group systematics,
+    containing taxonomic details.
+
+
     """
 
     general_description: str
