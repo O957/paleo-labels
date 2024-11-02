@@ -3,11 +3,9 @@ Classes for creating
 paleontological labels.
 """
 
-import json
-from abc import ABC, abstractmethod
+from abc import ABC
 
 import attrs
-import qrcode
 
 
 @attrs.define
@@ -178,7 +176,7 @@ class Label(ABC):
         or color names.
 
     border_size
-        The thickness of the border.
+        The thickness of the label border.
 
     hide_group_names
         Whether to hide group names.
@@ -198,6 +196,23 @@ class Label(ABC):
         center, right. Defaults to
         bottom-left. Cannot conflict with
         watermark, if selected.
+
+    image_path
+        Path to an image to have in the
+        label above the label text.
+
+    image_dimensions
+        What percentage of the label's
+        dimensions to make the image.
+
+    image_dpi
+        The quality of the image to
+        retain.
+
+    override_size_w_image
+        Whether to scale the label text to
+        accommodate the image or scale the
+        label size instead.
     """
 
     save_directory: str
@@ -266,18 +281,16 @@ class Label(ABC):
     qr_code_size: int = 100
     qr_code_position: str = "bottom-left"
 
-    @abstractmethod
-    def format_label_based_on_dimensions(
-        self,
-    ) -> str:
-        """
-        Abstract method for formatting the label content based on the type of label.
-        """
-        pass
+    image_path: str | None = None
+    image_dimensions: float = 1.0
+    image_dpi: float = 150
+    override_size_w_image: bool = True
 
     def save(self):
         """
-        Save the label based on the specified format.
+        Method to the save based on the specified
+        formats. Each label is expected to start
+        out as a Pillow image.
         """
         if self.save_format == "plain_text":
             self.save_as_plain_text()
@@ -308,58 +321,72 @@ class Label(ABC):
         """Save label as an image."""
         pass
 
-    def add_watermark(self):
-        """Overlay watermark text onto the label."""
-        pass
+    # def add_watermark(self):
+    #     """Overlay watermark text onto the label."""
+    #     pass
 
-    def validate_dimensions(self):
-        """Ensure font size is appropriate for label dimensions."""
-        if (
-            self.font_size
-            > min(self.dimensions) // 10
-        ):
-            self.font_size = (
-                min(self.dimensions) // 10
-            )
+    # def validate_dimensions(self):
+    #     """Ensure font size is appropriate for label dimensions."""
+    #     if (
+    #         self.font_size
+    #         > min(self.dimensions) // 10
+    #     ):
+    #         self.font_size = (
+    #             min(self.dimensions) // 10
+    #         )
 
-    def preview_label(self):
-        """Generate a preview of the label."""
-        print(
-            self.format_label_based_on_dimensions()
-        )
+    # def preview_label(self):
+    #     """Generate a preview of the label."""
+    #     print(
+    #         self.format_label_based_on_dimensions()
+    #     )
 
-    def convert_to_qr_code(self, data):
-        """Generate a QR code based on given data."""
-        qr = qrcode.make(data)
-        qr.save(f"{self.save_path}_qr.png")
+    # def convert_to_qr_code(self, data):
+    #     """Generate a QR code based on given data."""
+    #     qr = qrcode.make(data)
+    #     qr.save(f"{self.save_path}_qr.png")
 
-    def format_for_metadata(self):
-        """Format label information as JSON metadata."""
-        return json.dumps(
-            attrs.asdict(self), indent=2
-        )
+    # def format_for_metadata(self):
+    #     """Format label information as JSON metadata."""
+    #     return json.dumps(
+    #         attrs.asdict(self), indent=2
+    #     )
 
 
 @attrs.define
 class CollectionsLabel(Label):
     """
-    A label class for paleontological collections,
-    containing collection-specific details.
+    A label for collections specimens, i.e.
+    labels involving more details than
+    fossil systematics.
 
     Attributes
     ----------
-    common_name
-        The common name of the specimen.
+    collection
+        The name of the collection housing
+        the specimen.
+
     collector
-        Who collected the specimen.
+        The name of the collector, if this
+        information is known.
+
     species
-        The species of the specimen. Can
-        be a list of species.
-    author
-        The author of the species. Can be
-        a list of authors.
+        The scientific name of the species
+        that the label is associated with.
+
+    species_author
+        The author of the scientific name of
+        the species that the label is
+        associated with.
+
+    common_name
+        The common name of the species
+        that the label is associated with.
+
     location
-        Where the fossil was found.
+        The geographical name of the location
+        where the specimen was retrieved.
+
     date
         When the fossil was discovered.
     formation
@@ -405,13 +432,13 @@ class CollectionsLabel(Label):
             f"Date of Discovery: {self.date_of_discovery}"
         )
 
-    def summarize_species_info(self):
-        """Summarize species information."""
-        return f"{len(self.species_names)} species documented."
+    # def summarize_species_info(self):
+    #     """Summarize species information."""
+    #     return f"{len(self.species_names)} species documented."
 
-    def generate_collection_overview(self):
-        """Provide an overview statement for the collection."""
-        return f"{self.general_description} - Found in {self.formation}, {self.locale}."
+    # def generate_collection_overview(self):
+    #     """Provide an overview statement for the collection."""
+    #     return f"{self.general_description} - Found in {self.formation}, {self.locale}."
 
 
 @attrs.define
