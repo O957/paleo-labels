@@ -370,10 +370,6 @@ class CollectionsLabel(Label):
 
     Attributes
     ----------
-    group_ordering
-        The ordering of the groups in the
-        label.
-
     collection
         The name of the collection housing
         the specimen.
@@ -381,7 +377,7 @@ class CollectionsLabel(Label):
     collection_title
         The name of the collection group
         on the label. Defaults to
-        "Collection".
+        "Collection: ".
 
     id_number
         The ID number of the specimen in the
@@ -389,7 +385,7 @@ class CollectionsLabel(Label):
 
     id_number_title
         The name of the ID number group
-        on the label. Defaults to "ID".
+        on the label. Defaults to "ID: ".
 
     collector
         The name of the collector, if this
@@ -398,7 +394,7 @@ class CollectionsLabel(Label):
     collector_title
         The name of the collector group
         on the label. Defaults to
-        "Found By".
+        "Found By: ".
 
     species
         The scientific name of the species
@@ -407,7 +403,7 @@ class CollectionsLabel(Label):
     species_title
         The name of the species group
         on the label. Defaults to
-        "Species".
+        "Scientific Name: ".
 
     species_author
         The author of the scientific name of
@@ -417,7 +413,7 @@ class CollectionsLabel(Label):
     species_author_title
         The name of the species author group
         on the label. Defaults to
-        "Author".
+        "Author: ".
 
     species_author_separate
         Whether to place the species author
@@ -429,7 +425,7 @@ class CollectionsLabel(Label):
 
     common_name_title
         The name of the common name group
-        on the label. Defaults to "Name".
+        on the label. Defaults to "Name: ".
 
     location
         The geographical name of the location
@@ -437,19 +433,19 @@ class CollectionsLabel(Label):
 
     location_title
         The name of the location group
-        on the label. Defaults to "Location".
+        on the label. Defaults to "Location: ".
 
     coordinates
         The coordinates of the geographical
         location where the specimen was retrieved.
 
+    coordinates_title
+        The name of the coordinates group
+        on the label. Defaults to "Coordinates: ".
+
     coordinates_separate
         Whether to have the coordinates listed
         as their own line.
-
-    coordinates_title
-        The name of the coordinates group
-        on the label. Defaults to "Coordinates".
 
     date_found
         The date the specimen was found.
@@ -457,7 +453,7 @@ class CollectionsLabel(Label):
     date_found_title
         The name of the date group
         on the label. Defaults to
-        "Date Found".
+        "Date Found: ".
 
     date_cataloged
         The date the specimen was cataloged.
@@ -465,7 +461,7 @@ class CollectionsLabel(Label):
     date_cataloged_title
         The name of the date cataloged group
         on the label. Defaults to
-        "Date Cataloged".
+        "Date Cataloged: ".
 
     formation
         The formation in which the specimen
@@ -474,7 +470,7 @@ class CollectionsLabel(Label):
     formation_title
         The name of the formation group
         on the label. Defaults to
-        "Formation".
+        "Formation: ".
 
     formation_author
         The author of the formation in which
@@ -488,7 +484,7 @@ class CollectionsLabel(Label):
     chrono_age_title
         The name of the chronostratigraphic
         age group on the label. Defaults to
-        "Age".
+        "Age: ".
 
     chrono_age_author
         The author of the chronostratigraphic
@@ -500,34 +496,49 @@ class CollectionsLabel(Label):
 
     size_title
         The name of the size group on the label.
-        Defaults to "Size".
+        Defaults to "Size: ".
 
     link
         A URL to the specimen online.
 
     link_title
         The name of the link group on the label.
-        Defaults to "Link".
+        Defaults to "Link: ".
     """
 
-    group_ordering: list[str] | None = None
     collection: str | None = None
+    collection_title: str = "Collection: "
     id_number: str | None = None
+    id_number_title: str = "ID: "
     collector: str | None = None
+    collector_title: str = "Found By: "
     species: str | None = None
+    species_title: str = "Scientific Name: "
     species_author: str | None = None
+    species_author_title: str | None = "Author: "
     common_name: str | None = None
+    common_name_title: str = "Name: "
     location: str | None = None
+    location_title: str = "Location: "
     coordinates: tuple[float, float] | None = None
+    coordinates_title: str | None = (
+        "Coordinates: "
+    )
     coordinates_separate: bool = False
     date_found: str | None = None
+    date_found_title: str = "Date Found: "
     date_cataloged: str | None = None
+    date_cataloged_title: str = "Date Cataloged: "
     formation: str | None = None
+    formation_title: str = "Formation: "
     formation_author: str | None = None
     chrono_age: str | None = None
+    chrono_age_title: str = "Age: "
     chrono_age_author: str | None = None
-    size_and_weight: str | None = None
+    size: str | None = None
+    size_title: str = "Size: "
     link: str | None = None
+    link_title: str = "Link: "
 
     # def format_label_based_on_dimensions(
     #     self,
