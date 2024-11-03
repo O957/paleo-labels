@@ -22,19 +22,18 @@ label = paleo_utils.CollectionsLabel(
     title_overrides={"collection": "Museum: "},
 )
 print(label.label())
-print()
 
 # %% NEW LABEL
-label = paleo_utils.CollectionsLabel(
-    id_number="12345",
+label2 = paleo_utils.CollectionsLabel(
     save_directory="../assets/saved_images/",
+    id_number="12345",
     collection="AMNH",
     date_found="2023-01-01",
     collector="Dr. Larson",
     location="Europe",
     coordinates=(40.7128, -74.0060),
 )
-print(label.label())
+print(label2.label())
 
 # %%
 

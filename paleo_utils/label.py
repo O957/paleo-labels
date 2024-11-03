@@ -352,7 +352,7 @@ class Label(ABC):
         pass
 
 
-@attrs.define
+@attrs.define(kw_only=True)
 class CollectionsLabel(Label):
     """
     A label for collections specimens, i.e.
@@ -507,50 +507,67 @@ class CollectionsLabel(Label):
 
     title_overrides: dict[str, str] = attrs.field(
         factory=dict
-    )
+    )  # empty by default
 
-    def __attrs_post_init__(self):
+    # _ordered_kwargs: dict = attrs.field(init=False)
+
+    # def __init__(self, **kwargs):
+    #     self._ordered_kwargs = {key: kwargs[key] for key in kwargs}
+
+    def __attrs_post_init__(self, **kwargs):
         # update title_overrides with any user-provided overrides
-        print(self.title_overrides)
         if self.title_overrides:
-
             # merge user-provided titles, overriding defaults
             for (
                 key,
                 value,
             ) in self.title_overrides.items():
-                if key in self.__attrs_attrs__:
-                    self.title_overrides[key] = (
+                if key in self.default_titles:
+                    self.default_titles[key] = (
                         value
                     )
 
+    def _get_collections_attrs(self):
+        label_attrs = {
+            attr.name
+            for attr in Label.__attrs_attrs__
+        }
+        collections_attrs = {
+            attr.name: getattr(self, attr.name)
+            for attr in self.__attrs_attrs__
+            if attr.name not in label_attrs
+        }
+        print(self.__attrs_attrs__)
+        # collections_attrs = {
+        #     key: value for key, value in self._ordered_kwargs.items() if key not in label_attrs
+        # }
+        return collections_attrs
+
     def label(self):
+        # empty list for parts of the final label
         parts = []
-        for attr in self.__attrs_attrs__:
-            key = attr.name
-            value = getattr(self, key)
-            if value is not None:
-                title = self.title_overrides.get(
+        # collections label exclusive attrs
+        collections_attrs = (
+            self._get_collections_attrs()
+        )
+        # iterative over collections attrs
+        for (
+            key,
+            value,
+        ) in collections_attrs.items():
+            # for all non-None collections attrs, proceed
+            if (
+                value is not None
+                and not isinstance(value, dict)
+            ):
+                # edit title with spaces and capitalized
+                title = self.default_titles.get(
                     key,
                     f"{key.replace('_', ' ').capitalize()}: ",
                 )
-                if (
-                    key == "coordinates"
-                    and isinstance(value, tuple)
-                ):
-                    coords = (
-                        f"{value[0]}, {value[1]}"
-                    )
-                    parts.append(
-                        f"{title}{coords}"
-                        if not self.coordinates_separate
-                        else coords
-                    )
-                else:
-                    parts.append(
-                        f"{title}{value}"
-                    )
-
+                # add the group
+                parts.append(f"{title}{value}")
+        # consolidate to multiline label
         return "\n".join(parts)
 
 
