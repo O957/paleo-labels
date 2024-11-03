@@ -4,6 +4,38 @@ having dependencies in constructed
 string based on order of arguments.
 """
 
+# %% LIBRARY IMPORTS
+
+
+import paleo_utils
+
+# %% TEST FIRST LABEL
+
+label = paleo_utils.CollectionsLabel(
+    save_directory="../assets/saved_images/",
+    id_number="12345",
+    collection="AMNH",
+    collector="Dr. Larson",
+    location="Europe",
+    coordinates=(40.7128, -74.0060),
+    date_found="2023-01-01",
+    title_overrides={"collection": "Museum: "},
+)
+print(label.label())
+print()
+
+# %% NEW LABEL
+label = paleo_utils.CollectionsLabel(
+    id_number="12345",
+    save_directory="../assets/saved_images/",
+    collection="AMNH",
+    date_found="2023-01-01",
+    collector="Dr. Larson",
+    location="Europe",
+    coordinates=(40.7128, -74.0060),
+)
+print(label.label())
+
 # %%
 
 

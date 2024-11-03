@@ -357,59 +357,39 @@ class CollectionsLabel(Label):
     """
     A label for collections specimens, i.e.
     labels involving more details than
-    fossil systematics.
-
-
-    Optional Keyword Arguments
-    --------------------------
+    fossil systematics. The kwargs parameter
+    used is the group title.
 
 
     Attributes
     ----------
+    coordinates_separate
+        Whether to have the coordinates listed
+        as their own line.
+
+
+    Optional Keyword Arguments
+    --------------------------
     collection
         The name of the collection housing
         the specimen.
-
-    collection_title
-        The name of the collection group
-        on the label. Defaults to
-        "Collection: ".
 
     id_number
         The ID number of the specimen in the
         housing collection.
 
-    id_number_title
-        The name of the ID number group
-        on the label. Defaults to "ID: ".
-
     collector
         The name of the collector, if this
         information is known.
-
-    collector_title
-        The name of the collector group
-        on the label. Defaults to
-        "Found By: ".
 
     species
         The scientific name of the species
         that the label is associated with.
 
-    species_title
-        The name of the species group
-        on the label. Defaults to
-        "Scientific Name: ".
-
     species_author
         The author of the scientific name of
         the species that the label is
         associated with.
-
-    species_author_title
-        The name of the species author group
-        on the label. Defaults to
-        "Author: ".
 
     species_author_separate
         Whether to place the species author
@@ -419,54 +399,23 @@ class CollectionsLabel(Label):
         The common name of the species
         that the label is associated with.
 
-    common_name_title
-        The name of the common name group
-        on the label. Defaults to "Name: ".
-
     location
         The geographical name of the location
         where the specimen was retrieved.
-
-    location_title
-        The name of the location group
-        on the label. Defaults to "Location: ".
 
     coordinates
         The coordinates of the geographical
         location where the specimen was retrieved.
 
-    coordinates_title
-        The name of the coordinates group
-        on the label. Defaults to "Coordinates: ".
-
-    coordinates_separate
-        Whether to have the coordinates listed
-        as their own line.
-
     date_found
         The date the specimen was found.
-
-    date_found_title
-        The name of the date group
-        on the label. Defaults to
-        "Date Found: ".
 
     date_cataloged
         The date the specimen was cataloged.
 
-    date_cataloged_title
-        The name of the date cataloged group
-        on the label. Defaults to
-        "Date Cataloged: ".
-
     formation
         The formation in which the specimen
         was found.
-
-    formation_title
-        The name of the formation group
-        on the label. Defaults to
-        "Formation: ".
 
     formation_author
         The author of the formation in which
@@ -477,11 +426,6 @@ class CollectionsLabel(Label):
         The chronostratigraphic age of the
         specimen.
 
-    chrono_age_title
-        The name of the chronostratigraphic
-        age group on the label. Defaults to
-        "Age: ".
-
     chrono_age_author
         The author of the chronostratigraphic
         age of the specimen. Defaults to
@@ -490,87 +434,106 @@ class CollectionsLabel(Label):
     size
         The size and weight of the specimen.
 
-    size_title
-        The name of the size group on the label.
-        Defaults to "Size: ".
-
     link
         A URL to the specimen online.
-
-    link_title
-        The name of the link group on the label.
-        Defaults to "Link: ".
     """
 
-    collection: str | None = None
-    collection_title: str = "Collection: "
-    id_number: str | None = None
-    id_number_title: str = "ID: "
-    collector: str | None = None
-    collector_title: str = "Found By: "
-    species: str | None = None
-    species_title: str = "Scientific Name: "
-    species_author: str | None = None
-    species_author_title: str | None = "Author: "
-    common_name: str | None = None
-    common_name_title: str = "Name: "
-    location: str | None = None
-    location_title: str = "Location: "
-    coordinates: tuple[float, float] | None = None
-    coordinates_title: str | None = (
-        "Coordinates: "
+    collection: str | None = attrs.field(
+        default=None
     )
-    coordinates_separate: bool = False
-    date_found: str | None = None
-    date_found_title: str = "Date Found: "
-    date_cataloged: str | None = None
-    date_cataloged_title: str = "Date Cataloged: "
-    formation: str | None = None
-    formation_title: str = "Formation: "
-    formation_author: str | None = None
-    chrono_age: str | None = None
-    chrono_age_title: str = "Age: "
-    chrono_age_author: str | None = None
-    size: str | None = None
-    size_title: str = "Size: "
-    link: str | None = None
-    link_title: str = "Link: "
+    id_number: str | None = attrs.field(
+        default=None
+    )
+    collector: str | None = attrs.field(
+        default=None
+    )
+    species: str | None = attrs.field(
+        default=None
+    )
+    species_author: str | None = attrs.field(
+        default=None
+    )
+    common_name: str | None = attrs.field(
+        default=None
+    )
+    location: str | None = attrs.field(
+        default=None
+    )
+    coordinates: tuple[float, float] | None = (
+        attrs.field(default=None)
+    )
+    coordinates_separate: bool = attrs.field(
+        default=False
+    )
+    date_found: str | None = attrs.field(
+        default=None
+    )
+    date_cataloged: str | None = attrs.field(
+        default=None
+    )
+    formation: str | None = attrs.field(
+        default=None
+    )
+    formation_author: str | None = attrs.field(
+        default=None
+    )
+    chrono_age: str | None = attrs.field(
+        default=None
+    )
+    chrono_age_author: str | None = attrs.field(
+        default=None
+    )
+    size: str | None = attrs.field(default=None)
+    link: str | None = attrs.field(default=None)
 
-    def _get_collections_attrs(self):
-        label_attrs = {
-            attr.name
-            for attr in Label.__attrs_attrs__
-        }
-        collections_attrs = {
-            attr.name: getattr(self, attr.name)
-            for attr in self.__attrs_attrs__
-            if attr.name not in label_attrs
-        }
-        return collections_attrs
+    default_titles = {
+        "collection": "Collection: ",
+        "id_number": "ID Number: ",
+        "collector": "Collector: ",
+        "species": "Scientific Name: ",
+        "species_author": "Species Author: ",
+        "common_name": "Common Name: ",
+        "location": "Location: ",
+        "coordinates": "Coordinates: ",
+        "date_found": "Date Found: ",
+        "date_cataloged": "Date Cataloged: ",
+        "formation": "Formation: ",
+        "formation_author": "Formation Author: ",
+        "chrono_age": "Age: ",
+        "chrono_age_author": "Age Author: ",
+        "size": "Size: ",
+        "link": "Link: ",
+    }
+
+    title_overrides: dict[str, str] = attrs.field(
+        factory=dict
+    )
+
+    def __attrs_post_init__(self):
+        # update title_overrides with any user-provided overrides
+        print(self.title_overrides)
+        if self.title_overrides:
+
+            # merge user-provided titles, overriding defaults
+            for (
+                key,
+                value,
+            ) in self.title_overrides.items():
+                if key in self.__attrs_attrs__:
+                    self.title_overrides[key] = (
+                        value
+                    )
 
     def label(self):
-        collections_attrs = (
-            self._get_collections_attrs()
-        )
         parts = []
-
-        # iterate over subclass-specific attributes with metadata for titles
-        for (
-            key,
-            value,
-        ) in collections_attrs.items():
-            if (
-                value is not None
-            ):  # only include non-None attributes
-                attr = next(
-                    attr
-                    for attr in self.__attrs_attrs__
-                    if attr.name == key
+        for attr in self.__attrs_attrs__:
+            key = attr.name
+            value = getattr(self, key)
+            if value is not None:
+                title = self.title_overrides.get(
+                    key,
+                    f"{key.replace('_', ' ').capitalize()}: ",
                 )
-                title = attr.metadata.get(
-                    "title", ""
-                )
-
                 if (
                     key == "coordinates"
                     and isinstance(value, tuple)
@@ -588,7 +551,6 @@ class CollectionsLabel(Label):
                         f"{title}{value}"
                     )
 
-        # join all parts with newlines
         return "\n".join(parts)
 
 

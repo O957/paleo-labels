@@ -10,32 +10,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 import paleo_utils
 
-# %% TEST ZONE
-
-label1 = paleo_utils.CollectionsLabel(
-    save_directory="../assets/saved_images/",
-    id_number="12345",
-    collection="AMNH",
-    collector="Dr. Larson",
-    location="Europe",
-    coordinates=(40.7128, -74.0060),
-    date_found="2023-01-01",
-)
-print(label1.label())
-print(label1._get_collections_attrs())
-print()
-label2 = paleo_utils.CollectionsLabel(
-    id_number="12345",
-    save_directory="../assets/saved_images/",
-    collection="AMNH",
-    date_found="2023-01-01",
-    collector="Dr. Larson",
-    location="Europe",
-    coordinates=(40.7128, -74.0060),
-)
-print(label2.label())
-print(label2._get_collections_attrs())
-
 # %% CREATE A SIMPLE IMAGE & DRAWER
 
 # produce new image object
