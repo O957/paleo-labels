@@ -13,27 +13,33 @@ import paleo_utils
 
 label = paleo_utils.CollectionsLabel(
     save_directory="../assets/saved_images/",
-    id_number="12345",
+    id_number="3244",
     collection="AMNH",
-    collector="Dr. Larson",
-    location="Europe",
+    collector="Dr. Montague",
+    location="North America",
+    formation="Navesink",
     coordinates=(40.7128, -74.0060),
-    date_found="2023-01-01",
+    date_found="2024-01-01",
     title_overrides={"collection": "Museum: "},
 )
 print(label.label())
 
 # %% NEW LABEL
-label2 = paleo_utils.CollectionsLabel(
+label = paleo_utils.CollectionsLabel(
     save_directory="../assets/saved_images/",
-    id_number="12345",
+    date_found="2024-01-01",
+    id_number="3244",
+    formation="Navesink",
     collection="AMNH",
-    date_found="2023-01-01",
-    collector="Dr. Larson",
-    location="Europe",
+    collector="Dr. Montague",
+    location="North America",
     coordinates=(40.7128, -74.0060),
+    title_overrides={
+        "date_found": "Date Collected: ",
+        "location": "Locality: ",
+    },
 )
-print(label2.label())
+print(label.label())
 
 # %%
 

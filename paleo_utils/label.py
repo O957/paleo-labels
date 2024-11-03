@@ -509,12 +509,16 @@ class CollectionsLabel(Label):
         factory=dict
     )  # empty by default
 
-    # _ordered_kwargs: dict = attrs.field(init=False)
+    _ordered_kwargs: dict = attrs.field(
+        init=False
+    )
 
-    # def __init__(self, **kwargs):
-    #     self._ordered_kwargs = {key: kwargs[key] for key in kwargs}
+    def __init__(self, **kwargs):
+        self._ordered_kwargs = {
+            key: kwargs[key] for key in kwargs
+        }
 
-    def __attrs_post_init__(self, **kwargs):
+    def __attrs_post_init__(self):
         # update title_overrides with any user-provided overrides
         if self.title_overrides:
             # merge user-provided titles, overriding defaults
@@ -532,15 +536,17 @@ class CollectionsLabel(Label):
             attr.name
             for attr in Label.__attrs_attrs__
         }
-        collections_attrs = {
-            attr.name: getattr(self, attr.name)
-            for attr in self.__attrs_attrs__
-            if attr.name not in label_attrs
-        }
-        print(self.__attrs_attrs__)
         # collections_attrs = {
-        #     key: value for key, value in self._ordered_kwargs.items() if key not in label_attrs
+        #     attr.name: getattr(self, attr.name)
+        #     for attr in self.__attrs_attrs__
+        #     if attr.name not in label_attrs
         # }
+        # print(self.__attrs_attrs__)
+        collections_attrs = {
+            key: value
+            for key, value in self._ordered_kwargs.items()
+            if key not in label_attrs
+        }
         return collections_attrs
 
     def label(self):
