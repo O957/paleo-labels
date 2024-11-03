@@ -320,36 +320,6 @@ class Label(ABC):
 
     to_hide: list[str] | None = None
 
-    _ordered_kwargs: list[str] = attrs.field(
-        factory=list, init=False
-    )
-
-    def __attrs_post_init__(self):
-        # capture the order of non-None fields
-        for (
-            field
-        ) in self.__class__.__attrs_attrs__:
-            value = getattr(self, field.name)
-            if value is not None:
-                self._ordered_kwargs.append(
-                    field.name
-                )
-        print(self._ordered_kwargs)
-
-    def label(self) -> str:
-        parts = []
-        # add each attribute according to the original argument order
-        for key in self._ordered_kwargs:
-            # dynamically retrieve the title and value attributes
-            title_attr = f"{key}_title"
-            value = getattr(self, key)
-            title = getattr(self, title_attr, "")
-            # add to parts if the value is not None
-            if value is not None:
-                parts.append(f"{title}{value}")
-        # join all parts with newlines
-        return "\n".join(parts)
-
     def save(self):
         """
         Method to the save based on the specified
@@ -527,39 +497,94 @@ class CollectionsLabel(Label):
         Defaults to "Link: ".
     """
 
-    collection: str | None = None
-    collection_title: str = "Collection: "
-    id_number: str | None = None
-    id_number_title: str = "ID: "
-    collector: str | None = None
-    collector_title: str = "Found By: "
-    species: str | None = None
-    species_title: str = "Scientific Name: "
-    species_author: str | None = None
-    species_author_title: str | None = "Author: "
-    common_name: str | None = None
-    common_name_title: str = "Name: "
-    location: str | None = None
-    location_title: str = "Location: "
-    coordinates: tuple[float, float] | None = None
-    coordinates_title: str | None = (
-        "Coordinates: "
+    collection: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Collection: "},
     )
-    coordinates_separate: bool = False
-    date_found: str | None = None
-    date_found_title: str = "Date Found: "
-    date_cataloged: str | None = None
-    date_cataloged_title: str = "Date Cataloged: "
-    formation: str | None = None
-    formation_title: str = "Formation: "
-    formation_author: str | None = None
-    chrono_age: str | None = None
-    chrono_age_title: str = "Age: "
-    chrono_age_author: str | None = None
-    size: str | None = None
-    size_title: str = "Size: "
-    link: str | None = None
-    link_title: str = "Link: "
+    id_number: str | None = attrs.field(
+        default=None, metadata={"title": "ID: "}
+    )
+    collector: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Found By: "},
+    )
+    species: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Scientific Name: "},
+    )
+    species_author: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Author: "},
+    )
+    common_name: str | None = attrs.field(
+        default=None, metadata={"title": "Name: "}
+    )
+    location: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Location: "},
+    )
+    coordinates: tuple[float, float] | None = (
+        attrs.field(
+            default=None,
+            metadata={"title": "Coordinates: "},
+        )
+    )
+    coordinates_separate: bool = (
+        False  # does not need a title
+    )
+    date_found: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Date Found: "},
+    )
+    date_cataloged: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Date Cataloged: "},
+    )
+    formation: str | None = attrs.field(
+        default=None,
+        metadata={"title": "Formation: "},
+    )
+    chrono_age: str | None = attrs.field(
+        default=None, metadata={"title": "Age: "}
+    )
+    size: str | None = attrs.field(
+        default=None, metadata={"title": "Size: "}
+    )
+    link: str | None = attrs.field(
+        default=None, metadata={"title": "Link: "}
+    )
+
+    def _get_collections_attrs(self):
+        label_attrs = {
+            attr.name
+            for attr in Label.__attrs_attrs__
+        }
+        collections_attrs = {
+            attr.name: getattr(self, attr.name)
+            for attr in self.__attrs_attrs__
+            if attr.name not in label_attrs
+        }
+        return collections_attrs
+
+    def label(self):
+        collections_attrs = (
+            self._get_collections_attrs()
+        )
+        parts = []
+        # add each attribute according to the original argument order
+        for (
+            key,
+            value,
+        ) in collections_attrs.items():
+            if value is not None:
+                print(key, value)
+                title_attr = f"{key}_title"
+                title = getattr(
+                    self, title_attr, ""
+                )
+                parts.append(f"{title}{value}")
+        # join all parts with newlines
+        return "\n".join(parts)
 
 
 @attrs.define
