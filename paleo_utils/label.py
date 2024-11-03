@@ -252,7 +252,9 @@ class Label(ABC):
     watermark_color: str = "black"
     watermark_opacity: float = attrs.field(
         default=0.5,
-        validator=attrs.validators.in_(0.0, 1.0),
+        validator=attrs.validators.in_(
+            (0.0, 1.0)
+        ),
     )
     watermark_image: str | None = None
     watermark_position: str = "bottom-left"
@@ -546,7 +548,6 @@ class CollectionsLabel(Label):
     size_title: str = "Size: "
     link: str | None = None
     link_title: str = "Link: "
-    to_hide: list[str]
 
     # def format_label_based_on_dimensions(
     #     self,
