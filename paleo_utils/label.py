@@ -229,15 +229,24 @@ class Label(ABC):
     font_path: str = "Times New Roman"
     font_size: int = attrs.field(
         default=9,
-        validator=attrs.validators.in_([4, 20]),
+        validator=[
+            attrs.validators.ge(4),
+            attrs.validators.le(20),
+        ],
     )
     group_font_size: int = attrs.field(
         default=9,
-        validator=attrs.validators.in_([4, 20]),
+        validator=[
+            attrs.validators.ge(4),
+            attrs.validators.le(20),
+        ],
     )
     text_font_size: int = attrs.field(
         default=9,
-        validator=attrs.validators.in_([4, 20]),
+        validator=[
+            attrs.validators.ge(4),
+            attrs.validators.le(20),
+        ],
     )
 
     date_format: str = "YYYY-MM-DD"
@@ -247,14 +256,18 @@ class Label(ABC):
     watermark_font_style: str = "normal"
     watermark_font_size: int = attrs.field(
         default=9,
-        validator=attrs.validators.in_([4, 20]),
+        validator=[
+            attrs.validators.ge(4),
+            attrs.validators.le(20),
+        ],
     )
     watermark_color: str = "black"
     watermark_opacity: float = attrs.field(
         default=0.5,
-        validator=attrs.validators.in_(
-            (0.0, 1.0)
-        ),
+        validator=[
+            attrs.validators.ge(0.0),
+            attrs.validators.le(1.0),
+        ],
     )
     watermark_image: str | None = None
     watermark_position: str = "bottom-left"
@@ -291,83 +304,82 @@ class Label(ABC):
     image_path: str | None = None
     image_dimensions: float = attrs.field(
         default=1.0,
-        validator=attrs.validators.in_(
-            [0.25, 1.0]
-        ),
+        validator=[
+            attrs.validators.ge(0.25),
+            attrs.validators.le(1.0),
+        ],
     )
     image_dpi: float = attrs.field(
         default=150,
-        validator=attrs.validators.in_([50, 500]),
+        validator=[
+            attrs.validators.ge(50),
+            attrs.validators.le(500),
+        ],
     )
     override_size_w_image: bool = True
 
     to_hide: list[str] | None = None
 
+    _ordered_kwargs: list[str] = attrs.field(
+        factory=list, init=False
+    )
+
+    def __attrs_post_init__(self):
+        # capture the order of non-None fields
+        for (
+            field
+        ) in self.__class__.__attrs_attrs__:
+            value = getattr(self, field.name)
+            if value is not None:
+                self._ordered_kwargs.append(
+                    field.name
+                )
+        print(self._ordered_kwargs)
+
+    def label(self) -> str:
+        parts = []
+        # add each attribute according to the original argument order
+        for key in self._ordered_kwargs:
+            # dynamically retrieve the title and value attributes
+            title_attr = f"{key}_title"
+            value = getattr(self, key)
+            title = getattr(self, title_attr, "")
+            # add to parts if the value is not None
+            if value is not None:
+                parts.append(f"{title}{value}")
+        # join all parts with newlines
+        return "\n".join(parts)
+
     def save(self):
         """
         Method to the save based on the specified
         formats. Each label is expected to start
-        out as a Pillow image.
+        out as a Python string.
         """
-        if self.save_format == "plain_text":
+        if self.save_as_text:
             self.save_as_plain_text()
-        elif self.save_format == "latex":
+        if self.save_as_latex:
             self.save_as_latex()
-        elif self.save_format == "svg":
+        if self.save_as_svg:
             self.save_as_svg()
-        elif self.save_format == "image":
+        if self.save_as_image == "image":
             self.save_as_image()
-        else:
-            raise ValueError(
-                f"Unknown save format: {self.save_format}"
-            )
 
     def save_as_plain_text(self):
-        """Save label as plain text."""
+        """Saves label as plain text."""
         pass
 
     def save_as_latex(self):
-        """Save label as LaTeX."""
+        """Saves label as LaTeX."""
         pass
 
     def save_as_svg(self):
-        """Save label as SVG."""
+        """Saves label as SVG."""
         pass
 
     def save_as_image(self):
-        """Save label as an image."""
+        """Saves label as an image."""
         pass
-
-    # def add_watermark(self):
-    #     """Overlay watermark text onto the label."""
-    #     pass
-
-    # def validate_dimensions(self):
-    #     """Ensure font size is appropriate for label dimensions."""
-    #     if (
-    #         self.font_size
-    #         > min(self.dimensions) // 10
-    #     ):
-    #         self.font_size = (
-    #             min(self.dimensions) // 10
-    #         )
-
-    # def preview_label(self):
-    #     """Generate a preview of the label."""
-    #     print(
-    #         self.format_label_based_on_dimensions()
-    #     )
-
-    # def convert_to_qr_code(self, data):
-    #     """Generate a QR code based on given data."""
-    #     qr = qrcode.make(data)
-    #     qr.save(f"{self.save_path}_qr.png")
-
-    # def format_for_metadata(self):
-    #     """Format label information as JSON metadata."""
-    #     return json.dumps(
-    #         attrs.asdict(self), indent=2
-    #     )
 
 
 @attrs.define
@@ -548,36 +560,6 @@ class CollectionsLabel(Label):
     size_title: str = "Size: "
     link: str | None = None
     link_title: str = "Link: "
-
-    # def format_label_based_on_dimensions(
-    #     self,
-    # ) -> str:
-    #     """
-    #     Formats the label content for the collection details.
-    #     """
-    #     species_info = "\n".join(
-    #         [
-    #             f"{species} (Author: {self.species_authors})"
-    #             for species in self.species_names
-    #         ]
-    #     )
-    #     return (
-    #         f"Description: {self.general_description}\n"
-    #         f"Species: {species_info}\n"
-    #         f"Chronostratigraphy: {self.chronostratigraphy}\n"
-    #         f"Formation: {self.formation}\n"
-    #         f"Locale: {self.locale}\n"
-    #         f"Collector: {self.collector}\n"
-    #         f"Date of Discovery: {self.date_of_discovery}"
-    #     )
-
-    # def summarize_species_info(self):
-    #     """Summarize species information."""
-    #     return f"{len(self.species_names)} species documented."
-
-    # def generate_collection_overview(self):
-    #     """Provide an overview statement for the collection."""
-    #     return f"{self.general_description} - Found in {self.formation}, {self.locale}."
 
 
 @attrs.define
@@ -1006,42 +988,3 @@ class SystematicsLabel(Label):
     form_author: str = ""
     subform: str = "Subform: "
     subform_author: str = ""
-
-    def format_label_based_on_dimensions(
-        self,
-    ) -> str:
-        """
-        Formats the label for systematics based on taxonomic details.
-        """
-        return (
-            f"Description: {self.general_description}\n"
-            f"Domain: {self.domain_name} (Author: {self.domain_author})\n"
-            f"Kingdom: {self.kingdom_name} (Author: {self.kingdom_author})\n"
-            f"Phylum: {self.phylum_name} (Author: {self.phylum_author})\n"
-            f"Class: {self.class_name} (Author: {self.class_author})\n"
-            f"Order: {self.order_name} (Author: {self.order_author})\n"
-            f"Family: {self.family_name} (Author: {self.family_author})\n"
-            f"Genus: {self.genus_name} (Author: {self.genus_author})\n"
-            f"Species: {self.species_name} (Author: {self.specimen_author})"
-        )
-
-    def validate_taxonomy(self):
-        """Ensure taxonomic fields are complete."""
-        missing_fields = [
-            field
-            for field in [
-                "domain_name",
-                "kingdom_name",
-                "phylum_name",
-                "class_name",
-                "order_name",
-                "family_name",
-                "genus_name",
-                "species_name",
-            ]
-            if not getattr(self, field)
-        ]
-        if missing_fields:
-            raise ValueError(
-                f"Missing taxonomy fields: {', '.join(missing_fields)}"
-            )

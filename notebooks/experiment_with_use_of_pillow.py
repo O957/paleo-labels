@@ -10,6 +10,19 @@ from PIL import Image, ImageDraw, ImageFont
 
 import paleo_utils
 
+# %% TEST ZONE
+
+label = paleo_utils.CollectionsLabel(
+    save_directory="../assets/saved_images/",
+    id_number="12345",
+    collection="AMNH",
+    collector="Dr. Larson",
+    location="Europe",
+    coordinates=(40.7128, -74.0060),
+    date_found="2023-01-01",
+)
+print(label.label())
+
 # %% CREATE A SIMPLE IMAGE & DRAWER
 
 # produce new image object
