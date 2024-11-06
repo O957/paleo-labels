@@ -433,6 +433,19 @@ class Label:
                 * self.image_dots_per_inch,
             )
 
+    def create_label_body(self):
+        """
+        Create the body of the label using
+        PIL.
+        """
+        pass
+
+    def _add_text_content(self):
+        """
+        Internal method (not exposed to the
+        user) for attaching label contents
+        to the label.
+        """
         pass
 
     def save(self):
