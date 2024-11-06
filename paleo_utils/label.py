@@ -31,6 +31,8 @@ SUPPORTED_POSITIONS = [
     "lower-center",
     "lower-right",
 ]
+SUPPORTED_ALIGNMENTS = ["center", "left", "right"]
+SUPPORTED_BORDERS = ["dotted", "solid", "dashed"]
 
 
 def validate_save_directory(
@@ -253,55 +255,185 @@ class Label:
             ),
         ],
     )
-    to_hide: list[str] | None = attrs.field(
-        default=None,
-        validator=attrs.validators.optional(
-            attrs.validators.deep_iterable(
-                member_validator=attrs.validators.instance_of(
-                    str
-                ),
-                iterable_validator=attrs.validators.instance_of(
-                    list
-                ),
-            )
-        ),
+    group_titles_to_hide: list[str] | None = (
+        attrs.field(
+            default=None,
+            validator=attrs.validators.optional(
+                attrs.validators.deep_iterable(
+                    member_validator=attrs.validators.instance_of(
+                        str
+                    ),
+                    iterable_validator=attrs.validators.instance_of(
+                        list
+                    ),
+                )
+            ),
+        )
     )
 
     # OPTIONS FOR TEXT ALIGNMENT
 
-    text_alignment: str = "center"
-    text_flush: bool = False
-
-    # OPTIONS FOR NON-TEXT COMPONENT STYLING
-
-    dimensions: tuple[int, int] = (400, 200)
-    dimensions_system: str = "pixels"
-
-    border_style: str = "none"
-    border_color: str = "black"
-    border_size: int = 1
-
-    image_dimensions: float = attrs.field(
-        default=1.0,
+    text_alignment: str = attrs.field(
+        default="center",
         validator=[
-            attrs.validators.ge(0.25),
-            attrs.validators.le(1.0),
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(
+                SUPPORTED_ALIGNMENTS
+            ),
         ],
     )
-    image_dpi: float = attrs.field(
+    text_flush: bool = attrs.field(
+        default=False,
+        validator=attrs.validators.instance_of(
+            bool
+        ),
+    )
+
+    # OPTIONS FOR IMAGE DIMENSIONS
+
+    image_dots_per_inch: int = attrs.field(
         default=150,
         validator=[
             attrs.validators.ge(50),
             attrs.validators.le(500),
         ],
     )
-    override_size_w_image: bool = True
+    dimensions: tuple[float, float] = attrs.field(
+        default=(4.0, 4.0),
+        validator=[
+            attrs.validators.deep_iterable(
+                member_validator=attrs.validators.ge(
+                    0.5
+                )
+                & attrs.validators.le(20.0),
+                iterable_validator=attrs.validators.instance_of(
+                    tuple
+                ),
+            ),
+        ],
+    )
+    dimensions_in_inches: bool = attrs.field(
+        default=True,
+        validator=attrs.validators.instance_of(
+            bool
+        ),
+    )
+    dimensions_in_centimeters: bool = attrs.field(
+        default=False,
+        validator=attrs.validators.instance_of(
+            bool
+        ),
+    )
+    dimensions_as_inches: tuple[float, float] = (
+        attrs.field(init=False)
+    )
+    dimensions_as_centimeters: tuple[
+        float, float
+    ] = attrs.field(init=False)
+    dimensions_as_pixels: tuple[float, float] = (
+        attrs.field(init=False)
+    )
+
+    # OPTIONS FOR BORDER
+
+    border_style: str | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.and_(
+                attrs.validators.instance_of(str),
+                attrs.validators.ge(1),
+                attrs.validators.in_(
+                    SUPPORTED_BORDERS
+                ),
+            )
+        ),
+    )
+    border_color: str = attrs.field(
+        default="black",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(
+                SUPPORTED_COLORS
+            ),
+        ],
+    )
+    border_size_in_inches: float = attrs.field(
+        default=0.05,
+        validator=[
+            attrs.validators.ge(0.01),
+            attrs.validators.le(0.50),
+        ],  # TODO: raise error depending on border size
+    )
 
     # OPTIONS FOR QR CODES
 
-    qr_code: bool = False
-    qr_code_size: int = 100
-    qr_code_position: str = "bottom-left"
+    qr_code: bool = attrs.field(
+        default=False,
+        validator=attrs.validators.instance_of(
+            bool
+        ),
+    )
+    qr_code_size_in_inches: float = attrs.field(
+        default=0.75,
+        validator=[
+            attrs.validators.ge(0.25),
+            attrs.validators.le(2.0),
+        ],  # TODO: raise error depending on border size
+    )
+    qr_code_position: str = attrs.field(
+        default="best",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(
+                [SUPPORTED_POSITIONS]
+            ),
+        ],
+    )
+    qr_code_on_back: bool = attrs.field(
+        default=False,
+        validator=attrs.validators.instance_of(
+            bool
+        ),
+    )
+
+    def __attrs_post_init__(self):
+        if (
+            self.dimensions_in_centimeters
+            and self.dimensions_in_inches
+        ):
+            raise ValueError(
+                "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
+            )
+        if self.dimensions_in_centimeters:
+            self.dimensions_as_centimeters = (
+                self.dimensions
+            )
+            self.dimensions_as_inches = (
+                self.dimensions[0] / 2.54,
+                self.dimensions[1] / 2.54,
+            )
+            self.dimensions_as_pixels: (
+                self.dimensions_as_inches[0]
+                * self.image_dots_per_inch,
+                self.dimensions_as_inches[1]
+                * self.image_dots_per_inch,
+            )
+        if self.dimensions_in_inches:
+            self.dimensions_as_inches = (
+                self.dimensions
+            )
+            self.dimensions_as_centimeters = (
+                self.dimensions[0] * 2.54,
+                self.dimensions[1] * 2.54,
+            )
+            self.dimensions_as_pixels: (
+                self.dimensions[0]
+                * self.image_dots_per_inch,
+                self.dimensions[1]
+                * self.image_dots_per_inch,
+            )
+
+        pass
 
     def save(self):
         """
