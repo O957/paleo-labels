@@ -14,9 +14,7 @@ import paleo_utils
 
 # produce new image object
 # see: https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.new
-new_img = Image.new(
-    mode="RGB", size=(1000, 1000), color="white"
-)
+new_img = Image.new(mode="RGB", size=(1000, 1000), color="white")
 
 # create image draw object
 # see: https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html
@@ -36,9 +34,7 @@ Found By: The Author
 #     "Pillow/Tests/fonts/FreeMono.ttf", 20)
 try:
     fnt = ImageFont.truetype(
-        font=paleo_utils.get_font_path(
-            "texgyreschola-regular.otf"
-        ),
+        font=paleo_utils.get_font_path("texgyreschola-regular.otf"),
         size=20,
     )
 except IOError:

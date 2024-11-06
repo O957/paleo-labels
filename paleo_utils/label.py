@@ -278,12 +278,8 @@ class Label(ABC):
     group_colors: dict[str, str] | str = "black"
     text_colors: dict[str, str] | str = "black"
 
-    group_styling: (
-        dict[str, str] | list[str] | str
-    ) = "bold"
-    text_styling: dict[str, str] | list[str] = (
-        attrs.Factory(list)
-    )
+    group_styling: dict[str, str] | list[str] | str = "bold"
+    text_styling: dict[str, str] | list[str] = attrs.Factory(list)
 
     text_alignment: str = "center"
     text_flush: bool = False
@@ -335,21 +331,21 @@ class Label(ABC):
         if self.save_as_image == "image":
             self.save_as_image()
 
-    def save_as_plain_text(self):
-        """Saves label as plain text."""
-        pass
+    # def save_as_plain_text(self):
+    #     """Saves label as plain text."""
+    #     pass
 
-    def save_as_latex(self):
-        """Saves label as LaTeX."""
-        pass
+    # def save_as_latex(self):
+    #     """Saves label as LaTeX."""
+    #     pass
 
-    def save_as_svg(self):
-        """Saves label as SVG."""
-        pass
+    # def save_as_svg(self):
+    #     """Saves label as SVG."""
+    #     pass
 
-    def save_as_image(self):
-        """Saves label as an image."""
-        pass
+    # def save_as_image(self):
+    #     """Saves label as an image."""
+    #     pass
 
 
 @attrs.define(kw_only=True)
@@ -438,51 +434,21 @@ class CollectionsLabel(Label):
         A URL to the specimen online.
     """
 
-    collection: str | None = attrs.field(
-        default=None
-    )
-    id_number: str | None = attrs.field(
-        default=None
-    )
-    collector: str | None = attrs.field(
-        default=None
-    )
-    species: str | None = attrs.field(
-        default=None
-    )
-    species_author: str | None = attrs.field(
-        default=None
-    )
-    common_name: str | None = attrs.field(
-        default=None
-    )
-    location: str | None = attrs.field(
-        default=None
-    )
-    coordinates: tuple[float, float] | None = (
-        attrs.field(default=None)
-    )
-    coordinates_separate: bool = attrs.field(
-        default=False
-    )
-    date_found: str | None = attrs.field(
-        default=None
-    )
-    date_cataloged: str | None = attrs.field(
-        default=None
-    )
-    formation: str | None = attrs.field(
-        default=None
-    )
-    formation_author: str | None = attrs.field(
-        default=None
-    )
-    chrono_age: str | None = attrs.field(
-        default=None
-    )
-    chrono_age_author: str | None = attrs.field(
-        default=None
-    )
+    collection: str | None = attrs.field(default=None)
+    id_number: str | None = attrs.field(default=None)
+    collector: str | None = attrs.field(default=None)
+    species: str | None = attrs.field(default=None)
+    species_author: str | None = attrs.field(default=None)
+    common_name: str | None = attrs.field(default=None)
+    location: str | None = attrs.field(default=None)
+    coordinates: tuple[float, float] | None = attrs.field(default=None)
+    coordinates_separate: bool = attrs.field(default=False)
+    date_found: str | None = attrs.field(default=None)
+    date_cataloged: str | None = attrs.field(default=None)
+    formation: str | None = attrs.field(default=None)
+    formation_author: str | None = attrs.field(default=None)
+    chrono_age: str | None = attrs.field(default=None)
+    chrono_age_author: str | None = attrs.field(default=None)
     size: str | None = attrs.field(default=None)
     link: str | None = attrs.field(default=None)
 
@@ -509,14 +475,10 @@ class CollectionsLabel(Label):
         factory=dict
     )  # empty by default
 
-    _ordered_kwargs: dict = attrs.field(
-        init=False
-    )
+    _ordered_kwargs: dict = attrs.field(init=False)
 
     def __init__(self, **kwargs):
-        self._ordered_kwargs = {
-            key: kwargs[key] for key in kwargs
-        }
+        self._ordered_kwargs = {key: kwargs[key] for key in kwargs}
 
     def __attrs_post_init__(self):
         # update title_overrides with any user-provided overrides
@@ -527,15 +489,10 @@ class CollectionsLabel(Label):
                 value,
             ) in self.title_overrides.items():
                 if key in self.default_titles:
-                    self.default_titles[key] = (
-                        value
-                    )
+                    self.default_titles[key] = value
 
     def _get_collections_attrs(self):
-        label_attrs = {
-            attr.name
-            for attr in Label.__attrs_attrs__
-        }
+        label_attrs = {attr.name for attr in Label.__attrs_attrs__}
         # collections_attrs = {
         #     attr.name: getattr(self, attr.name)
         #     for attr in self.__attrs_attrs__
@@ -553,19 +510,14 @@ class CollectionsLabel(Label):
         # empty list for parts of the final label
         parts = []
         # collections label exclusive attrs
-        collections_attrs = (
-            self._get_collections_attrs()
-        )
+        collections_attrs = self._get_collections_attrs()
         # iterative over collections attrs
         for (
             key,
             value,
         ) in collections_attrs.items():
             # for all non-None collections attrs, proceed
-            if (
-                value is not None
-                and not isinstance(value, dict)
-            ):
+            if value is not None and not isinstance(value, dict):
                 # edit title with spaces and capitalized
                 title = self.default_titles.get(
                     key,

@@ -7,11 +7,7 @@ https://peps.python.org/pep-0420/
 """
 
 from .fonts_utils import get_font_path
-from .label import (
-    CollectionsLabel,
-    Label,
-    SystematicsLabel,
-)
+from .label import CollectionsLabel, Label, SystematicsLabel
 
 __all__ = [
     "Label",
