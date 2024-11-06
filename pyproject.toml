@@ -3,8 +3,7 @@ name = "paleo-utils"
 version = "0.0.1"
 description = "Tools for the author to facilitate various tasks in paleontological work, including specimen labels, systematics organization, measurement grids, and imaging utilities."
 authors = ["AFg6K7h4fhy2 <127630341+AFg6K7h4fhy2@users.noreply.github.com>"]
-readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 packages = [{include = "paleo_utils"}]
 include = [
     "paleo_utils/fonts/*.otf"
