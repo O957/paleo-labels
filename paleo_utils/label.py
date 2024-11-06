@@ -54,9 +54,12 @@ class Label(ABC):
     )
     image_format: str = attrs.field(
         default=".jpg",
-        validator=attrs.validotors.in_(
-            [".jpg", ".png", ".heic"]
-        ),
+        validator=[
+            attrs.validators.in_(
+                [".jpg", ".png", ".heic"]
+            ),
+            attrs.validators.instance_of(str),
+        ],
     )
     save_as_text: bool = attrs.field(
         default=False,
@@ -121,12 +124,39 @@ class Label(ABC):
 
     # OPTIONS FOR WATERMARKS
 
-    watermark: str = ""
-    watermark_font: str = "Times New Roman"
-    watermark_font_style: str = "normal"
+    watermark: str = attrs.field(
+        default="",
+        validator=attrs.validators.instance_of(
+            str
+        ),
+    )  # TODO: character limit, naughty word censoring
+    watermark_font_path: str = attrs.field(
+        default="TeX Gyra Schola",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(
+                ["TeX Gyra Schola", "Iosevka"]
+            ),
+        ],
+    )
+    watermark_font_style: str = attrs.field(
+        default="regular",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(
+                [
+                    "bold",
+                    "regular",
+                    "italics",
+                    "underlined",
+                ]
+            ),
+        ],
+    )
     watermark_font_size: int = attrs.field(
         default=9,
         validator=[
+            attrs.validators.instance_of(int),
             attrs.validators.ge(4),
             attrs.validators.le(20),
         ],
