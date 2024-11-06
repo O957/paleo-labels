@@ -149,64 +149,31 @@ cls_inst2.get_message()
 # should have a separator option.
 
 
-@attrs.define
+@attrs.define(kw_only=True)
 class ExampleClassC:
-    """
-    Test class for a making a message where
-    the outcome message depends on which
-    order the keywords arguments are given.
-    """
 
-    normal_arg: str
-    msg_parts: dict[str, str] = attrs.field(
-        kw_only=True,
-        validator=attrs.validators.instance_of(
-            dict
-        ),
-        default={
-            "msg_NACP": "NACP",
-            "msg_NJLC": "NJLC",
-        },
+    normal_arg: str = attrs.field(
+        default="Default",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(
+                ["Default", "Zone"]
+            ),
+        ],
     )
 
-    @msg_parts.validator
-    def check_values_are_strings(
-        self, attribute, value
-    ):
-        for key, val in value.items():
-            if not isinstance(val, str):
-                raise TypeError(
-                    f"Value for '{key}' must be a string, got {type(val).__name__} instead"
-                )
-
-    full_message: str = attrs.field(init=False)
-
-    def __attrs_post_init__(self):
-        self.full_message = "\n".join(
-            value
-            for key, value in self.msg_parts.items()
-        )
-
-    def get_message(self):
-        print(self.full_message)
+    def check(self):
+        print(self.normal_arg)
 
 
-# %% SUCCESS USING EXAMPLE CLASS B!
+# %%
 
-cls_inst1 = ExampleClassC(
-    "hello",
-    msg_parts={
-        "msg_NACP": "NACP",
-        "msg_NJLC": "NJLC",
-    },
-)
-cls_inst1.get_message()
+cls_inst1 = ExampleClassC(normal_arg="Zone")
+cls_inst1.check()
 
-cls_inst2 = ExampleClassC(
-    "hello",
-    msg_parts={
-        "msg_NJLC": "NJLC",
-        "msg_NACP": "NACP",
-    },
-)
-cls_inst2.get_message()
+
+# RESOURCES
+
+# https://www.attrs.org/en/stable/api.html#api-validators
+#
+# %%
