@@ -1,3 +1,24 @@
+# TODO, SUPPORT MULTIPLE SECTIONS
+
+# use_header: bool = attrs.field(
+#     default=False,
+#     validator=attrs.validators.instance_of(bool)
+# )
+# use_heading: bool = attrs.field(
+#     default=False,
+#     validator=attrs.validators.instance_of(
+#         bool
+#     ),
+# )
+# heading_font_size: int = attrs.field(
+#     default=12,
+#     validator=[
+#         attrs.validators.instance_of(int),
+#         attrs.validators.ge(4),
+#         attrs.validators.le(20),
+#     ],
+# )
+
 """
 Attributes
 ----------

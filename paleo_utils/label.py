@@ -1,12 +1,16 @@
 """
 Classes for creating
-paleontological labels.
+labels for use in paleontological
+collections.
 """
 
 import pathlib
+from typing import Iterable
 
 import attrs
-from PIL import ImageColor
+from PIL import Image, ImageColor, ImageDraw
+
+import paleo_utils
 
 SUPPORTED_COLORS = list(
     ImageColor.colormap.keys()
@@ -33,33 +37,21 @@ SUPPORTED_POSITIONS = [
 ]
 SUPPORTED_ALIGNMENTS = ["center", "left", "right"]
 SUPPORTED_BORDERS = ["dotted", "solid", "dashed"]
-
-
-def validate_save_directory(
-    instance: any,
-    attribute: attrs.Attribute,
-    value: str | pathlib.Path,
-):
-    """
-    NOTE: Does not check if file already
-    exists by the same name.
-    """
-    # convert str path to path
-    if isinstance(value, str):
-        value = pathlib.Path(value)
-    # check if path exists, if not, err
-    if not value.exists():
-        raise ValueError(
-            f"{attribute.name} must be a valid path; got '{value}', which does not exist."
-        )
+SUPPORTED_IMAGE_FORMATS = [
+    ".jpg",
+    ".png",
+    ".heic",
+]
 
 
 @attrs.define(kw_only=True)
 class Label:
     """
-    Abstract base class for a Label.
-    Each Label contains shared attributes,
-    such as dimensions or background color.
+    Class for a Label. Each Label consists
+    of multiple sections. Sections can be
+    formatted vertically or horizontally.
+    Selected dimensions influence the section
+    size. Sections can consist of images.
     """
 
     # OPTIONS FOR SAVING
@@ -69,7 +61,7 @@ class Label:
             attrs.validators.instance_of(
                 (str, pathlib.Path)
             ),
-            validate_save_directory,
+            paleo_utils.validate_save_directory,
         ]
     )
     save_as_image: bool = attrs.field(
@@ -82,7 +74,7 @@ class Label:
         default=".jpg",
         validator=[
             attrs.validators.in_(
-                [".jpg", ".png", ".heic"]
+                SUPPORTED_IMAGE_FORMATS
             ),
             attrs.validators.instance_of(str),
         ],
@@ -125,20 +117,6 @@ class Label:
     )
     group_content_font_size: int = attrs.field(
         default=9,
-        validator=[
-            attrs.validators.instance_of(int),
-            attrs.validators.ge(4),
-            attrs.validators.le(20),
-        ],
-    )
-    use_heading: bool = attrs.field(
-        default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
-    )
-    heading_font_size: int = attrs.field(
-        default=12,
         validator=[
             attrs.validators.instance_of(int),
             attrs.validators.ge(4),
@@ -270,6 +248,13 @@ class Label:
             ),
         )
     )
+    spaces_between_group_lines: int = attrs.field(
+        default=0,
+        validator=[
+            attrs.validators.ge(0),
+            attrs.validators.le(2),
+        ],
+    )
 
     # OPTIONS FOR TEXT ALIGNMENT
 
@@ -364,6 +349,13 @@ class Label:
             attrs.validators.le(0.50),
         ],  # TODO: raise error depending on border size
     )
+    border_padding_from_edge: float = attrs.field(
+        default=0.05,
+        validator=[
+            attrs.validators.ge(0.01),
+            attrs.validators.le(0.50),
+        ],
+    )
 
     # OPTIONS FOR QR CODES
 
@@ -396,56 +388,209 @@ class Label:
         ),
     )
 
-    def __attrs_post_init__(self):
-        if (
-            self.dimensions_in_centimeters
-            and self.dimensions_in_inches
-        ):
+    def _convert_values_to_pixels(
+        self, values: Iterable[float], unit: str
+    ) -> float:
+        """
+        Internal method to convert unit
+        values to pixels.
+        """
+        if unit == "inches":
+            return [
+                value * self.image_dots_per_inch
+                for value in values
+            ]
+        elif unit == "centimeters":
+            return [
+                value
+                * (
+                    self.image_dots_per_inch
+                    / 2.54
+                )
+                for value in values
+            ]
+        else:
             raise ValueError(
-                "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
-            )
-        if self.dimensions_in_centimeters:
-            self.dimensions_as_centimeters = (
-                self.dimensions
-            )
-            self.dimensions_as_inches = (
-                self.dimensions[0] / 2.54,
-                self.dimensions[1] / 2.54,
-            )
-            self.dimensions_as_pixels: (
-                self.dimensions_as_inches[0]
-                * self.image_dots_per_inch,
-                self.dimensions_as_inches[1]
-                * self.image_dots_per_inch,
-            )
-        if self.dimensions_in_inches:
-            self.dimensions_as_inches = (
-                self.dimensions
-            )
-            self.dimensions_as_centimeters = (
-                self.dimensions[0] * 2.54,
-                self.dimensions[1] * 2.54,
-            )
-            self.dimensions_as_pixels: (
-                self.dimensions[0]
-                * self.image_dots_per_inch,
-                self.dimensions[1]
-                * self.image_dots_per_inch,
+                "Unit must be either 'inches' or 'centimeters'"
             )
 
-    def create_label_body(self):
+    def _convert_values_to_inches(
+        self, values: Iterable[float], unit: str
+    ) -> list[float]:
         """
-        Create the body of the label using
-        PIL.
+        Internal method to convert unit
+        values to inches.
         """
+        if unit == "pixels":
+            return [
+                value / self.image_dots_per_inch
+                for value in values
+            ]
+        elif unit == "centimeters":
+            return [
+                value / 2.54 for value in values
+            ]
+        else:
+            raise ValueError(
+                "Unit must be either 'pixels' or 'centimeters'"
+            )
+
+    def _convert_values_to_centimeters(
+        self, values: Iterable[float], unit: str
+    ) -> list[float]:
+        """
+        Internal method to convert unit
+        values to centimeters.
+        """
+        if unit == "pixels":
+            return [
+                value
+                / self.image_dots_per_inch
+                * 2.54
+                for value in values
+            ]
+        elif unit == "inches":
+            return [
+                value * 2.54 for value in values
+            ]
+        else:
+            raise ValueError(
+                "Unit must be either 'pixels' or 'inches'"
+            )
+
+
+def __attrs_post_init__(self):
+    # ensure only one dimension unit is specified (either inches or centimeters)
+    if (
+        self.dimensions_in_centimeters
+        and self.dimensions_in_inches
+    ):
+        raise ValueError(
+            "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
+        )
+    # handle case when dimensions are specified in centimeters
+    if self.dimensions_in_centimeters:
+        # set dimensions in centimeters
+        unit = "centimeters"
+        self.dimensions_as_centimeters = (
+            self.dimensions
+        )
+        # convert to inches and pixels using the helper methods
+        self.dimensions_as_inches = (
+            self._convert_values_to_inches(
+                values=self.dimensions, unit=unit
+            )
+        )
+        self.dimensions_as_pixels = (
+            self._convert_values_to_pixels(
+                values=self.dimensions_as_inches,
+                unit="inches",
+            )
+        )
+    # handle the case when dimensions are specified in inches
+    elif self.dimensions_in_inches:
+        # set dimensions in inches
+        unit = "inches"
+        self.dimensions_as_inches = (
+            self.dimensions
+        )
+        # convert to centimeters and pixels using the helper methods
+        self.dimensions_as_centimeters = (
+            self._convert_values_to_centimeters(
+                values=self.dimensions, unit=unit
+            )
+        )
+        self.dimensions_as_pixels = (
+            self._convert_values_to_pixels(
+                values=self.dimensions,
+                unit="inches",
+            )
+        )
+    # raise an error if neither dimensions_in_centimeters nor dimensions_in_inches is specified
+    elif not (
+        self.dimensions_in_centimeters
+        or self.dimensions_in_inches
+    ):
+        raise ValueError(
+            "You must specify either dimensions_in_centimeters or dimensions_in_inches."
+        )
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        """
+        Instantiates a Label object from a
+        dictionary.
+        """
+        return cls(**data)
+
+    def _create_label_body(self):
+        """
+        Create the body of the Label using
+        PIL and the provided dimensions in
+        pixels, including border and padding.
+        """
+        # get label width and height in pixels
+        label_width, label_height = (
+            self.dimensions_as_pixels
+        )
+
+        # convert border size and padding
+        # from inches to pixels
+        border_size = (
+            self._convert_values_to_pixels(
+                [self.border_size_in_inches],
+                unit="inches",
+            )[0]
+        )
+        border_padding = (
+            self._convert_values_to_pixels(
+                [self.border_padding_from_edge],
+                unit="inches",
+            )[0]
+        )
+
+        # create the base image with
+        # background color
+        img = Image.new(
+            "RGB",
+            (label_width, label_height),
+            self.background_color,
+        )
+        draw = ImageDraw.Draw(img)
+
+        # add the border if specified
+        if self.border_style:
+            # create a border rectangle
+            # inside the image with padding
+            draw.rectangle(
+                [
+                    (
+                        border_padding,
+                        border_padding,
+                    ),
+                    (
+                        label_width
+                        - border_padding,
+                        label_height
+                        - border_padding,
+                    ),
+                ],
+                outline=self.border_color,
+                width=int(border_size),
+            )
+        # return the generated image
+        return img
+
+    def add_systematics_text():
         pass
 
-    def _add_text_content(self):
-        """
-        Internal method (not exposed to the
-        user) for attaching label contents
-        to the label.
-        """
+    def add_collections_text():
+        pass
+
+    def _add_qr_code():
+        pass
+
+    def _add_watermark():
         pass
 
     def save(self):
@@ -463,21 +608,28 @@ class Label:
         if self.save_as_image == "image":
             self.save_as_image()
 
-    # def save_as_plain_text(self):
-    #     """Saves label as plain text."""
-    #     pass
+        # if self.save_as_image:
+        #     self.label.save(self.save_path, self.image_format)
 
-    # def save_as_latex(self):
-    #     """Saves label as LaTeX."""
-    #     pass
+        # if self.save_as_text:
+        #     with open(self.save_path, "w") as f:
+        #         f.write(self.text)
 
-    # def save_as_svg(self):
-    #     """Saves label as SVG."""
-    #     pass
+    def save_as_plain_text(self):
+        """Saves label as plain text."""
+        pass
 
-    # def save_as_image(self):
-    #     """Saves label as an image."""
-    #     pass
+    def save_as_latex(self):
+        """Saves label as LaTeX."""
+        pass
+
+    def save_as_svg(self):
+        """Saves label as SVG."""
+        pass
+
+    def save_as_image(self):
+        """Saves label as an image."""
+        pass
 
 
 @attrs.define(kw_only=True)
