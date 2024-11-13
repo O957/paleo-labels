@@ -156,7 +156,12 @@ class Label:
             attrs.validators.le(20),
         ],
     )
-    watermark_color: str = "black"
+    watermark_color: str = attrs.field(
+        default="black",
+        validator=attrs.validators.instance_of(
+            str
+        ),
+    )
     watermark_opacity: float = attrs.field(
         default=0.5,
         validator=[
@@ -167,10 +172,7 @@ class Label:
     watermark_image: str | None = attrs.field(
         default=None,
         validator=attrs.validators.optional(
-            attrs.validators.and_(
-                attrs.validators.instance_of(str),
-                attrs.validators.ge(1),
-            )
+            attrs.validators.instance_of(str)
         ),
     )
     watermark_position: str = attrs.field(
@@ -178,7 +180,7 @@ class Label:
         validator=[
             attrs.validators.instance_of(str),
             attrs.validators.in_(
-                [SUPPORTED_POSITIONS]
+                SUPPORTED_POSITIONS
             ),
         ],
     )
@@ -287,10 +289,10 @@ class Label:
         default=(4.0, 4.0),
         validator=[
             attrs.validators.deep_iterable(
-                member_validator=attrs.validators.ge(
-                    0.5
-                )
-                & attrs.validators.le(20.0),
+                member_validator=attrs.validators.and_(
+                    attrs.validators.ge(0.5),
+                    attrs.validators.le(20.0),
+                ),
                 iterable_validator=attrs.validators.instance_of(
                     tuple
                 ),
@@ -318,6 +320,7 @@ class Label:
     dimensions_as_pixels: tuple[float, float] = (
         attrs.field(init=False)
     )
+    dimensions_unit: str = attrs.field(init=False)
 
     # OPTIONS FOR BORDER
 
@@ -326,7 +329,6 @@ class Label:
         validator=attrs.validators.optional(
             attrs.validators.and_(
                 attrs.validators.instance_of(str),
-                attrs.validators.ge(1),
                 attrs.validators.in_(
                     SUPPORTED_BORDERS
                 ),
@@ -342,7 +344,7 @@ class Label:
             ),
         ],
     )
-    border_size_in_inches: float = attrs.field(
+    border_size: float = attrs.field(
         default=0.05,
         validator=[
             attrs.validators.ge(0.01),
@@ -377,7 +379,7 @@ class Label:
         validator=[
             attrs.validators.instance_of(str),
             attrs.validators.in_(
-                [SUPPORTED_POSITIONS]
+                SUPPORTED_POSITIONS
             ),
         ],
     )
@@ -458,62 +460,59 @@ class Label:
                 "Unit must be either 'pixels' or 'inches'"
             )
 
-
-def __attrs_post_init__(self):
-    # ensure only one dimension unit is specified (either inches or centimeters)
-    if (
-        self.dimensions_in_centimeters
-        and self.dimensions_in_inches
-    ):
-        raise ValueError(
-            "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
-        )
-    # handle case when dimensions are specified in centimeters
-    if self.dimensions_in_centimeters:
-        # set dimensions in centimeters
-        unit = "centimeters"
-        self.dimensions_as_centimeters = (
-            self.dimensions
-        )
-        # convert to inches and pixels using the helper methods
-        self.dimensions_as_inches = (
-            self._convert_values_to_inches(
-                values=self.dimensions, unit=unit
+    def __attrs_post_init__(self):
+        # ensure only one dimension unit is specified (either inches or centimeters)
+        if (
+            self.dimensions_in_centimeters
+            and self.dimensions_in_inches
+        ):
+            raise ValueError(
+                "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
             )
-        )
-        self.dimensions_as_pixels = (
-            self._convert_values_to_pixels(
+        # handle case when dimensions are specified in centimeters
+        if self.dimensions_in_centimeters:
+            # set dimensions in centimeters
+            self.dimensions_unit = "centimeters"
+            self.dimensions_as_centimeters = (
+                self.dimensions
+            )
+            # convert to inches and pixels using the helper methods
+            self.dimensions_as_inches = (
+                self._convert_values_to_inches(
+                    values=self.dimensions,
+                    unit=self.dimensions_unit,
+                )
+            )
+            self.dimensions_as_pixels = self._convert_values_to_pixels(
                 values=self.dimensions_as_inches,
                 unit="inches",
             )
-        )
-    # handle the case when dimensions are specified in inches
-    elif self.dimensions_in_inches:
-        # set dimensions in inches
-        unit = "inches"
-        self.dimensions_as_inches = (
-            self.dimensions
-        )
-        # convert to centimeters and pixels using the helper methods
-        self.dimensions_as_centimeters = (
-            self._convert_values_to_centimeters(
-                values=self.dimensions, unit=unit
+        # handle the case when dimensions are specified in inches
+        elif self.dimensions_in_inches:
+            # set dimensions in inches
+            self.dimensions_unit = "inches"
+            self.dimensions_as_inches = (
+                self.dimensions
             )
-        )
-        self.dimensions_as_pixels = (
-            self._convert_values_to_pixels(
+            # convert to centimeters and pixels using the helper methods
+            self.dimensions_as_centimeters = self._convert_values_to_centimeters(
                 values=self.dimensions,
-                unit="inches",
+                unit=self.dimensions_unit,
             )
-        )
-    # raise an error if neither dimensions_in_centimeters nor dimensions_in_inches is specified
-    elif not (
-        self.dimensions_in_centimeters
-        or self.dimensions_in_inches
-    ):
-        raise ValueError(
-            "You must specify either dimensions_in_centimeters or dimensions_in_inches."
-        )
+            self.dimensions_as_pixels = (
+                self._convert_values_to_pixels(
+                    values=self.dimensions,
+                    unit=self.dimensions_unit,
+                )
+            )
+        # raise an error if neither dimensions_in_centimeters nor dimensions_in_inches is specified
+        elif not (
+            self.dimensions_in_centimeters
+            or self.dimensions_in_inches
+        ):
+            raise ValueError(
+                "You must specify either dimensions_in_centimeters or dimensions_in_inches."
+            )
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -527,59 +526,192 @@ def __attrs_post_init__(self):
         """
         Create the body of the Label using
         PIL and the provided dimensions in
-        pixels, including border and padding.
+        pixels, including background color.
         """
         # get label width and height in pixels
         label_width, label_height = (
             self.dimensions_as_pixels
         )
+        # create the base image with background color
+        img = Image.new(
+            mode="RGB",
+            size=(
+                int(label_width),
+                int(label_height),
+            ),
+            color=self.background_color,
+        )
+        drawn_img = ImageDraw.Draw(img)
+        # add the border if specified
+        if self.border_style:
+            self._add_border(
+                label_as_img=drawn_img,
+                label_width=label_width,
+                label_height=label_height,
+            )
+        # return generated image
+        return img
 
+    def _add_border(
+        self,
+        label_as_img,
+        label_width: float,
+        label_height: float,
+    ) -> float:
+        """
+        Add a border to the label using
+        the specified border style, color,
+        and size.
+        """
         # convert border size and padding
-        # from inches to pixels
+        # to pixels from whatever unit was
+        # used
         border_size = (
             self._convert_values_to_pixels(
-                [self.border_size_in_inches],
-                unit="inches",
+                [self.border_size],
+                unit=self.dimensions_unit,
             )[0]
         )
         border_padding = (
             self._convert_values_to_pixels(
                 [self.border_padding_from_edge],
-                unit="inches",
+                unit=self.dimensions_unit,
             )[0]
         )
-
-        # create the base image with
-        # background color
-        img = Image.new(
-            "RGB",
-            (label_width, label_height),
-            self.background_color,
+        # border coordinates
+        border_left = border_padding
+        border_top = border_padding
+        border_right = (
+            label_width - border_padding
         )
-        draw = ImageDraw.Draw(img)
-
-        # add the border if specified
-        if self.border_style:
-            # create a border rectangle
-            # inside the image with padding
-            draw.rectangle(
+        border_bottom = (
+            label_height - border_padding
+        )
+        if self.border_style == "solid":
+            # draw a solid border using
+            # rectangle
+            label_as_img.rectangle(
                 [
-                    (
-                        border_padding,
-                        border_padding,
-                    ),
-                    (
-                        label_width
-                        - border_padding,
-                        label_height
-                        - border_padding,
-                    ),
+                    (border_left, border_top),
+                    (border_right, border_bottom),
                 ],
                 outline=self.border_color,
                 width=int(border_size),
             )
-        # return the generated image
-        return img
+        elif self.border_style == "dashed":
+            # draw a dashed border
+            dash_length = 10  # TODO: adjust length of each dash
+            for x in range(
+                border_left,
+                border_right,
+                dash_length * 2,
+            ):
+                label_as_img.line(
+                    [
+                        (x, border_top),
+                        (
+                            x + dash_length,
+                            border_top,
+                        ),
+                    ],
+                    fill=self.border_color,
+                    width=int(border_size),
+                )
+                label_as_img.line(
+                    [
+                        (x, border_bottom),
+                        (
+                            x + dash_length,
+                            border_bottom,
+                        ),
+                    ],
+                    fill=self.border_color,
+                    width=int(border_size),
+                )
+            for y in range(
+                border_top,
+                border_bottom,
+                dash_length * 2,
+            ):
+                label_as_img.line(
+                    [
+                        (border_left, y),
+                        (
+                            border_left,
+                            y + dash_length,
+                        ),
+                    ],
+                    fill=self.border_color,
+                    width=int(border_size),
+                )
+                label_as_img.line(
+                    [
+                        (border_right, y),
+                        (
+                            border_right,
+                            y + dash_length,
+                        ),
+                    ],
+                    fill=self.border_color,
+                    width=int(border_size),
+                )
+        elif self.border_style == "dotted":
+            # draw a dotted border using
+            # small circles
+            dot_radius = (
+                2  # TODO adjust size of the dot
+            )
+            for x in range(
+                border_left,
+                border_right,
+                2 * dot_radius,
+            ):
+                label_as_img.ellipse(
+                    [
+                        x,
+                        border_top,
+                        x + dot_radius,
+                        border_top + dot_radius,
+                    ],
+                    fill=self.border_color,
+                )
+                label_as_img.ellipse(
+                    [
+                        x,
+                        border_bottom
+                        - dot_radius,
+                        x + dot_radius,
+                        border_bottom,
+                    ],
+                    fill=self.border_color,
+                )
+            for y in range(
+                border_top,
+                border_bottom,
+                2 * dot_radius,
+            ):
+                label_as_img.ellipse(
+                    [
+                        border_left,
+                        y,
+                        border_left + dot_radius,
+                        y + dot_radius,
+                    ],
+                    fill=self.border_color,
+                )
+                label_as_img.ellipse(
+                    [
+                        border_right - dot_radius,
+                        y,
+                        border_right,
+                        y + dot_radius,
+                    ],
+                    fill=self.border_color,
+                )
+        else:
+            raise ValueError(
+                f"Unsupported border style: {self.border_style}"
+            )
 
     def add_systematics_text():
         pass
@@ -593,6 +725,22 @@ def __attrs_post_init__(self):
     def _add_watermark():
         pass
 
+    def _save_as_plain_text(self):
+        """Saves label as plain text."""
+        pass
+
+    def _save_as_latex(self):
+        """Saves label as LaTeX."""
+        pass
+
+    def _save_as_svg(self):
+        """Saves label as SVG."""
+        pass
+
+    def _save_as_image(self):
+        """Saves label as an image."""
+        pass
+
     def save(self):
         """
         Method to the save based on the specified
@@ -600,13 +748,13 @@ def __attrs_post_init__(self):
         out as a Python string.
         """
         if self.save_as_text:
-            self.save_as_plain_text()
+            self._save_as_plain_text()
         if self.save_as_latex:
-            self.save_as_latex()
+            self._save_as_latex()
         if self.save_as_svg:
-            self.save_as_svg()
+            self._save_as_svg()
         if self.save_as_image == "image":
-            self.save_as_image()
+            self._save_as_image()
 
         # if self.save_as_image:
         #     self.label.save(self.save_path, self.image_format)
@@ -614,22 +762,6 @@ def __attrs_post_init__(self):
         # if self.save_as_text:
         #     with open(self.save_path, "w") as f:
         #         f.write(self.text)
-
-    def save_as_plain_text(self):
-        """Saves label as plain text."""
-        pass
-
-    def save_as_latex(self):
-        """Saves label as LaTeX."""
-        pass
-
-    def save_as_svg(self):
-        """Saves label as SVG."""
-        pass
-
-    def save_as_image(self):
-        """Saves label as an image."""
-        pass
 
 
 @attrs.define(kw_only=True)

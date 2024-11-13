@@ -1,7 +1,10 @@
 """
-Making A Label For _Squalicorax Pristodontus_
+Making A Label For Squalicorax Pristodontus
 
-_The following tutorial demonstrates how to use Paleo Utils to make a label for a specimen from the Late Cretaceous of New Jersey that the author found._
+The following tutorial demonstrates how to
+use Paleo Utils to make a label for a
+specimen from the Late Cretaceous of
+New Jersey that the author found.
 """
 
 # NOTES: Two labels come to mind, i.e. collections and systematics labels (both are classes, subclassed as Labels). Systematics labels have Linnaen taxonomic considerations. Collections labels have elements such as Collector, Repository, Date Found, Locale, etc... Each Label has dimensions, font, a save path, and a font size. Each Label can be saved as an image, as SVG, as text, or as a PDF.
@@ -10,7 +13,28 @@ _The following tutorial demonstrates how to use Paleo Utils to make a label for 
 
 # NOTES: For testing on FF, do not have users use it themselves, just have users provide you images.
 
-label_dictionary = {
+
+# %%  LIBRARY IMPORTS
+
+
+import paleo_utils
+
+# %% CREATE LABEL WITH BORDER
+
+label = paleo_utils.Label(
+    save_path="../assets",
+    border_style="dashed",
+    border_color="black",
+    border_size=0.2,
+    border_padding_from_edge=0.5,
+)
+img = label._create_label_body()
+img.show()
+
+
+# %%
+
+label_dictionary_defaults = {
     "save_path": None,
     "save_as_image": True,
     "image_format": ".jpg",
