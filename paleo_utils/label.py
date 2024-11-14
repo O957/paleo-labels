@@ -10,8 +10,6 @@ from typing import Iterable
 import attrs
 from PIL import Image, ImageColor, ImageDraw
 
-import paleo_utils
-
 SUPPORTED_COLORS = list(
     ImageColor.colormap.keys()
 )
@@ -44,6 +42,25 @@ SUPPORTED_IMAGE_FORMATS = [
 ]
 
 
+def validate_save_directory(
+    instance: any,
+    attribute: attrs.Attribute,
+    value: str | pathlib.Path,
+):
+    """
+    NOTE: Does not check if file already
+    exists by the same name.
+    """
+    # convert str path to path
+    if isinstance(value, str):
+        value = pathlib.Path(value)
+    # check if path exists, if not, err
+    if not value.exists():
+        raise ValueError(
+            f"{attribute.name} must be a valid path; got '{value}', which does not exist."
+        )
+
+
 @attrs.define(kw_only=True)
 class Label:
     """
@@ -61,7 +78,7 @@ class Label:
             attrs.validators.instance_of(
                 (str, pathlib.Path)
             ),
-            paleo_utils.validate_save_directory,
+            validate_save_directory,
         ]
     )
     save_as_image: bool = attrs.field(

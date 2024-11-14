@@ -6,8 +6,8 @@ PEP 420:
 https://peps.python.org/pep-0420/
 """
 
-from .label import Label
-from .utils import (
+from paleo_utils.label import Label
+from paleo_utils.utils import (
     get_font_path,
     validate_save_directory,
 )
