@@ -230,9 +230,7 @@ to_hide
     A list of the attributes of the label
     to not display the group name for.
     Defaults to None.
-"""
 
-"""
 A label for collections specimens, i.e.
 labels involving more details than
 fossil systematics. The kwargs parameter
@@ -314,9 +312,7 @@ size
 
 link
     A URL to the specimen online.
-"""
 
-"""
 Attributes
 ----------
 description:
