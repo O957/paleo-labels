@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2025-01-12T01:17:53.868539</dc:date>
+    <dc:date>2025-01-12T11:43:48.391265</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -35,7 +35,7 @@ L 387.72 256.32
 L 387.72 34.56
 L 55.08 34.56
 z
-" clip-path="url(#p496db0c7fe)" style="fill: #ffffe0; stroke: #ffffe0; stroke-linejoin: miter"/>
+" clip-path="url(#pacdb050394)" style="fill: #ffffe0; stroke: #ffffe0; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 66.168 245.232
@@ -44,7 +44,7 @@ L 376.632 45.648
 L 66.168 45.648
 L 66.168 245.232
 z
-" clip-path="url(#p496db0c7fe)" style="fill: none; stroke: #000000; stroke-width: 1.2; stroke-linejoin: miter"/>
+" clip-path="url(#pacdb050394)" style="fill: none; stroke: #000000; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <g id="patch_4">
@@ -61,7 +61,7 @@ z
 " style="fill: #ffffff; stroke: #000000; stroke-linejoin: miter"/>
     </g>
     <!-- ID Number:                    3244 -->
-    <g transform="translate(131.151406 104.267531) scale(0.14 -0.14)">
+    <g transform="translate(118.285625 104.267531) scale(0.14 -0.14)">
      <defs>
       <path id="ArialMT-49" d="M 597 0
 L 597 4581
@@ -358,7 +358,7 @@ z
      <use xlink:href="#ArialMT-34" x="1233.740234"/>
     </g>
     <!-- Collection: AMNH -->
-    <g transform="translate(166.548437 119.075156) scale(0.14 -0.14)">
+    <g transform="translate(118.285625 119.075156) scale(0.14 -0.14)">
      <defs>
       <path id="ArialMT-43" d="M 3763 1606
 L 4369 1453
@@ -563,7 +563,7 @@ z
      <use xlink:href="#ArialMT-48" x="711.394531"/>
     </g>
     <!-- Collector: Dr. Montague -->
-    <g transform="translate(147.869375 134.087531) scale(0.14 -0.14)">
+    <g transform="translate(118.285625 134.087531) scale(0.14 -0.14)">
      <defs>
       <path id="ArialMT-2e" d="M 581 0
 L 581 641
@@ -674,7 +674,7 @@ z
      <use xlink:href="#ArialMT-65" x="994.890625"/>
     </g>
     <!-- Location: North America -->
-    <g transform="translate(146.700156 149.059219) scale(0.14 -0.14)">
+    <g transform="translate(118.285625 149.059219) scale(0.14 -0.14)">
      <defs>
       <path id="ArialMT-4c" d="M 469 0
 L 469 4581
@@ -731,7 +731,7 @@ z
      <use xlink:href="#ArialMT-61" x="1011.589844"/>
     </g>
     <!-- Formation: Navesink -->
-    <g transform="translate(157.214375 163.866844) scale(0.14 -0.14)">
+    <g transform="translate(118.285625 163.866844) scale(0.14 -0.14)">
      <defs>
       <path id="ArialMT-46" d="M 525 0
 L 525 4581
@@ -1064,7 +1064,7 @@ z
      <use xlink:href="#ArialMT-29" x="1439.892578"/>
     </g>
     <!-- Date Found: 2024-01-01 -->
-    <g transform="translate(145.131719 193.850906) scale(0.14 -0.14)">
+    <g transform="translate(118.285625 193.850906) scale(0.14 -0.14)">
      <use xlink:href="#ArialMT-44"/>
      <use xlink:href="#ArialMT-61" x="72.216797"/>
      <use xlink:href="#ArialMT-74" x="127.832031"/>
@@ -1092,7 +1092,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p496db0c7fe">
+  <clipPath id="pacdb050394">
    <rect x="55.08" y="34.56" width="332.64" height="221.76"/>
   </clipPath>
  </defs>
