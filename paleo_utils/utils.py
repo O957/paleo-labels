@@ -30,9 +30,7 @@ def get_font_path(font_name: str) -> str:
     """
     font_path = FONT_DIR / font_name
     if not font_path.exists():
-        raise FileNotFoundError(
-            f"Font {font_name} not found in {FONT_DIR}"
-        )
+        raise FileNotFoundError(f"Font {font_name} not found in {FONT_DIR}")
     return str(font_path)
 
 

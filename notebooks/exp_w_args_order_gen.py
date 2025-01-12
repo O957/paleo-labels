@@ -21,19 +21,13 @@ class ExampleClassA:
     normal_arg: str
     msg_NJLC: str = attrs.field(
         kw_only=True,
-        validator=attrs.validators.instance_of(
-            str
-        ),
+        validator=attrs.validators.instance_of(str),
     )
     msg_NACP: str = attrs.field(
         kw_only=True,
-        validator=attrs.validators.instance_of(
-            str
-        ),
+        validator=attrs.validators.instance_of(str),
     )
-    kw_only_args: dict[str, str] = attrs.field(
-        init=False
-    )
+    kw_only_args: dict[str, str] = attrs.field(init=False)
     full_message: str = attrs.field(init=False)
 
     def __attrs_post_init__(self):
@@ -42,9 +36,7 @@ class ExampleClassA:
             for field in attrs.fields(type(self))
             if field.kw_only
         }
-        self.full_message = "\n".join(
-            [key for key in self.kw_only_args]
-        )
+        self.full_message = "\n".join([key for key in self.kw_only_args])
 
     def get_message(self):
         print(self.full_message)
@@ -52,14 +44,10 @@ class ExampleClassA:
 
 # %% FAILURE USING EXAMPLE CLASS A!
 
-cls_inst1 = ExampleClassA(
-    "hello", msg_NACP="NACP", msg_NJLC="NJLC"
-)
+cls_inst1 = ExampleClassA("hello", msg_NACP="NACP", msg_NJLC="NJLC")
 cls_inst1.get_message()
 
-cls_inst2 = ExampleClassA(
-    "hello", msg_NJLC="NJLC", msg_NACP="NACP"
-)
+cls_inst2 = ExampleClassA("hello", msg_NJLC="NJLC", msg_NACP="NACP")
 cls_inst2.get_message()
 
 
@@ -77,9 +65,7 @@ class ExampleClassB:
     normal_arg: str
     msg_parts: dict[str, str] = attrs.field(
         kw_only=True,
-        validator=attrs.validators.instance_of(
-            dict
-        ),
+        validator=attrs.validators.instance_of(dict),
         default={
             "msg_NACP": "NACP",
             "msg_NJLC": "NJLC",
@@ -89,20 +75,15 @@ class ExampleClassB:
     @msg_parts.validator
     def check_keys_safe(self, attribute, value):
         permitted_keys = ["msg_NACP", "msg_NJLC"]
-        difference = set(value.keys()).difference(
-            set(permitted_keys)
-        )
+        difference = set(value.keys()).difference(set(permitted_keys))
         if bool(difference):
-            raise Exception(
-                f"Foreign keys are present: {difference}"
-            )
+            raise Exception(f"Foreign keys are present: {difference}")
 
     full_message: str = attrs.field(init=False)
 
     def __attrs_post_init__(self):
         self.full_message = "\n".join(
-            value
-            for key, value in self.msg_parts.items()
+            value for key, value in self.msg_parts.items()
         )
 
     def get_message(self):
@@ -156,9 +137,7 @@ class ExampleClassC:
         default="Default",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                ["Default", "Zone"]
-            ),
+            attrs.validators.in_(["Default", "Zone"]),
         ],
     )
 

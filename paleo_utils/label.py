@@ -11,9 +11,7 @@ from typing import Iterable
 import attrs
 from PIL import Image, ImageColor, ImageDraw
 
-SUPPORTED_COLORS = list(
-    ImageColor.colormap.keys()
-)
+SUPPORTED_COLORS = list(ImageColor.colormap.keys())
 SUPPORTED_STYLES = [
     "bold",
     "regular",
@@ -46,19 +44,19 @@ SUPPORTED_IMAGE_FORMATS = [
 def validate_save_directory(
     instance: any,
     attribute: attrs.Attribute,
-    value: str | pathlib.Path,
+    save_dir: str | pathlib.Path,
 ):
     """
     NOTE: Does not check if file already
     exists by the same name.
     """
     # convert str path to path
-    if isinstance(value, str):
-        value = pathlib.Path(value)
+    if isinstance(save_dir, str):
+        save_dir = pathlib.Path(save_dir)
     # check if path exists, if not, err
-    if not value.exists():
+    if not save_dir.exists():
         raise ValueError(
-            f"{attribute.name} must be a valid path; got '{value}', which does not exist."
+            f"{attribute.name} must be a valid path; got '{save_dir}', which does not exist."
         )
 
 
@@ -79,44 +77,36 @@ class Label:
 
     save_path: str | pathlib.Path = attrs.field(
         validator=[
-            attrs.validators.instance_of(
-                (str, pathlib.Path)
-            ),
+            attrs.validators.instance_of((str, pathlib.Path)),
             validate_save_directory,
         ]
     )
     save_as_image: bool = attrs.field(
         default=True,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
     image_format: str = attrs.field(
         default=".jpg",
         validator=[
-            attrs.validators.in_(
-                SUPPORTED_IMAGE_FORMATS
-            ),
+            attrs.validators.in_(SUPPORTED_IMAGE_FORMATS),
             attrs.validators.instance_of(str),
         ],
     )
     save_as_text: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
     save_as_svg: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
     save_as_tex: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
+    )
+    save_as_json: bool = attrs.field(
+        default=False,
+        validator=attrs.validators.instance_of(bool),
     )
 
     # OPTIONS FOR BODY FONT
@@ -149,9 +139,7 @@ class Label:
 
     watermark: str = attrs.field(
         default="",
-        validator=attrs.validators.instance_of(
-            str
-        ),
+        validator=attrs.validators.instance_of(str),
     )
     watermark_font_path: str = attrs.field(
         default="TeX Gyra Schola",
@@ -164,9 +152,7 @@ class Label:
         default="regular",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_STYLES
-            ),
+            attrs.validators.in_(SUPPORTED_STYLES),
         ],
     )
     watermark_font_size: int = attrs.field(
@@ -179,9 +165,7 @@ class Label:
     )
     watermark_color: str = attrs.field(
         default="black",
-        validator=attrs.validators.instance_of(
-            str
-        ),
+        validator=attrs.validators.instance_of(str),
     )
     watermark_opacity: float = attrs.field(
         default=0.5,
@@ -192,17 +176,13 @@ class Label:
     )
     watermark_image: str | None = attrs.field(
         default=None,
-        validator=attrs.validators.optional(
-            attrs.validators.instance_of(str)
-        ),
+        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )
     watermark_position: str = attrs.field(
         default="best",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_POSITIONS
-            ),
+            attrs.validators.in_(SUPPORTED_POSITIONS),
         ],
     )
 
@@ -212,27 +192,21 @@ class Label:
         default="white",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_COLORS
-            ),
+            attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
     group_title_color: str = attrs.field(
         default="black",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_COLORS
-            ),
+            attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
     group_content_color: str = attrs.field(
         default="black",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_COLORS
-            ),
+            attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
 
@@ -242,34 +216,24 @@ class Label:
         default="regular",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_STYLES
-            ),
+            attrs.validators.in_(SUPPORTED_STYLES),
         ],
     )
     group_content_styling: str = attrs.field(
         default="regular",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_STYLES
-            ),
+            attrs.validators.in_(SUPPORTED_STYLES),
         ],
     )
-    group_titles_to_hide: list[str] | None = (
-        attrs.field(
-            default=None,
-            validator=attrs.validators.optional(
-                attrs.validators.deep_iterable(
-                    member_validator=attrs.validators.instance_of(
-                        str
-                    ),
-                    iterable_validator=attrs.validators.instance_of(
-                        list
-                    ),
-                )
-            ),
-        )
+    group_titles_to_hide: list[str] | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.deep_iterable(
+                member_validator=attrs.validators.instance_of(str),
+                iterable_validator=attrs.validators.instance_of(list),
+            )
+        ),
     )
     spaces_between_group_lines: int = attrs.field(
         default=0,
@@ -285,16 +249,12 @@ class Label:
         default="center",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_ALIGNMENTS
-            ),
+            attrs.validators.in_(SUPPORTED_ALIGNMENTS),
         ],
     )
     text_flush: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
 
     # OPTIONS FOR IMAGE DIMENSIONS
@@ -314,33 +274,21 @@ class Label:
                     attrs.validators.ge(0.5),
                     attrs.validators.le(20.0),
                 ),
-                iterable_validator=attrs.validators.instance_of(
-                    tuple
-                ),
+                iterable_validator=attrs.validators.instance_of(tuple),
             ),
         ],
     )
     dimensions_in_inches: bool = attrs.field(
         default=True,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
     dimensions_in_centimeters: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
-    dimensions_as_inches: tuple[float, float] = (
-        attrs.field(init=False)
-    )
-    dimensions_as_centimeters: tuple[
-        float, float
-    ] = attrs.field(init=False)
-    dimensions_as_pixels: tuple[float, float] = (
-        attrs.field(init=False)
-    )
+    dimensions_as_inches: tuple[float, float] = attrs.field(init=False)
+    dimensions_as_centimeters: tuple[float, float] = attrs.field(init=False)
+    dimensions_as_pixels: tuple[float, float] = attrs.field(init=False)
     dimensions_unit: str = attrs.field(init=False)
 
     # OPTIONS FOR BORDER
@@ -350,9 +298,7 @@ class Label:
         validator=attrs.validators.optional(
             attrs.validators.and_(
                 attrs.validators.instance_of(str),
-                attrs.validators.in_(
-                    SUPPORTED_BORDERS
-                ),
+                attrs.validators.in_(SUPPORTED_BORDERS),
             )
         ),
     )
@@ -360,9 +306,7 @@ class Label:
         default="black",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_COLORS
-            ),
+            attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
     border_size: float = attrs.field(
@@ -384,9 +328,7 @@ class Label:
 
     qr_code: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
     qr_code_size_in_inches: float = attrs.field(
         default=0.75,
@@ -399,16 +341,12 @@ class Label:
         default="best",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(
-                SUPPORTED_POSITIONS
-            ),
+            attrs.validators.in_(SUPPORTED_POSITIONS),
         ],
     )
     qr_code_on_back: bool = attrs.field(
         default=False,
-        validator=attrs.validators.instance_of(
-            bool
-        ),
+        validator=attrs.validators.instance_of(bool),
     )
 
     def _convert_values_to_pixels(
@@ -419,23 +357,13 @@ class Label:
         values to pixels.
         """
         if unit == "inches":
-            return [
-                value * self.image_dots_per_inch
-                for value in values
-            ]
+            return [value * self.image_dots_per_inch for value in values]
         elif unit == "centimeters":
             return [
-                value
-                * (
-                    self.image_dots_per_inch
-                    / 2.54
-                )
-                for value in values
+                value * (self.image_dots_per_inch / 2.54) for value in values
             ]
         else:
-            raise ValueError(
-                "Unit must be either 'inches' or 'centimeters'"
-            )
+            raise ValueError("Unit must be either 'inches' or 'centimeters'")
 
     def _convert_values_to_inches(
         self, values: Iterable[float], unit: str
@@ -445,18 +373,11 @@ class Label:
         values to inches.
         """
         if unit == "pixels":
-            return [
-                value / self.image_dots_per_inch
-                for value in values
-            ]
+            return [value / self.image_dots_per_inch for value in values]
         elif unit == "centimeters":
-            return [
-                value / 2.54 for value in values
-            ]
+            return [value / 2.54 for value in values]
         else:
-            raise ValueError(
-                "Unit must be either 'pixels' or 'centimeters'"
-            )
+            raise ValueError("Unit must be either 'pixels' or 'centimeters'")
 
     def _convert_values_to_centimeters(
         self, values: Iterable[float], unit: str
@@ -467,26 +388,19 @@ class Label:
         """
         if unit == "pixels":
             return [
-                value
-                / self.image_dots_per_inch
-                * 2.54
-                for value in values
+                value / self.image_dots_per_inch * 2.54 for value in values
             ]
         elif unit == "inches":
-            return [
-                value * 2.54 for value in values
-            ]
+            return [value * 2.54 for value in values]
         else:
-            raise ValueError(
-                "Unit must be either 'pixels' or 'inches'"
-            )
+            raise ValueError("Unit must be either 'pixels' or 'inches'")
 
     def __attrs_post_init__(self):
+
+        # DIMENSION HANDLING
+
         # ensure only one dimension unit is specified (either inches or centimeters)
-        if (
-            self.dimensions_in_centimeters
-            and self.dimensions_in_inches
-        ):
+        if self.dimensions_in_centimeters and self.dimensions_in_inches:
             raise ValueError(
                 "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
             )
@@ -494,15 +408,11 @@ class Label:
         if self.dimensions_in_centimeters:
             # set dimensions in centimeters
             self.dimensions_unit = "centimeters"
-            self.dimensions_as_centimeters = (
-                self.dimensions
-            )
+            self.dimensions_as_centimeters = self.dimensions
             # convert to inches and pixels using the helper methods
-            self.dimensions_as_inches = (
-                self._convert_values_to_inches(
-                    values=self.dimensions,
-                    unit=self.dimensions_unit,
-                )
+            self.dimensions_as_inches = self._convert_values_to_inches(
+                values=self.dimensions,
+                unit=self.dimensions_unit,
             )
             self.dimensions_as_pixels = self._convert_values_to_pixels(
                 values=self.dimensions_as_inches,
@@ -512,25 +422,20 @@ class Label:
         elif self.dimensions_in_inches:
             # set dimensions in inches
             self.dimensions_unit = "inches"
-            self.dimensions_as_inches = (
-                self.dimensions
-            )
+            self.dimensions_as_inches = self.dimensions
             # convert to centimeters and pixels using the helper methods
-            self.dimensions_as_centimeters = self._convert_values_to_centimeters(
-                values=self.dimensions,
-                unit=self.dimensions_unit,
-            )
-            self.dimensions_as_pixels = (
-                self._convert_values_to_pixels(
+            self.dimensions_as_centimeters = (
+                self._convert_values_to_centimeters(
                     values=self.dimensions,
                     unit=self.dimensions_unit,
                 )
             )
+            self.dimensions_as_pixels = self._convert_values_to_pixels(
+                values=self.dimensions,
+                unit=self.dimensions_unit,
+            )
         # raise an error if neither dimensions_in_centimeters nor dimensions_in_inches is specified
-        elif not (
-            self.dimensions_in_centimeters
-            or self.dimensions_in_inches
-        ):
+        elif not (self.dimensions_in_centimeters or self.dimensions_in_inches):
             raise ValueError(
                 "You must specify either dimensions_in_centimeters or dimensions_in_inches."
             )
@@ -550,9 +455,7 @@ class Label:
         pixels, including background color.
         """
         # get label width and height in pixels
-        label_width, label_height = (
-            self.dimensions_as_pixels
-        )
+        label_width, label_height = self.dimensions_as_pixels
         # create the base image with background color
         img = Image.new(
             mode="RGB",
@@ -587,27 +490,19 @@ class Label:
         # convert border size and padding
         # to pixels from whatever unit was
         # used
-        border_size = (
-            self._convert_values_to_pixels(
-                [self.border_size],
-                unit=self.dimensions_unit,
-            )[0]
-        )
-        border_padding = (
-            self._convert_values_to_pixels(
-                [self.border_padding_from_edge],
-                unit=self.dimensions_unit,
-            )[0]
-        )
+        border_size = self._convert_values_to_pixels(
+            [self.border_size],
+            unit=self.dimensions_unit,
+        )[0]
+        border_padding = self._convert_values_to_pixels(
+            [self.border_padding_from_edge],
+            unit=self.dimensions_unit,
+        )[0]
         # border coordinates
         border_left = border_padding
         border_top = border_padding
-        border_right = (
-            label_width - border_padding
-        )
-        border_bottom = (
-            label_height - border_padding
-        )
+        border_right = label_width - border_padding
+        border_bottom = label_height - border_padding
         if self.border_style == "solid":
             # draw a solid border using
             # rectangle
@@ -679,9 +574,7 @@ class Label:
         elif self.border_style == "dotted":
             # draw a dotted border using
             # small circles
-            dot_radius = (
-                2  # TODO adjust size of the dot
-            )
+            dot_radius = 2  # TODO adjust size of the dot
             for x in range(
                 border_left,
                 border_right,
@@ -699,8 +592,7 @@ class Label:
                 label_as_img.ellipse(
                     [
                         x,
-                        border_bottom
-                        - dot_radius,
+                        border_bottom - dot_radius,
                         x + dot_radius,
                         border_bottom,
                     ],
@@ -730,9 +622,7 @@ class Label:
                     fill=self.border_color,
                 )
         else:
-            raise ValueError(
-                f"Unsupported border style: {self.border_style}"
-            )
+            raise ValueError(f"Unsupported border style: {self.border_style}")
 
     def add_systematics_text():
         pass
@@ -794,51 +684,21 @@ class CollectionsLabel(Label):
     used is the group title.
     """
 
-    collection: str | None = attrs.field(
-        default=None
-    )
-    id_number: str | None = attrs.field(
-        default=None
-    )
-    collector: str | None = attrs.field(
-        default=None
-    )
-    species: str | None = attrs.field(
-        default=None
-    )
-    species_author: str | None = attrs.field(
-        default=None
-    )
-    common_name: str | None = attrs.field(
-        default=None
-    )
-    location: str | None = attrs.field(
-        default=None
-    )
-    coordinates: tuple[float, float] | None = (
-        attrs.field(default=None)
-    )
-    coordinates_separate: bool = attrs.field(
-        default=False
-    )
-    date_found: str | None = attrs.field(
-        default=None
-    )
-    date_cataloged: str | None = attrs.field(
-        default=None
-    )
-    formation: str | None = attrs.field(
-        default=None
-    )
-    formation_author: str | None = attrs.field(
-        default=None
-    )
-    chrono_age: str | None = attrs.field(
-        default=None
-    )
-    chrono_age_author: str | None = attrs.field(
-        default=None
-    )
+    collection: str | None = attrs.field(default=None)
+    id_number: str | None = attrs.field(default=None)
+    collector: str | None = attrs.field(default=None)
+    species: str | None = attrs.field(default=None)
+    species_author: str | None = attrs.field(default=None)
+    common_name: str | None = attrs.field(default=None)
+    location: str | None = attrs.field(default=None)
+    coordinates: tuple[float, float] | None = attrs.field(default=None)
+    coordinates_separate: bool = attrs.field(default=False)
+    date_found: str | None = attrs.field(default=None)
+    date_cataloged: str | None = attrs.field(default=None)
+    formation: str | None = attrs.field(default=None)
+    formation_author: str | None = attrs.field(default=None)
+    chrono_age: str | None = attrs.field(default=None)
+    chrono_age_author: str | None = attrs.field(default=None)
     size: str | None = attrs.field(default=None)
     link: str | None = attrs.field(default=None)
 
@@ -865,14 +725,10 @@ class CollectionsLabel(Label):
         factory=dict
     )  # empty by default
 
-    _ordered_kwargs: dict = attrs.field(
-        init=False
-    )
+    _ordered_kwargs: dict = attrs.field(init=False)
 
     def __init__(self, **kwargs):
-        self._ordered_kwargs = {
-            key: kwargs[key] for key in kwargs
-        }
+        self._ordered_kwargs = {key: kwargs[key] for key in kwargs}
 
     def __attrs_post_init__(self):
         # update title_overrides with any user-provided overrides
@@ -883,15 +739,10 @@ class CollectionsLabel(Label):
                 value,
             ) in self.title_overrides.items():
                 if key in self.default_titles:
-                    self.default_titles[key] = (
-                        value
-                    )
+                    self.default_titles[key] = value
 
     def _get_collections_attrs(self):
-        label_attrs = {
-            attr.name
-            for attr in Label.__attrs_attrs__
-        }
+        label_attrs = {attr.name for attr in Label.__attrs_attrs__}
         # collections_attrs = {
         #     attr.name: getattr(self, attr.name)
         #     for attr in self.__attrs_attrs__
@@ -909,19 +760,14 @@ class CollectionsLabel(Label):
         # empty list for parts of the final label
         parts = []
         # collections label exclusive attrs
-        collections_attrs = (
-            self._get_collections_attrs()
-        )
+        collections_attrs = self._get_collections_attrs()
         # iterative over collections attrs
         for (
             key,
             value,
         ) in collections_attrs.items():
             # for all non-None collections attrs, proceed
-            if (
-                value is not None
-                and not isinstance(value, dict)
-            ):
+            if value is not None and not isinstance(value, dict):
                 # edit title with spaces and capitalized
                 title = self.default_titles.get(
                     key,
