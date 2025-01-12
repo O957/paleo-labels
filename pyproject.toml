@@ -3,14 +3,19 @@ name = "paleo-utils"
 version = "0.0.1"
 description = "Tools for the author to facilitate various tasks in paleontological work, including specimen labels, systematics organization, measurement grids, and imaging utilities."
 authors = ["AFg6K7h4fhy2 <127630341+AFg6K7h4fhy2@users.noreply.github.com>"]
+repository = "https://github.com/AFg6K7h4fhy2/Paleo-Utils"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 package-mode = false
+keywords = ["python", "geology", "paleontology", "chronostratigraphy"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
 pre-commit = "^3.7.0"
 
+[tool.poetry.urls]
+"Repository Issues" = "https://github.com/AFg6K7h4fhy2/Paleo-Utils/issues"
+"Author Homepage" = "https://github.com/AFg6K7h4fhy2"
 
 [build-system]
 requires = ["poetry-core"]
