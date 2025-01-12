@@ -11,11 +11,11 @@ from typing import Iterable
 import attrs
 import matplotlib.pyplot as plt
 import toml
+from matplotlib.colors import CSS4_COLORS
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import Rectangle
-from PIL import ImageColor
 
-SUPPORTED_COLORS = list(ImageColor.colormap.keys())
+SUPPORTED_COLORS = list(CSS4_COLORS.keys())
 SUPPORTED_STYLES = [
     "bold",
     "regular",
@@ -23,7 +23,7 @@ SUPPORTED_STYLES = [
     "underlined",
     "small_caps",
 ]
-SUPPORTED_FONTS = ["Iosevka", "TeX Gyra Schola"]
+SUPPORTED_FONTS = ["Iosevka", "TeX Gyra Schola", "Arial", "Times New Roman"]
 SUPPORTED_POSITIONS = [
     "best",
     "upper-left",
@@ -50,10 +50,6 @@ def validate_save_directory(
     attribute: attrs.Attribute,
     save_dir: str | pathlib.Path,
 ):
-    """
-    NOTE: Does not check if file already
-    exists by the same name.
-    """
     # convert str path to path
     if isinstance(save_dir, str):
         save_dir = pathlib.Path(save_dir)
@@ -77,6 +73,17 @@ class Label:
     content).
     """
 
+    # REQUIRED INPUT
+
+    body: list[dict[str, str]] = attrs.field(
+        validator=attrs.validators.deep_iterable(
+            member_validator=attrs.validators.instance_of(dict),
+            iterable_validator=attrs.validators.instance_of(list),
+        )
+    )
+    header: list[dict[str, str]] | None = None
+    footer: list[dict[str, str]] | None = None
+
     # OPTIONS FOR SAVING
 
     save_path: str | pathlib.Path = attrs.field(
@@ -90,7 +97,7 @@ class Label:
         validator=attrs.validators.instance_of(bool),
     )
     image_format: str = attrs.field(
-        default=".jpg",
+        default="png",
         validator=[
             attrs.validators.in_(SUPPORTED_IMAGE_FORMATS),
             attrs.validators.instance_of(str),
@@ -113,7 +120,7 @@ class Label:
         validator=attrs.validators.instance_of(bool),
     )
 
-    # OPTIONS FOR BODY FONT
+    # OPTIONS FOR BODY, HEADER, FOOTER FONT SIZE
 
     body_font_path: str = attrs.field(
         default="TeX Gyra Schola",
@@ -122,16 +129,16 @@ class Label:
             attrs.validators.in_(SUPPORTED_FONTS),
         ],
     )
-    group_title_font_size: int = attrs.field(
-        default=9,
+    body_title_font_size: int = attrs.field(
+        default=10,
         validator=[
             attrs.validators.instance_of(int),
             attrs.validators.ge(4),
             attrs.validators.le(20),
         ],
     )
-    group_content_font_size: int = attrs.field(
-        default=9,
+    body_content_font_size: int = attrs.field(
+        default=12,
         validator=[
             attrs.validators.instance_of(int),
             attrs.validators.ge(4),
@@ -139,98 +146,251 @@ class Label:
         ],
     )
 
-    # OPTIONS FOR WATERMARKS
-
-    watermark: str = attrs.field(
-        default="",
-        validator=attrs.validators.instance_of(str),
+    body_title_font_styling: str = attrs.field(
+        default="bold",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_STYLES),
+        ],
     )
-    watermark_font_path: str = attrs.field(
+    body_content_font_styling: str = attrs.field(
+        default="regular",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_STYLES),
+        ],
+    )
+    body_title_font_color: str = attrs.field(
+        default="black",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+    body_content_font_color: str = attrs.field(
+        default="darkblue",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+
+    header_font_path: str = attrs.field(
         default="TeX Gyra Schola",
         validator=[
             attrs.validators.instance_of(str),
             attrs.validators.in_(SUPPORTED_FONTS),
         ],
     )
-    watermark_font_style: str = attrs.field(
+    header_title_font_size: int = attrs.field(
+        default=14,
+        validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(4),
+            attrs.validators.le(30),
+        ],
+    )
+    header_content_font_size: int = attrs.field(
+        default=12,
+        validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(4),
+            attrs.validators.le(30),
+        ],
+    )
+
+    header_title_font_styling: str = attrs.field(
+        default="bold",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_STYLES),
+        ],
+    )
+    header_content_font_styling: str = attrs.field(
+        default="italic",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_STYLES),
+        ],
+    )
+    header_title_font_color: str = attrs.field(
+        default="blue",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+    header_content_font_color: str = attrs.field(
+        default="darkgreen",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+
+    footer_font_path: str = attrs.field(
+        default="TeX Gyra Schola",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_FONTS),
+        ],
+    )
+    footer_title_font_size: int = attrs.field(
+        default=12,
+        validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(4),
+            attrs.validators.le(30),
+        ],
+    )
+    footer_content_font_size: int = attrs.field(
+        default=10,
+        validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(4),
+            attrs.validators.le(30),
+        ],
+    )
+    footer_title_font_styling: str = attrs.field(
+        default="bold",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_STYLES),
+        ],
+    )
+    footer_content_font_styling: str = attrs.field(
         default="regular",
         validator=[
             attrs.validators.instance_of(str),
             attrs.validators.in_(SUPPORTED_STYLES),
         ],
     )
-    watermark_font_size: int = attrs.field(
-        default=9,
-        validator=[
-            attrs.validators.instance_of(int),
-            attrs.validators.ge(4),
-            attrs.validators.le(20),
-        ],
-    )
-    watermark_color: str = attrs.field(
-        default="black",
-        validator=attrs.validators.instance_of(str),
-    )
-    watermark_opacity: float = attrs.field(
-        default=0.5,
-        validator=[
-            attrs.validators.ge(0.0),
-            attrs.validators.le(1.0),
-        ],
-    )
-    watermark_image: str | None = attrs.field(
-        default=None,
-        validator=attrs.validators.optional(attrs.validators.instance_of(str)),
-    )
-    watermark_position: str = attrs.field(
-        default="best",
+    footer_title_font_color: str = attrs.field(
+        default="purple",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(SUPPORTED_POSITIONS),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+    footer_content_font_color: str = attrs.field(
+        default="black",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
 
-    # OPTIONS FOR COLORING OF COMPONENTS
+    # OPTIONS FOR HEADER, BODY, AND FOOTER BORDERS
 
-    background_color: str = attrs.field(
+    header_border_style: str | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.and_(
+                attrs.validators.instance_of(str),
+                attrs.validators.in_(SUPPORTED_BORDERS),
+            )
+        ),
+    )
+    header_border_color: str = attrs.field(
+        default="black",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+    header_border_size: float = attrs.field(
+        default=0.05,
+        validator=[
+            attrs.validators.ge(0.01),
+            attrs.validators.le(0.50),
+        ],
+    )
+
+    body_border_style: str | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.and_(
+                attrs.validators.instance_of(str),
+                attrs.validators.in_(SUPPORTED_BORDERS),
+            )
+        ),
+    )
+    body_border_color: str = attrs.field(
+        default="black",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+    body_border_size: float = attrs.field(
+        default=0.05,
+        validator=[
+            attrs.validators.ge(0.01),
+            attrs.validators.le(0.50),
+        ],
+    )
+
+    footer_border_style: str | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.and_(
+                attrs.validators.instance_of(str),
+                attrs.validators.in_(SUPPORTED_BORDERS),
+            )
+        ),
+    )
+    footer_border_color: str = attrs.field(
+        default="black",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
+    footer_border_size: float = attrs.field(
+        default=0.05,
+        validator=[
+            attrs.validators.ge(0.01),
+            attrs.validators.le(0.50),
+        ],
+    )
+
+    # BACKGROUND COLORS FOR BODY, HEADER, AND FOOTER
+
+    label_background_color: str = attrs.field(
         default="white",
         validator=[
             attrs.validators.instance_of(str),
             attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
-    group_title_color: str = attrs.field(
-        default="black",
-        validator=[
-            attrs.validators.instance_of(str),
-            attrs.validators.in_(SUPPORTED_COLORS),
-        ],
-    )
-    group_content_color: str = attrs.field(
-        default="black",
+
+    header_background_color: str = attrs.field(
+        default="white",
         validator=[
             attrs.validators.instance_of(str),
             attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
 
-    # OPTIONS FOR TEXT COMPONENT STYLING
+    body_background_color: str = attrs.field(
+        default="white",
+        validator=[
+            attrs.validators.instance_of(str),
+            attrs.validators.in_(SUPPORTED_COLORS),
+        ],
+    )
 
-    group_title_styling: str = attrs.field(
-        default="regular",
+    footer_background_color: str = attrs.field(
+        default="white",
         validator=[
             attrs.validators.instance_of(str),
-            attrs.validators.in_(SUPPORTED_STYLES),
+            attrs.validators.in_(SUPPORTED_COLORS),
         ],
     )
-    group_content_styling: str = attrs.field(
-        default="regular",
-        validator=[
-            attrs.validators.instance_of(str),
-            attrs.validators.in_(SUPPORTED_STYLES),
-        ],
-    )
-    group_titles_to_hide: list[str] | None = attrs.field(
+
+    # TITLES TO HIDE FOR BODY, HEADER, AND FOOTER
+
+    body_titles_to_hide: list[str] | None = attrs.field(
         default=None,
         validator=attrs.validators.optional(
             attrs.validators.deep_iterable(
@@ -239,9 +399,62 @@ class Label:
             )
         ),
     )
-    spaces_between_group_lines: int = attrs.field(
+
+    header_titles_to_hide: list[str] | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.deep_iterable(
+                member_validator=attrs.validators.instance_of(str),
+                iterable_validator=attrs.validators.instance_of(list),
+            )
+        ),
+    )
+
+    footer_titles_to_hide: list[str] | None = attrs.field(
+        default=None,
+        validator=attrs.validators.optional(
+            attrs.validators.deep_iterable(
+                member_validator=attrs.validators.instance_of(str),
+                iterable_validator=attrs.validators.instance_of(list),
+            )
+        ),
+    )
+
+    # SPACING BETWEEN LINES FOR BODY, HEADER, AND FOOTER
+
+    body_spaces_between_lines: int = attrs.field(
         default=0,
         validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(0),
+            attrs.validators.le(2),
+        ],
+    )
+
+    header_spaces_between_lines: int = attrs.field(
+        default=0,
+        validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(0),
+            attrs.validators.le(2),
+        ],
+    )
+
+    footer_spaces_between_lines: int = attrs.field(
+        default=0,
+        validator=[
+            attrs.validators.instance_of(int),
+            attrs.validators.ge(0),
+            attrs.validators.le(2),
+        ],
+    )
+
+    # SPACES BETWEEN SECTIONS
+
+    space_between_sections: int = attrs.field(
+        default=0,
+        validator=[
+            attrs.validators.instance_of(int),
             attrs.validators.ge(0),
             attrs.validators.le(2),
         ],
@@ -261,7 +474,7 @@ class Label:
         validator=attrs.validators.instance_of(bool),
     )
 
-    # OPTIONS FOR IMAGE DIMENSIONS
+    # OPTIONS FOR LABEL DIMENSIONS
 
     image_dots_per_inch: int = attrs.field(
         default=150,
@@ -328,31 +541,6 @@ class Label:
         ],
     )
 
-    # OPTIONS FOR QR CODES
-
-    qr_code: bool = attrs.field(
-        default=False,
-        validator=attrs.validators.instance_of(bool),
-    )
-    qr_code_size_in_inches: float = attrs.field(
-        default=0.75,
-        validator=[
-            attrs.validators.ge(0.25),
-            attrs.validators.le(2.0),
-        ],  # TODO: raise error depending on border size
-    )
-    qr_code_position: str = attrs.field(
-        default="best",
-        validator=[
-            attrs.validators.instance_of(str),
-            attrs.validators.in_(SUPPORTED_POSITIONS),
-        ],
-    )
-    qr_code_on_back: bool = attrs.field(
-        default=False,
-        validator=attrs.validators.instance_of(bool),
-    )
-
     def _convert_values_to_pixels(
         self, values: Iterable[float], unit: str
     ) -> float:
@@ -401,19 +589,13 @@ class Label:
 
     def __attrs_post_init__(self):
 
-        # DIMENSION HANDLING
-
-        # ensure only one dimension unit is specified (either inches or centimeters)
         if self.dimensions_in_centimeters and self.dimensions_in_inches:
             raise ValueError(
                 "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
             )
-        # handle case when dimensions are specified in centimeters
         if self.dimensions_in_centimeters:
-            # set dimensions in centimeters
             self.dimensions_unit = "centimeters"
             self.dimensions_as_centimeters = self.dimensions
-            # convert to inches and pixels using the helper methods
             self.dimensions_as_inches = self._convert_values_to_inches(
                 values=self.dimensions,
                 unit=self.dimensions_unit,
@@ -422,7 +604,6 @@ class Label:
                 values=self.dimensions_as_inches,
                 unit="inches",
             )
-        # handle the case when dimensions are specified in inches
         elif self.dimensions_in_inches:
             # set dimensions in inches
             self.dimensions_unit = "inches"
@@ -438,7 +619,6 @@ class Label:
                 values=self.dimensions,
                 unit=self.dimensions_unit,
             )
-        # raise an error if neither dimensions_in_centimeters nor dimensions_in_inches is specified
         elif not (self.dimensions_in_centimeters or self.dimensions_in_inches):
             raise ValueError(
                 "You must specify either dimensions_in_centimeters or dimensions_in_inches."

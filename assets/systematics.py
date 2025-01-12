@@ -381,3 +381,79 @@
 #                                    linewidth=border_size, linestyle=(0, (1, 3))))
 #         else:
 #             raise ValueError(f"Unsupported border style: {self.border_style}")
+
+# OPTIONS FOR WATERMARKS
+
+#     watermark: str = attrs.field(
+#         default="",
+#         validator=attrs.validators.instance_of(str),
+#     )
+#     watermark_font_path: str = attrs.field(
+#         default="TeX Gyra Schola",
+#         validator=[
+#             attrs.validators.instance_of(str),
+#             attrs.validators.in_(SUPPORTED_FONTS),
+#         ],
+#     )
+#     watermark_font_style: str = attrs.field(
+#         default="regular",
+#         validator=[
+#             attrs.validators.instance_of(str),
+#             attrs.validators.in_(SUPPORTED_STYLES),
+#         ],
+#     )
+#     watermark_font_size: int = attrs.field(
+#         default=9,
+#         validator=[
+#             attrs.validators.instance_of(int),
+#             attrs.validators.ge(4),
+#             attrs.validators.le(20),
+#         ],
+#     )
+#     watermark_color: str = attrs.field(
+#         default="black",
+#         validator=attrs.validators.instance_of(str),
+#     )
+#     watermark_opacity: float = attrs.field(
+#         default=0.5,
+#         validator=[
+#             attrs.validators.ge(0.0),
+#             attrs.validators.le(1.0),
+#         ],
+#     )
+#     watermark_image: str | None = attrs.field(
+#         default=None,
+#         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
+#     )
+#     watermark_position: str = attrs.field(
+#         default="best",
+#         validator=[
+#             attrs.validators.instance_of(str),
+#             attrs.validators.in_(SUPPORTED_POSITIONS),
+#         ],
+#     )
+
+# # OPTIONS FOR QR CODES
+
+#     qr_code: bool = attrs.field(
+#         default=False,
+#         validator=attrs.validators.instance_of(bool),
+#     )
+#     qr_code_size_in_inches: float = attrs.field(
+#         default=0.75,
+#         validator=[
+#             attrs.validators.ge(0.25),
+#             attrs.validators.le(2.0),
+#         ],  # TODO: raise error depending on border size
+#     )
+#     qr_code_position: str = attrs.field(
+#         default="best",
+#         validator=[
+#             attrs.validators.instance_of(str),
+#             attrs.validators.in_(SUPPORTED_POSITIONS),
+#         ],
+#     )
+#     qr_code_on_back: bool = attrs.field(
+#         default=False,
+#         validator=attrs.validators.instance_of(bool),
+#     )

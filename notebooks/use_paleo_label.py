@@ -4,7 +4,7 @@ import paleo_utils
 
 # %% USE LABEL
 
-label = paleo_utils.Label(
+label_full = paleo_utils.Label(
     save_path="label_output",
     dimensions=(6, 4),
     background_color="lightyellow",
