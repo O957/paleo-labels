@@ -100,3 +100,284 @@
 #     form_author: str = ""
 #     subform: str = "Subform: "
 #     subform_author: str = ""
+
+
+# def __attrs_post_init__(self):
+
+#         # DIMENSION HANDLING
+
+#         # ensure only one dimension unit is specified (either inches or centimeters)
+#         if self.dimensions_in_centimeters and self.dimensions_in_inches:
+#             raise ValueError(
+#                 "You cannot specify both dimensions_in_inches and dimensions_in_centimeters. Please provide only one."
+#             )
+#         # handle case when dimensions are specified in centimeters
+#         if self.dimensions_in_centimeters:
+#             # set dimensions in centimeters
+#             self.dimensions_unit = "centimeters"
+#             self.dimensions_as_centimeters = self.dimensions
+#             # convert to inches and pixels using the helper methods
+#             self.dimensions_as_inches = self._convert_values_to_inches(
+#                 values=self.dimensions,
+#                 unit=self.dimensions_unit,
+#             )
+#             self.dimensions_as_pixels = self._convert_values_to_pixels(
+#                 values=self.dimensions_as_inches,
+#                 unit="inches",
+#             )
+#         # handle the case when dimensions are specified in inches
+#         elif self.dimensions_in_inches:
+#             # set dimensions in inches
+#             self.dimensions_unit = "inches"
+#             self.dimensions_as_inches = self.dimensions
+#             # convert to centimeters and pixels using the helper methods
+#             self.dimensions_as_centimeters = (
+#                 self._convert_values_to_centimeters(
+#                     values=self.dimensions,
+#                     unit=self.dimensions_unit,
+#                 )
+#             )
+#             self.dimensions_as_pixels = self._convert_values_to_pixels(
+#                 values=self.dimensions,
+#                 unit=self.dimensions_unit,
+#             )
+#         # raise an error if neither dimensions_in_centimeters nor dimensions_in_inches is specified
+#         elif not (self.dimensions_in_centimeters or self.dimensions_in_inches):
+#             raise ValueError(
+#                 "You must specify either dimensions_in_centimeters or dimensions_in_inches."
+#             )
+
+#     @classmethod
+#     def from_dict(cls, data: dict):
+#         """
+#         Instantiates a Label object from a
+#         dictionary.
+#         """
+#         return cls(**data)
+
+#     def _create_label_body(self):
+#         """
+#         Create the body of the Label using
+#         PIL and the provided dimensions in
+#         pixels, including background color.
+#         """
+#         # get label width and height in pixels
+#         label_width, label_height = self.dimensions_as_pixels
+#         # create the base image with background color
+#         img = Image.new(
+#             mode="RGB",
+#             size=(
+#                 int(label_width),
+#                 int(label_height),
+#             ),
+#             color=self.background_color,
+#         )
+#         drawn_img = ImageDraw.Draw(img)
+#         # add the border if specified
+#         if self.border_style:
+#             self._add_border(
+#                 label_as_img=drawn_img,
+#                 label_width=label_width,
+#                 label_height=label_height,
+#             )
+#         # return generated image
+#         return img
+
+#     def _add_border(
+#         self,
+#         label_as_img,
+#         label_width: float,
+#         label_height: float,
+#     ) -> float:
+#         """
+#         Add a border to the label using
+#         the specified border style, color,
+#         and size.
+#         """
+#         # convert border size and padding
+#         # to pixels from whatever unit was
+#         # used
+#         border_size = self._convert_values_to_pixels(
+#             [self.border_size],
+#             unit=self.dimensions_unit,
+#         )[0]
+#         border_padding = self._convert_values_to_pixels(
+#             [self.border_padding_from_edge],
+#             unit=self.dimensions_unit,
+#         )[0]
+#         # border coordinates
+#         border_left = border_padding
+#         border_top = border_padding
+#         border_right = label_width - border_padding
+#         border_bottom = label_height - border_padding
+#         if self.border_style == "solid":
+#             # draw a solid border using
+#             # rectangle
+#             label_as_img.rectangle(
+#                 [
+#                     (border_left, border_top),
+#                     (border_right, border_bottom),
+#                 ],
+#                 outline=self.border_color,
+#                 width=int(border_size),
+#             )
+#         elif self.border_style == "dashed":
+#             # draw a dashed border
+#             dash_length = 10  # TODO: adjust length of each dash
+#             for x in range(
+#                 border_left,
+#                 border_right,
+#                 dash_length * 2,
+#             ):
+#                 label_as_img.line(
+#                     [
+#                         (x, border_top),
+#                         (
+#                             x + dash_length,
+#                             border_top,
+#                         ),
+#                     ],
+#                     fill=self.border_color,
+#                     width=int(border_size),
+#                 )
+#                 label_as_img.line(
+#                     [
+#                         (x, border_bottom),
+#                         (
+#                             x + dash_length,
+#                             border_bottom,
+#                         ),
+#                     ],
+#                     fill=self.border_color,
+#                     width=int(border_size),
+#                 )
+#             for y in range(
+#                 border_top,
+#                 border_bottom,
+#                 dash_length * 2,
+#             ):
+#                 label_as_img.line(
+#                     [
+#                         (border_left, y),
+#                         (
+#                             border_left,
+#                             y + dash_length,
+#                         ),
+#                     ],
+#                     fill=self.border_color,
+#                     width=int(border_size),
+#                 )
+#                 label_as_img.line(
+#                     [
+#                         (border_right, y),
+#                         (
+#                             border_right,
+#                             y + dash_length,
+#                         ),
+#                     ],
+#                     fill=self.border_color,
+#                     width=int(border_size),
+#                 )
+#         elif self.border_style == "dotted":
+#             # draw a dotted border using
+#             # small circles
+#             dot_radius = 2  # TODO adjust size of the dot
+#             for x in range(
+#                 border_left,
+#                 border_right,
+#                 2 * dot_radius,
+#             ):
+#                 label_as_img.ellipse(
+#                     [
+#                         x,
+#                         border_top,
+#                         x + dot_radius,
+#                         border_top + dot_radius,
+#                     ],
+#                     fill=self.border_color,
+#                 )
+#                 label_as_img.ellipse(
+#                     [
+#                         x,
+#                         border_bottom - dot_radius,
+#                         x + dot_radius,
+#                         border_bottom,
+#                     ],
+#                     fill=self.border_color,
+#                 )
+#             for y in range(
+#                 border_top,
+#                 border_bottom,
+#                 2 * dot_radius,
+#             ):
+#                 label_as_img.ellipse(
+#                     [
+#                         border_left,
+#                         y,
+#                         border_left + dot_radius,
+#                         y + dot_radius,
+#                     ],
+#                     fill=self.border_color,
+#                 )
+#                 label_as_img.ellipse(
+#                     [
+#                         border_right - dot_radius,
+#                         y,
+#                         border_right,
+#                         y + dot_radius,
+#                     ],
+#                     fill=self.border_color,
+#                 )
+#         else:
+#             raise ValueError(f"Unsupported border style: {self.border_style}")
+
+
+# def _create_label_body(self):
+#         """
+#         Create the body of the Label using
+#         matplotlib and the provided dimensions
+#         in inches or centimeters,
+#         including background color.
+#         """
+#         fig, ax = plt.subplots(figsize=self.dimensions_as_inches)
+#         ax.set_xlim(0, self.dimensions_as_inches[0])
+#         ax.set_ylim(0, self.dimensions_as_inches[1])
+#         ax.set_aspect("equal")
+#         ax.axis("off")
+#         # add background color
+#         ax.add_patch(
+#             Rectangle((0, 0),
+#             *self.dimensions_as_inches,
+#             color=self.background_color))
+#         # add border if specified
+#         if self.border_style:
+#             self._add_border(ax)
+#         return fig, ax
+
+#     def _add_border(self, ax):
+#         """
+#         Add a border to the label using
+#         the specified border style, color,
+#         and size.
+#         """
+#         border_size = self._convert_values_to_inches([self.border_size], unit=self.dimensions_unit)[0]
+#         border_padding = self._convert_values_to_inches([self.border_padding_from_edge], unit=self.dimensions_unit)[0]
+
+#         left = border_padding
+#         bottom = border_padding
+#         right = self.dimensions_as_inches[0] - border_padding
+#         top = self.dimensions_as_inches[1] - border_padding
+
+#         if self.border_style == "solid":
+#             ax.add_patch(Rectangle((left, bottom), right - left, top - bottom,
+#                                    edgecolor=self.border_color, facecolor="none", linewidth=border_size))
+#         elif self.border_style == "dashed":
+#             ax.add_patch(Rectangle((left, bottom), right - left, top - bottom,
+#                                    edgecolor=self.border_color, facecolor="none",
+#                                    linewidth=border_size, linestyle=(0, (5, 5))))
+#         elif self.border_style == "dotted":
+#             ax.add_patch(Rectangle((left, bottom), right - left, top - bottom,
+#                                    edgecolor=self.border_color, facecolor="none",
+#                                    linewidth=border_size, linestyle=(0, (1, 3))))
+#         else:
+#             raise ValueError(f"Unsupported border style: {self.border_style}")

@@ -1,0 +1,25 @@
+save_path = "label_output"
+dimensions = [6.0, 4.0]
+background_color = "lightyellow"
+border_style = "solid"
+border_color = "black"
+border_size = 0.05
+border_padding_from_edge = 0.1
+
+[header]
+Genus = "Examplicus"
+Species = "fossil"
+
+[body]
+ID_Number = "3432"
+Location = "North America"
+Formation = "Navesink"
+
+[footer]
+footer_image = "path/to/footer_image.png"
+
+[font]
+font_path = "TeX Gyra Schola"
+font_size = 10
+group_title_color = "black"
+group_content_color = "black"

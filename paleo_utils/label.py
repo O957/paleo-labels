@@ -9,7 +9,11 @@ import pathlib
 from typing import Iterable
 
 import attrs
-from PIL import Image, ImageColor, ImageDraw
+import matplotlib.pyplot as plt
+import toml
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from matplotlib.patches import Rectangle
+from PIL import ImageColor
 
 SUPPORTED_COLORS = list(ImageColor.colormap.keys())
 SUPPORTED_STYLES = [
@@ -448,203 +452,133 @@ class Label:
         """
         return cls(**data)
 
-    def _create_label_body(self):
+    @classmethod
+    def from_toml(cls, file_path: str):
         """
-        Create the body of the Label using
-        PIL and the provided dimensions in
-        pixels, including background color.
+        Load a Label configuration from a
+        TOML file.
         """
-        # get label width and height in pixels
-        label_width, label_height = self.dimensions_as_pixels
-        # create the base image with background color
-        img = Image.new(
-            mode="RGB",
-            size=(
-                int(label_width),
-                int(label_height),
-            ),
-            color=self.background_color,
-        )
-        drawn_img = ImageDraw.Draw(img)
-        # add the border if specified
-        if self.border_style:
-            self._add_border(
-                label_as_img=drawn_img,
-                label_width=label_width,
-                label_height=label_height,
-            )
-        # return generated image
-        return img
+        with open(file_path, "r") as f:
+            data = toml.load(f)
+        return cls(**data)
 
-    def _add_border(
-        self,
-        label_as_img,
-        label_width: float,
-        label_height: float,
-    ) -> float:
+    def _create_section(self, ax, content, position, width, height):
         """
-        Add a border to the label using
-        the specified border style, color,
-        and size.
+        Create a text box or an image for a
+        given section (header, body, footer).
         """
-        # convert border size and padding
-        # to pixels from whatever unit was
-        # used
-        border_size = self._convert_values_to_pixels(
-            [self.border_size],
-            unit=self.dimensions_unit,
-        )[0]
-        border_padding = self._convert_values_to_pixels(
-            [self.border_padding_from_edge],
-            unit=self.dimensions_unit,
-        )[0]
-        # border coordinates
-        border_left = border_padding
-        border_top = border_padding
-        border_right = label_width - border_padding
-        border_bottom = label_height - border_padding
-        if self.border_style == "solid":
-            # draw a solid border using
-            # rectangle
-            label_as_img.rectangle(
+        if isinstance(content, list):
+            # render text
+            text = "\n".join(
                 [
-                    (border_left, border_top),
-                    (border_right, border_bottom),
-                ],
-                outline=self.border_color,
-                width=int(border_size),
+                    f"{key}: {value}"
+                    for group in content
+                    for key, value in group.items()
+                ]
             )
-        elif self.border_style == "dashed":
-            # draw a dashed border
-            dash_length = 10  # TODO: adjust length of each dash
-            for x in range(
-                border_left,
-                border_right,
-                dash_length * 2,
-            ):
-                label_as_img.line(
-                    [
-                        (x, border_top),
-                        (
-                            x + dash_length,
-                            border_top,
-                        ),
-                    ],
-                    fill=self.border_color,
-                    width=int(border_size),
-                )
-                label_as_img.line(
-                    [
-                        (x, border_bottom),
-                        (
-                            x + dash_length,
-                            border_bottom,
-                        ),
-                    ],
-                    fill=self.border_color,
-                    width=int(border_size),
-                )
-            for y in range(
-                border_top,
-                border_bottom,
-                dash_length * 2,
-            ):
-                label_as_img.line(
-                    [
-                        (border_left, y),
-                        (
-                            border_left,
-                            y + dash_length,
-                        ),
-                    ],
-                    fill=self.border_color,
-                    width=int(border_size),
-                )
-                label_as_img.line(
-                    [
-                        (border_right, y),
-                        (
-                            border_right,
-                            y + dash_length,
-                        ),
-                    ],
-                    fill=self.border_color,
-                    width=int(border_size),
-                )
-        elif self.border_style == "dotted":
-            # draw a dotted border using
-            # small circles
-            dot_radius = 2  # TODO adjust size of the dot
-            for x in range(
-                border_left,
-                border_right,
-                2 * dot_radius,
-            ):
-                label_as_img.ellipse(
-                    [
-                        x,
-                        border_top,
-                        x + dot_radius,
-                        border_top + dot_radius,
-                    ],
-                    fill=self.border_color,
-                )
-                label_as_img.ellipse(
-                    [
-                        x,
-                        border_bottom - dot_radius,
-                        x + dot_radius,
-                        border_bottom,
-                    ],
-                    fill=self.border_color,
-                )
-            for y in range(
-                border_top,
-                border_bottom,
-                2 * dot_radius,
-            ):
-                label_as_img.ellipse(
-                    [
-                        border_left,
-                        y,
-                        border_left + dot_radius,
-                        y + dot_radius,
-                    ],
-                    fill=self.border_color,
-                )
-                label_as_img.ellipse(
-                    [
-                        border_right - dot_radius,
-                        y,
-                        border_right,
-                        y + dot_radius,
-                    ],
-                    fill=self.border_color,
-                )
-        else:
-            raise ValueError(f"Unsupported border style: {self.border_style}")
+            ax.text(
+                position[0] + width / 2,
+                position[1] + height / 2,
+                text,
+                ha="center",
+                va="center",
+                fontsize=self.font_size,
+                color=self.group_content_color,
+                bbox=dict(
+                    boxstyle="round,pad=0.5",
+                    facecolor="white",
+                    edgecolor="black",
+                ),
+            )
+        elif isinstance(content, str):
+            # render image
+            img = plt.imread(content)
+            imagebox = OffsetImage(img, zoom=0.2)
+            image_annot = AnnotationBbox(
+                imagebox,
+                (position[0] + width / 2, position[1] + height / 2),
+                frameon=False,
+            )
+            ax.add_artist(image_annot)
 
-    def add_systematics_text():
-        pass
+    def render(self):
+        """
+        Render the label with header, body,
+        footer, and images.
+        """
+        fig, ax = plt.subplots(figsize=self.dimensions)
+        ax.set_xlim(0, self.dimensions[0])
+        ax.set_ylim(0, self.dimensions[1])
+        ax.set_aspect("equal")
+        ax.axis("off")
 
-    def add_collections_text():
-        pass
+        # background color
+        ax.add_patch(
+            Rectangle((0, 0), *self.dimensions, color=self.background_color)
+        )
 
-    def _add_qr_code():
-        pass
+        # border
+        if self.border_style:
+            border_size = self.border_size
+            ax.add_patch(
+                Rectangle(
+                    (
+                        self.border_padding_from_edge,
+                        self.border_padding_from_edge,
+                    ),
+                    self.dimensions[0] - 2 * self.border_padding_from_edge,
+                    self.dimensions[1] - 2 * self.border_padding_from_edge,
+                    edgecolor=self.border_color,
+                    facecolor="none",
+                    linewidth=border_size,
+                )
+            )
 
-    def _add_watermark():
-        pass
+        # section dimensions
+        section_height = self.dimensions[1] / 3
+        width = self.dimensions[0]
+
+        # render header
+        if self.header or self.header_image:
+            self._create_section(
+                ax,
+                self.header if self.header else self.header_image,
+                position=(0, 2 * section_height),
+                width=width,
+                height=section_height,
+            )
+
+        # render body
+        if self.body:
+            self._create_section(
+                ax,
+                self.body,
+                position=(0, section_height),
+                width=width,
+                height=section_height,
+            )
+
+        # render footer
+        if self.footer or self.footer_image:
+            self._create_section(
+                ax,
+                self.footer if self.footer else self.footer_image,
+                position=(0, 0),
+                width=width,
+                height=section_height,
+            )
+
+        plt.show()
 
     def _save_as_plain_text(self):
         """Saves label as plain text."""
         pass
 
-    def _save_as_tex(self):
-        """Saves label as LaTeX."""
+    def _save_as_svg(self):
+        """Saves label as SVG."""
         pass
 
-    def _save_as_svg(self):
+    def _save_as_json(self):
         """Saves label as SVG."""
         pass
 
@@ -673,6 +607,12 @@ class Label:
         # if self.save_as_text:
         #     with open(self.save_path, "w") as f:
         #         f.write(self.text)
+
+    def _add_qr_code():
+        pass
+
+    def _add_watermark():
+        pass
 
 
 @attrs.define(kw_only=True)
