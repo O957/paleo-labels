@@ -457,3 +457,107 @@
 #         default=False,
 #         validator=attrs.validators.instance_of(bool),
 #     )
+
+
+# @attrs.define(kw_only=True)
+# class CollectionsLabel(Label):
+#     """
+#     A label for collections specimens, i.e.
+#     labels involving more details than
+#     fossil systematics. The kwargs parameter
+#     used is the group title.
+#     """
+
+#     collection: str | None = attrs.field(default=None)
+#     id_number: str | None = attrs.field(default=None)
+#     collector: str | None = attrs.field(default=None)
+#     species: str | None = attrs.field(default=None)
+#     species_author: str | None = attrs.field(default=None)
+#     common_name: str | None = attrs.field(default=None)
+#     location: str | None = attrs.field(default=None)
+#     coordinates: tuple[float, float] | None = attrs.field(default=None)
+#     coordinates_separate: bool = attrs.field(default=False)
+#     date_found: str | None = attrs.field(default=None)
+#     date_cataloged: str | None = attrs.field(default=None)
+#     formation: str | None = attrs.field(default=None)
+#     formation_author: str | None = attrs.field(default=None)
+#     chrono_age: str | None = attrs.field(default=None)
+#     chrono_age_author: str | None = attrs.field(default=None)
+#     size: str | None = attrs.field(default=None)
+#     link: str | None = attrs.field(default=None)
+
+#     default_titles = {
+#         "collection": "Collection: ",
+#         "id_number": "ID Number: ",
+#         "collector": "Collector: ",
+#         "species": "Scientific Name: ",
+#         "species_author": "Species Author: ",
+#         "common_name": "Common Name: ",
+#         "location": "Location: ",
+#         "coordinates": "Coordinates: ",
+#         "date_found": "Date Found: ",
+#         "date_cataloged": "Date Cataloged: ",
+#         "formation": "Formation: ",
+#         "formation_author": "Formation Author: ",
+#         "chrono_age": "Age: ",
+#         "chrono_age_author": "Age Author: ",
+#         "size": "Size: ",
+#         "link": "Link: ",
+#     }
+
+#     title_overrides: dict[str, str] = attrs.field(
+#         factory=dict
+#     )  # empty by default
+
+#     _ordered_kwargs: dict = attrs.field(init=False)
+
+#     def __init__(self, **kwargs):
+#         self._ordered_kwargs = {key: kwargs[key] for key in kwargs}
+
+#     def __attrs_post_init__(self):
+#         # update title_overrides with any user-provided overrides
+#         if self.title_overrides:
+#             # merge user-provided titles, overriding defaults
+#             for (
+#                 key,
+#                 value,
+#             ) in self.title_overrides.items():
+#                 if key in self.default_titles:
+#                     self.default_titles[key] = value
+
+#     def _get_collections_attrs(self):
+#         label_attrs = {attr.name for attr in Label.__attrs_attrs__}
+#         # collections_attrs = {
+#         #     attr.name: getattr(self, attr.name)
+#         #     for attr in self.__attrs_attrs__
+#         #     if attr.name not in label_attrs
+#         # }
+#         # print(self.__attrs_attrs__)
+#         collections_attrs = {
+#             key: value
+#             for key, value in self._ordered_kwargs.items()
+#             if key not in label_attrs
+#         }
+#         return collections_attrs
+
+#     def label(self):
+#         # empty list for parts of the final label
+#         parts = []
+#         # collections label exclusive attrs
+#         collections_attrs = self._get_collections_attrs()
+#         # iterative over collections attrs
+#         for (
+#             key,
+#             value,
+#         ) in collections_attrs.items():
+#             # for all non-None collections attrs, proceed
+#             if value is not None and not isinstance(value, dict):
+#                 # edit title with spaces and capitalized
+#                 title = self.default_titles.get(
+#                     key,
+#                     f"{key.replace('_', ' ').capitalize()}: ",
+#                 )
+#                 # add the group
+#                 parts.append(f"{title}{value}")
+#         # consolidate to multiline label
+#         return "\n".join(parts)

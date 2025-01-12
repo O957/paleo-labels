@@ -5,6 +5,9 @@ headers, bodies, and footers. Labels can
 have QR codes and watermarks.
 """
 
+# %% LIBRARIES
+
+import json
 import pathlib
 from typing import Iterable
 
@@ -14,6 +17,8 @@ import toml
 from matplotlib.colors import CSS4_COLORS
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import Rectangle
+
+# %% CONSTANTS
 
 SUPPORTED_COLORS = list(CSS4_COLORS.keys())
 SUPPORTED_STYLES = [
@@ -39,10 +44,12 @@ SUPPORTED_POSITIONS = [
 SUPPORTED_ALIGNMENTS = ["center", "left", "right"]
 SUPPORTED_BORDERS = ["dotted", "solid", "dashed"]
 SUPPORTED_IMAGE_FORMATS = [
-    ".jpg",
-    ".png",
-    ".heic",
+    "jpg",
+    "png",
+    "heic",
 ]
+
+# %% HELPERS
 
 
 def validate_save_directory(
@@ -58,6 +65,9 @@ def validate_save_directory(
         raise ValueError(
             f"{attribute.name} must be a valid path; got '{save_dir}', which does not exist."
         )
+
+
+# %% LABEL CLASS
 
 
 @attrs.define(kw_only=True)
@@ -108,10 +118,6 @@ class Label:
         validator=attrs.validators.instance_of(bool),
     )
     save_as_svg: bool = attrs.field(
-        default=False,
-        validator=attrs.validators.instance_of(bool),
-    )
-    save_as_tex: bool = attrs.field(
         default=False,
         validator=attrs.validators.instance_of(bool),
     )
@@ -605,10 +611,8 @@ class Label:
                 unit="inches",
             )
         elif self.dimensions_in_inches:
-            # set dimensions in inches
             self.dimensions_unit = "inches"
             self.dimensions_as_inches = self.dimensions
-            # convert to centimeters and pixels using the helper methods
             self.dimensions_as_centimeters = (
                 self._convert_values_to_centimeters(
                     values=self.dimensions,
@@ -691,13 +695,9 @@ class Label:
         ax.set_ylim(0, self.dimensions[1])
         ax.set_aspect("equal")
         ax.axis("off")
-
-        # background color
         ax.add_patch(
             Rectangle((0, 0), *self.dimensions, color=self.background_color)
         )
-
-        # border
         if self.border_style:
             border_size = self.border_size
             ax.add_patch(
@@ -752,19 +752,33 @@ class Label:
 
     def _save_as_plain_text(self):
         """Saves label as plain text."""
-        pass
+        with open(f"{self.save_path}.txt", "w") as f:
+            f.write(
+                ("" if self.footer is not None else self.header)
+                + self.body
+                + ("" if self.footer is not None else self.footer)
+            )
 
     def _save_as_svg(self):
         """Saves label as SVG."""
-        pass
+        plt.savefig(f"{self.save_path}.svg")
 
     def _save_as_json(self):
-        """Saves label as SVG."""
-        pass
+        """Saves label as Json."""
+        with open(f"{self.save_path}.json", "w") as f:
+            json.dump(
+                {
+                    "header": self.header,
+                    "body": self.body,
+                    "footer": self.footer,
+                },
+                f,
+                indent=4,
+            )
 
     def _save_as_image(self):
         """Saves label as an image."""
-        pass
+        plt.savefig(self.save_path, format=self.image_format)
 
     def save(self):
         """
@@ -774,126 +788,108 @@ class Label:
         """
         if self.save_as_text:
             self._save_as_plain_text()
-        if self.save_as_tex:
-            self._save_as_tex()
         if self.save_as_svg:
             self._save_as_svg()
-        if self.save_as_image == "image":
+        if self.save_as_image:
             self._save_as_image()
-
-        # if self.save_as_image:
-        #     self.label.save(self.save_path, self.image_format)
-
-        # if self.save_as_text:
-        #     with open(self.save_path, "w") as f:
-        #         f.write(self.text)
-
-    def _add_qr_code():
-        pass
-
-    def _add_watermark():
-        pass
+        if self.save_as_json:
+            self._save_as_json()
 
 
-@attrs.define(kw_only=True)
-class CollectionsLabel(Label):
-    """
-    A label for collections specimens, i.e.
-    labels involving more details than
-    fossil systematics. The kwargs parameter
-    used is the group title.
-    """
+# %% CALL
 
-    collection: str | None = attrs.field(default=None)
-    id_number: str | None = attrs.field(default=None)
-    collector: str | None = attrs.field(default=None)
-    species: str | None = attrs.field(default=None)
-    species_author: str | None = attrs.field(default=None)
-    common_name: str | None = attrs.field(default=None)
-    location: str | None = attrs.field(default=None)
-    coordinates: tuple[float, float] | None = attrs.field(default=None)
-    coordinates_separate: bool = attrs.field(default=False)
-    date_found: str | None = attrs.field(default=None)
-    date_cataloged: str | None = attrs.field(default=None)
-    formation: str | None = attrs.field(default=None)
-    formation_author: str | None = attrs.field(default=None)
-    chrono_age: str | None = attrs.field(default=None)
-    chrono_age_author: str | None = attrs.field(default=None)
-    size: str | None = attrs.field(default=None)
-    link: str | None = attrs.field(default=None)
+header_content = [
+    {"Species": "Fossil Specimen"},
+    {"Subtitle": "Jurassic Period"},
+]
+body_content = [
+    {"ID Number": "3244"},
+    {"Location": "North America"},
+    {"Formation": "Navesink"},
+]
+footer_content = [
+    {"Collector": "Dr. Montague"},
+    {"Date Found": "2024-01-01"},
+]
 
-    default_titles = {
-        "collection": "Collection: ",
-        "id_number": "ID Number: ",
-        "collector": "Collector: ",
-        "species": "Scientific Name: ",
-        "species_author": "Species Author: ",
-        "common_name": "Common Name: ",
-        "location": "Location: ",
-        "coordinates": "Coordinates: ",
-        "date_found": "Date Found: ",
-        "date_cataloged": "Date Cataloged: ",
-        "formation": "Formation: ",
-        "formation_author": "Formation Author: ",
-        "chrono_age": "Age: ",
-        "chrono_age_author": "Age Author: ",
-        "size": "Size: ",
-        "link": "Link: ",
-    }
+label = Label(
+    # required Sections
+    header=header_content,
+    body=body_content,
+    footer=footer_content,
+    # saving Options
+    save_path=pathlib.Path("../label_testing/label"),
+    save_as_image=True,
+    image_format="png",
+    save_as_text=True,
+    save_as_svg=True,
+    save_as_json=True,
+    # body font options
+    body_font_path="Arial",
+    body_title_font_size=11,
+    body_content_font_size=13,
+    body_title_font_styling="bold",
+    body_content_font_styling="italic",
+    body_title_font_color="black",
+    body_content_font_color="black",
+    # header font options
+    header_font_path="Times New Roman",
+    header_title_font_size=15,
+    header_content_font_size=13,
+    header_title_font_styling="bold",
+    header_content_font_styling="italic",
+    header_title_font_color="black",
+    header_content_font_color="black",
+    # footer font options
+    footer_font_path="Courier New",
+    footer_title_font_size=12,
+    footer_content_font_size=10,
+    footer_title_font_styling="underline",
+    footer_content_font_styling="regular",
+    footer_title_font_color="black",
+    footer_content_font_color="black",
+    # borders
+    header_border_style="solid",
+    header_border_color="red",
+    header_border_size=0.1,
+    body_border_style="dashed",
+    body_border_color="black",
+    body_border_size=0.05,
+    footer_border_style="dotted",
+    footer_border_color="blue",
+    footer_border_size=0.08,
+    # background colors
+    label_background_color="lightgray",
+    header_background_color="white",
+    body_background_color="white",
+    footer_background_color="white",
+    # titles to Hide
+    body_titles_to_hide=["Formation"],
+    header_titles_to_hide=["Subtitle"],
+    footer_titles_to_hide=["Date Found"],
+    # line spacing
+    body_spaces_between_lines=1,
+    header_spaces_between_lines=0,
+    footer_spaces_between_lines=2,
+    # section spacing
+    space_between_sections=1,
+    # alignment
+    text_alignment="center",
+    text_flush=False,
+    # dimensions
+    image_dots_per_inch=300,
+    dimensions=(6.0, 4.0),
+    dimensions_in_inches=True,
+    dimensions_in_centimeters=False,
+    # general border
+    border_style="solid",
+    border_color="black",
+    border_size=0.1,
+    border_padding_from_edge=0.2,
+)
 
-    title_overrides: dict[str, str] = attrs.field(
-        factory=dict
-    )  # empty by default
+# render the label
+label.render()
 
-    _ordered_kwargs: dict = attrs.field(init=False)
-
-    def __init__(self, **kwargs):
-        self._ordered_kwargs = {key: kwargs[key] for key in kwargs}
-
-    def __attrs_post_init__(self):
-        # update title_overrides with any user-provided overrides
-        if self.title_overrides:
-            # merge user-provided titles, overriding defaults
-            for (
-                key,
-                value,
-            ) in self.title_overrides.items():
-                if key in self.default_titles:
-                    self.default_titles[key] = value
-
-    def _get_collections_attrs(self):
-        label_attrs = {attr.name for attr in Label.__attrs_attrs__}
-        # collections_attrs = {
-        #     attr.name: getattr(self, attr.name)
-        #     for attr in self.__attrs_attrs__
-        #     if attr.name not in label_attrs
-        # }
-        # print(self.__attrs_attrs__)
-        collections_attrs = {
-            key: value
-            for key, value in self._ordered_kwargs.items()
-            if key not in label_attrs
-        }
-        return collections_attrs
-
-    def label(self):
-        # empty list for parts of the final label
-        parts = []
-        # collections label exclusive attrs
-        collections_attrs = self._get_collections_attrs()
-        # iterative over collections attrs
-        for (
-            key,
-            value,
-        ) in collections_attrs.items():
-            # for all non-None collections attrs, proceed
-            if value is not None and not isinstance(value, dict):
-                # edit title with spaces and capitalized
-                title = self.default_titles.get(
-                    key,
-                    f"{key.replace('_', ' ').capitalize()}: ",
-                )
-                # add the group
-                parts.append(f"{title}{value}")
-        # consolidate to multiline label
-        return "\n".join(parts)
+# save the label
+label.save()
