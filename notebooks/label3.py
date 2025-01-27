@@ -1,8 +1,6 @@
 import os
-import subprocess
-
 import toml
-
+import subprocess
 
 class PaleontologyLabel:
     def __init__(self, config_path: str):
@@ -16,71 +14,50 @@ class PaleontologyLabel:
         self.dimensions = self.config["dimensions"]
 
     def generate_label(self, label_data: dict):
-        latex_template = """
-        \documentclass[letterpaper]{article}
-        \usepackage[utf8]{inputenc}
-        \usepackage[table,xcdraw]{xcolor}
-        \usepackage{geometry}
-        \geometry{
-            top=1in,
-            bottom=1in,
-            left=1in,
-            right=1in
-        }
-        \pagestyle{empty}
+        latex_template = rf"""
+\documentclass[letterpaper]{{article}}
+\usepackage[utf8]{{inputenc}}
+\usepackage[table,xcdraw]{{xcolor}}
+\usepackage{{geometry}}
+\geometry{{
+    top=1in,
+    bottom=1in,
+    left=1in,
+    right=1in
+}}
+\pagestyle{{empty}}
 
-        \begin{document}
-        \noindent
-        \fbox{\begin{minipage}[t][{height}in][t]{{width}in}
-            \vspace{{-0.1in}}
-            \noindent
+\begin{{document}}
+\noindent
+\fbox{{\begin{{minipage}}[t][{3.5}in][t]{{{3.5}in}}
+    \vspace{{-0.1in}}
+    \noindent
         """
-
         if "header" in label_data:
-            latex_template += f"""
-            \textbf{\textcolor{{{header_title_color}}}{\Large Header:}}\\[{header_spacing}ex]
-            \textcolor{{{header_content_color}}}{\texttt{Species: {species}, Formation: {formation}}}\\ \vspace{{{header_spacing}}}ex\\
-            \textcolor{{{header_title_color}}}{\hrulefill}\\
-            """.format(
-                header_title_color=self.header_style["header_title_font_color"],
-                header_content_color=self.header_style["header_content_font_color"],
-                header_spacing=self.spacing["space_between_sections"],
-                species=label_data["header"].get("species", ""),
-                formation=label_data["header"].get("formation", "")
-            )
-
+            latex_template += rf"""
+    \textbf{{\textcolor[HTML]{{{self.header_style['header_title_font_color']}}}{{\Large Header:}}}}\\[{self.spacing['space_between_sections']}ex]
+    \textcolor[HTML]{{{self.header_style['header_content_font_color']}}}{{\texttt{{Species: {label_data['header'].get('species', '')}, Formation: {label_data['header'].get('formation', '')}}}}}\\
+    \vspace{{{self.spacing['space_between_sections']}}}ex\\
+    \textcolor[HTML]{{{self.header_style['header_title_font_color']}}}{{\hrulefill}}\\
+            """
         if "body" in label_data:
-            latex_template += r"""
-            \textbf{\textcolor{{{body_title_color}}}{\large Body:}}\\[{body_spacing}ex]
-            \textcolor{{{body_content_color}}}{Date Collected: {date_collected},\\
-                Collector: {collector},\\
-                Locale: {locale}}\\
-            \textcolor{{{body_title_color}}}{\hrulefill}\\
-            """.format(
-                body_title_color=self.body_style["body_title_font_color"],
-                body_content_color=self.body_style["body_content_font_color"],
-                body_spacing=self.spacing["space_between_sections"],
-                date_collected=label_data["body"].get("date_collected", ""),
-                collector=label_data["body"].get("collector", ""),
-                locale=label_data["body"].get("locale", "")
-            )
-
+            latex_template += rf"""
+    \textbf{{\textcolor[HTML]{{{self.body_style['body_title_font_color']}}}{{\large Body:}}}}\\[{self.spacing['space_between_sections']}ex]
+    \textcolor[HTML]{{{self.body_style['body_content_font_color']}}}{{Date Collected: {label_data['body'].get('date_collected', '')},\\
+        Collector: {label_data['body'].get('collector', '')},\\
+        Locale: {label_data['body'].get('locale', '')}}}\\
+    \textcolor[HTML]{{{self.body_style['body_title_font_color']}}}{{\hrulefill}}\\
+            """
         if "footer" in label_data:
-            latex_template += r"""
-            \textbf{\textcolor{{{footer_title_color}}}{\large Footer:}}\\[{footer_spacing}ex]
-            \textcolor{{{footer_content_color}}}{Repository: {repository},\\
-                ID Number: {id_number}}\\
-            """.format(
-                footer_title_color=self.footer_style["footer_title_font_color"],
-                footer_content_color=self.footer_style["footer_content_font_color"],
-                footer_spacing=self.spacing["space_between_sections"],
-                repository=label_data["footer"].get("repository", ""),
-                id_number=label_data["footer"].get("id_number", "")
-            )
+            latex_template += rf"""
+    \textbf{{\textcolor[HTML]{{{self.footer_style['footer_title_font_color']}}}{{\large Footer:}}}}\\[{self.spacing['space_between_sections']}ex]
+    \textcolor[HTML]{{{self.footer_style['footer_content_font_color']}}}{{Repository: {label_data['footer'].get('repository', '')},\\
+        ID Number: {label_data['footer'].get('id_number', '')}}}\\
+            """
 
-        latex_template += """
-        \end{minipage}}
-        \end{document}
+        latex_template += r"""
+\end{minipage}}
+\end{document}
         """
 
         output_dir = self.save_args["save_path"]
@@ -99,7 +76,7 @@ class PaleontologyLabel:
             subprocess.run(["convert", "-density", str(self.dimensions["image_dots_per_inch"]), pdf_path, image_path], check=True)
 
 if __name__ == "__main__":
-    config_path = "example_config.toml"
+    config_path = "label_config.toml"
     label_data = {
         "header": {
             "species": "Squalicorax pristodontus",
@@ -115,8 +92,12 @@ if __name__ == "__main__":
             "id_number": "3244",
         }
     }
+    # can leave space for image
+
     label_generator = PaleontologyLabel(config_path)
     label_generator.generate_label(label_data)
+
+
 
 
 
