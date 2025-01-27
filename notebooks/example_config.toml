@@ -1,0 +1,50 @@
+[save_args]
+save_path = "."
+save_as_image = false
+image_format = "png"
+save_as_text = true
+save_as_svg = false
+save_as_json = true
+
+[body_style]
+body_font_path = "Times New Roman"
+body_title_font_size = 10
+body_content_font_size = 12
+body_title_font_styling = "bold"
+body_content_font_styling = "regular"
+body_title_font_color = "black"
+body_content_font_color = "darkblue"
+
+[header_style]
+header_font_path = "Courier"
+header_title_font_size = 14
+header_content_font_size = 12
+header_title_font_styling = "bold"
+header_content_font_styling = "italic"
+header_title_font_color = "blue"
+header_content_font_color = "darkgreen"
+
+[footer_style]
+footer_font_path = "Arial"
+footer_title_font_size = 12
+footer_content_font_size = 10
+footer_title_font_styling = "bold"
+footer_content_font_styling = "regular"
+footer_title_font_color = "purple"
+footer_content_font_color = "black"
+
+[background]
+label_background_color = "white"
+header_background_color = "white"
+body_background_color = "white"
+footer_background_color = "white"
+
+[spacing]
+body_spaces_between_lines = 0
+header_spaces_between_lines = 0
+footer_spaces_between_lines = 0
+space_between_sections = 0
+
+[dimensions]
+dimensions = [3.5, 3.5]
+image_dots_per_inch = 200
