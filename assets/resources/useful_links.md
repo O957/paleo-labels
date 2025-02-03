@@ -7,4 +7,6 @@
 * <https://tex.stackexchange.com/questions/263706/latex-adding-cell-padding-to-a-text-frame>
 * <https://tex.stackexchange.com/questions/25903/how-to-put-a-long-piece-of-text-in-a-box>
 * <https://tex.stackexchange.com/questions/23764/padding-left-top-right-and-bottom-in-latex>
+* <https://www.stategeologists.org/surveys>
+* <https://en.wikipedia.org/wiki/List_of_geoscience_organizations>
 *
