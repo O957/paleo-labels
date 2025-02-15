@@ -1,4 +1,4 @@
-
+# Useful Links For The Development Of Paleo-Utils
 
 * <https://tex.stackexchange.com/questions/304512/how-to-make-a-box-with-fixed-size>
 * <https://tex.stackexchange.com/questions/26002/fit-text-into-given-box-by-adjusting-the-fontsize>
@@ -9,4 +9,3 @@
 * <https://tex.stackexchange.com/questions/23764/padding-left-top-right-and-bottom-in-latex>
 * <https://www.stategeologists.org/surveys>
 * <https://en.wikipedia.org/wiki/List_of_geoscience_organizations>
-*
