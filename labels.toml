@@ -18,6 +18,11 @@ color = "cfd3d7"
 name = "actions"
 description = "Use of GitHub Actions to facilitate reduction in manual labor."
 
+[aesthetics]
+color = "cfd3d7"
+name = "aesthetics"
+description = "The appearance of items (e.g. website style) in the project."
+
 [automation]
 color = "cfd3d7"
 name = "automation"
@@ -32,6 +37,11 @@ description = "Something does not work as expected."
 color = "cfd3d7"
 name = "compliance"
 description = "Must adhere to an external ruleset."
+
+[conditional]
+color = "cfd3d7"
+name = "conditional"
+description = "This task depends on another task or on a critical, yet unmade decision."
 
 [data]
 color = "cfd3d7"
@@ -113,6 +123,11 @@ color = "cfd3d7"
 name = "resources"
 description = "Useful reference material(s)."
 
+[science]
+color = "cfd3d7"
+name = "science"
+description = "Involves research, experiments, and or scientific methods."
+
 [scope]
 color = "cfd3d7"
 name = "scope"
@@ -152,6 +167,11 @@ description = "Pertaining to user feedback for certain project items."
 color = "cfd3d7"
 name = "visuals"
 description = "Adds or pertains to visualizations."
+
+[warnings]
+color = "cfd3d7"
+name = "warnings"
+description = "Adjustments to project to remove warnings."
 
 [website]
 color = "cfd3d7"
