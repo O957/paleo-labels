@@ -10,4 +10,18 @@ Generalized Label Or Set Of Specific Labels
 
 Items Necessary For A Collections Label
 
-How To Connect References With Taxonomic Entries
+Connecting Bibtex References With Taxonomic Entries
+
+Connecting Research Paper PDFs With Taxonomic Entries
+
+Printing Labels As Small Pieces Of Paper
+
+Printing Labels As Full Pieces Of Paper
+
+Printing Labels As Stickers
+
+Having Bar Codes On Labels
+
+Options For Label Configuration Files
+
+On What To Include In A Label Configuration File
