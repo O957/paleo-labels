@@ -9,3 +9,5 @@ Uniqueness Of Specimen Label Template Items
 Generalized Label Or Set Of Specific Labels
 
 Items Necessary For A Collections Label
+
+How To Connect References With Taxonomic Entries
