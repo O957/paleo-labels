@@ -4,4 +4,4 @@ _Tools for the author to facilitate various tasks in paleontological work, inclu
 
 NOTE: This repository is a work in progress!
 
-![](./assets/readme_photos/IMG_3712.jpg)
+![](./assets/readme_photos/IMG_3764.jpg)

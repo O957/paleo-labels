@@ -103,6 +103,8 @@ repos:
           # B: flake8-bugbear (useful best practices).
           # SIM: flake8-simplify
           # C90: McCabe complexity (cyclomatic complexity).
+          # for setting C90 in ruff, see
+          # https://docs.astral.sh/ruff/settings/#lint_isort_variables
           # UP: pyupgrade, Python version compatibility
           "--select=E,W,F,B,C90,UP,SIM",
           "--line-length=79",
