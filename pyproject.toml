@@ -6,16 +6,20 @@ authors = ["AFg6K7h4fhy2 <127630341+AFg6K7h4fhy2@users.noreply.github.com>"]
 repository = "https://github.com/AFg6K7h4fhy2/Paleo-Utils"
 readme = "README.md"
 license = "Apache-2.0"
-package-mode = false
 keywords = ["python", "geology", "paleontology", "chronostratigraphy"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
 pre-commit = "^3.7.0"
+jinja2 = "^3.1.6"
+streamlit = "^1.44.1"
 
-[tool.poetry.urls]
-"Repository Issues" = "https://github.com/AFg6K7h4fhy2/Paleo-Utils/issues"
-"Author Homepage" = "https://github.com/AFg6K7h4fhy2"
+
+[tool.poetry.group.dev.dependencies]
+toml = "^0.10.2"
+ipykernel = "^6.29.5"
+matplotlib = "^3.10.0"
+attrs = "^24.3.0"
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
