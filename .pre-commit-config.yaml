@@ -121,6 +121,16 @@ repos:
 #     hooks:
 #       - id: mypy
 ################################################################################
+# UV PACKAGE AND DEPENDENCY MANAGEMENT
+################################################################################
+-   repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.7.3
+    hooks:
+    -   id: uv-lock
+    -   id: uv-export
+        args: ["--no-hashes", "--output-file=requirements.txt"]
+################################################################################
 # MAKE FILES
 ################################################################################
 -   repo: https://github.com/mrtazz/checkmake.git
