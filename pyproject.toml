@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = [
   {name = "AFg6K7h4fhy2", email = "127630341+AFg6K7h4fhy2@users.noreply.github.com"},
 ]
-description = "Tools for the author to facilitate various tasks in paleontological work, including specimen labels, systematics organization, measurement grids, and imaging utilities."
+description = "paleo-labels is an application for writing precisely formatted labels singularly or in bulk for use with paleontological specimens, collections, and excursions."
 readme = "README.md"
 license = "Apache-2.0"
 keywords = ["python", "geology", "paleontology", "chronostratigraphy"]
