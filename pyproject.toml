@@ -7,7 +7,7 @@ authors = [
 description = "paleo-labels is an application for writing precisely formatted labels singularly or in bulk for use with paleontological specimens, collections, and excursions."
 readme = "README.md"
 license = "Apache-2.0"
-keywords = ["python", "geology", "paleontology", "chronostratigraphy"]
+keywords = ["python", "geology", "paleontology", "chronostratigraphy", "package"]
 requires-python = ">=3.13"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [
