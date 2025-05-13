@@ -2,13 +2,14 @@
 name = "paleo-labels"
 version = "0.0.1"
 authors = [
-  {name = "AFg6K7h4fhy2", email = "AFg6K7h4fhy2 <127630341+AFg6K7h4fhy2@users.noreply.github.com>"},
+  {name = "AFg6K7h4fhy2", email = "127630341+AFg6K7h4fhy2@users.noreply.github.com"},
 ]
 description = "Tools for the author to facilitate various tasks in paleontological work, including specimen labels, systematics organization, measurement grids, and imaging utilities."
 readme = "README.md"
 license = "Apache-2.0"
 keywords = ["python", "geology", "paleontology", "chronostratigraphy"]
 requires-python = ">=3.13"
+classifiers = ["Private :: Do Not Upload"]
 dependencies = [
     "altair==5.5.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
     "appnope==0.1.4 ; python_full_version >= '3.12' and python_full_version < '4.0' and sys_platform == 'darwin'",
