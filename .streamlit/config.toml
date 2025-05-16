@@ -20,3 +20,4 @@ messageFormat = "%(asctime)s %(message)s"
 
 font = "monospace"
 headingFont = "serif"
+baseFontSize = 40

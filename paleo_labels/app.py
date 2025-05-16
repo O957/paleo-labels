@@ -14,6 +14,21 @@ import streamlit as st
 import toml
 
 
+def st_load_toml(uploaded_toml_file):
+    ext = pathlib.Path(uploaded_toml_file.name).suffix.lower()
+    try:
+        as_txt_from_bytesio = io.TextIOWrapper(
+            uploaded_toml_file, encoding="utf-8"
+        )
+        if ext == ".toml":
+            label_config = toml.load(as_txt_from_bytesio)
+    except ValueError as e:
+        st.error(str(e))
+        st.stop()
+    st.success(f"Loaded {uploaded_toml_file.name}.")
+    return label_config
+
+
 def main() -> None:
     # initiate logging
     logging.basicConfig(level=logging.INFO)
@@ -22,27 +37,36 @@ def main() -> None:
     # initiate session time tracking
     start_time = time.time()
 
-    # title block and upload options
+    # title block and opening message
     st.title("Paleontology Label Maker")
-    label_template = st.file_uploader(label="Upload Template", type=["toml"])
-    # label = st.file_uploader(
-    #     label="Upload Label", type=["toml"]
-    # )
+    st.markdown(
+        "_paleo-labels is an application for writing precisely formatted "
+        "labels singularly or in bulk for use with paleontological "
+        "specimens, collections, and excursions. Enjoy!_"
+    )
 
-    # read in toml template file
-    if label_template is not None:
-        ext = pathlib.Path(label_template.name).suffix.lower()
-        try:
-            as_txt_from_bytesio = io.TextIOWrapper(
-                label_template, encoding="utf-8"
-            )
-            if ext == ".toml":
-                label_config = toml.load(as_txt_from_bytesio)
-        except ValueError as e:
-            st.error(str(e))
-            st.stop()
-        st.success(f"Loaded {label_template.name}.")
-        logger.info(f"Uploaded file:\n {label_template.name}")
+    # have user choose upload pathway
+    mode = st.radio(
+        "Which File Type Do You Want To Upload?",
+        ("Template", "Label"),
+        index=0,
+    )
+
+    # template and label file upload
+    uploaded_file = None
+    if mode == "Template":
+        uploaded_file = st.file_uploader(
+            label="Upload Template", type=["toml"], key="template_file"
+        )
+    elif mode == "Label":
+        uploaded_file = st.file_uploader(
+            label="Upload Label", type=["toml"], key="label_file"
+        )
+
+    # uploaded file ingestion and loading
+    if uploaded_file is not None:
+        label_config = st_load_toml(uploaded_file)
+        logger.info(f"Uploaded file:\n {uploaded_file.name}")
         print(label_config)
 
     # dynamics widgets from ingested template
