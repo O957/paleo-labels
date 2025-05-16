@@ -42,9 +42,8 @@ def main() -> None:
             st.stop()
         st.success(f"Loaded {label_template.name}.")
         logger.info(f"Uploaded file:\n {label_template.name}")
-
-        # convert toml contents into selection boxes
         print(label_config)
+    # convert ingested toml contents into selection boxes
 
     # record end time
     end_time = time.time()
