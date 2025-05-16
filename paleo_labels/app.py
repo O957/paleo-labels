@@ -24,9 +24,10 @@ def main() -> None:
 
     # title block and upload options
     st.title("Paleontology Label Maker")
-    label_template = st.file_uploader(
-        label="Upload Label Template", type=["toml"]
-    )
+    label_template = st.file_uploader(label="Upload Template", type=["toml"])
+    # label = st.file_uploader(
+    #     label="Upload Label", type=["toml"]
+    # )
 
     # read in toml template file
     if label_template is not None:
@@ -43,9 +44,10 @@ def main() -> None:
         st.success(f"Loaded {label_template.name}.")
         logger.info(f"Uploaded file:\n {label_template.name}")
         print(label_config)
-    # convert ingested toml contents into selection boxes
 
-    # record end time
+    # dynamics widgets from ingested template
+
+    # record session time
     end_time = time.time()
     duration = end_time - start_time
     logger.info(f"Session lasted around: {duration // 60} minutes.")
