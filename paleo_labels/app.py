@@ -47,9 +47,9 @@ def main() -> None:
 
     # have user choose upload pathway
     mode = st.radio(
-        "Which File Type Do You Want To Upload?",
-        ("Template", "Label"),
-        index=0,
+        label="Which File Type Do You Want To Upload?",
+        options=("Template", "Label"),
+        index=0,  # default to option 0
     )
 
     # template and label file upload
@@ -66,10 +66,8 @@ def main() -> None:
     # uploaded file ingestion and loading
     if uploaded_file is not None:
         label_config = st_load_toml(uploaded_file)
-        logger.info(f"Uploaded file:\n {uploaded_file.name}")
+        logger.info(f"Uploaded file:\n{uploaded_file.name}")
         print(label_config)
-
-    # dynamics widgets from ingested template
 
     # record session time
     end_time = time.time()
