@@ -1,8 +1,11 @@
 """
 Streamlit application (ran locally) for a user to design
 at least one paleontological label.
+
+To Run: uv run streamlit run app.py
 """
 
+import io
 import logging
 import pathlib
 import time
@@ -21,23 +24,27 @@ def main() -> None:
 
     # title block and upload options
     st.title("Paleontology Label Maker")
-    label_template = st.file_uploader("Upload Label Template", type=["toml"])
+    label_template = st.file_uploader(
+        label="Upload Label Template", type=["toml"]
+    )
 
     # read in toml template file
     if label_template is not None:
         ext = pathlib.Path(label_template.name).suffix.lower()
         try:
+            as_txt_from_bytesio = io.TextIOWrapper(
+                label_template, encoding="utf-8"
+            )
             if ext == ".toml":
-                with open(label_template) as f:
-                    label_config = toml.load(f)
+                label_config = toml.load(as_txt_from_bytesio)
         except ValueError as e:
             st.error(str(e))
             st.stop()
         st.success(f"Loaded {label_template.name}.")
-    logger.info(f"Uploaded file:\n {label_template.name}")
+        logger.info(f"Uploaded file:\n {label_template.name}")
 
-    # convert toml contents into selection boxes
-    print(label_config)
+        # convert toml contents into selection boxes
+        print(label_config)
 
     # record end time
     end_time = time.time()
