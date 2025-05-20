@@ -1,0 +1,23 @@
+# More Information Here:
+# https://docs.streamlit.io/develop/api-reference/configuration/config.toml
+
+[logger]
+
+# Level of logging for Streamlit's internal logger: "error", "warning",
+# "info", or "debug".
+# Default: "info"
+level = "info"
+
+# String format for logging messages. If logger.datetimeFormat is set,
+# logger messages will default to `%(asctime)s.%(msecs)03d %(message)s`.
+# See Python's documentation for available attributes:
+# https://docs.python.org/3/library/logging.html#formatter-objects
+# Default: "%(asctime)s %(message)s"
+messageFormat = "%(asctime)s %(message)s"
+
+
+[theme]
+
+font = "monospace"
+headingFont = "serif"
+baseFontSize = 40

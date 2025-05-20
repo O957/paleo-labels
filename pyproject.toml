@@ -81,6 +81,7 @@ dependencies = [
     "six==1.17.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
     "smmap==5.0.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
     "stack-data==0.6.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
+    "streamlit>=1.45.1",
     "streamlit==1.45.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
     "tenacity==9.1.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
     "toml==0.10.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
