@@ -153,7 +153,7 @@ matplotlib-inline==0.1.7 ; python_full_version < '4.0'
     #   ipykernel
     #   ipython
     #   paleo-labels
-narwhals==1.39.0
+narwhals==1.40.0
     # via
     #   altair
     #   paleo-labels
