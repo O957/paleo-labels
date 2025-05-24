@@ -326,7 +326,7 @@ dependencies = [
     { name = "packaging", marker = "python_full_version < '4.0'" },
     { name = "psutil", marker = "python_full_version < '4.0'" },
     { name = "pyzmq", marker = "python_full_version < '4.0'" },
-    { name = "tornado", marker = "python_full_version < '4.0'" },
+    { name = "tornado", version = "6.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '4.0'" },
     { name = "traitlets", marker = "python_full_version < '4.0'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e9/5c/67594cb0c7055dc50814b21731c22a601101ea3b1b50a9a1b090e11f5d0f/ipykernel-6.29.5.tar.gz", hash = "sha256:f093a22c4a40f8828f8e330a9c297cb93dcab13bd9678ded6de8e5cf81c56215", size = 163367, upload-time = "2024-07-01T14:07:22.543Z" }
@@ -426,7 +426,7 @@ dependencies = [
     { name = "jupyter-core", marker = "python_full_version < '4.0'" },
     { name = "python-dateutil", marker = "python_full_version < '4.0'" },
     { name = "pyzmq", marker = "python_full_version < '4.0'" },
-    { name = "tornado", marker = "python_full_version < '4.0'" },
+    { name = "tornado", version = "6.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '4.0'" },
     { name = "traitlets", marker = "python_full_version < '4.0'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/71/22/bf9f12fdaeae18019a468b68952a60fe6dbab5d67cd2a103cac7659b41ca/jupyter_client-8.6.3.tar.gz", hash = "sha256:35b3a0947c4a6e9d589eb97d7d4cd5e90f910ee73101611f01283732bd6d9419", size = 342019, upload-time = "2024-09-17T10:44:17.613Z" }
@@ -697,7 +697,7 @@ dependencies = [
     { name = "streamlit" },
     { name = "tenacity", marker = "python_full_version < '4.0'" },
     { name = "toml", marker = "python_full_version < '4.0'" },
-    { name = "tornado", marker = "python_full_version < '4.0'" },
+    { name = "tornado", version = "6.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '4.0'" },
     { name = "traitlets", marker = "python_full_version < '4.0'" },
     { name = "typing-extensions", marker = "python_full_version < '4.0'" },
     { name = "tzdata", marker = "python_full_version < '4.0'" },
@@ -783,7 +783,7 @@ requires-dist = [
     { name = "streamlit", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==1.45.1" },
     { name = "tenacity", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==9.1.2" },
     { name = "toml", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==0.10.2" },
-    { name = "tornado", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==6.4.2" },
+    { name = "tornado", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==6.3.2" },
     { name = "traitlets", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==5.14.3" },
     { name = "typing-extensions", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==4.13.2" },
     { name = "tzdata", marker = "python_full_version >= '3.12' and python_full_version < '4.0'", specifier = "==2025.2" },
@@ -1213,7 +1213,8 @@ dependencies = [
     { name = "requests" },
     { name = "tenacity" },
     { name = "toml" },
-    { name = "tornado" },
+    { name = "tornado", version = "6.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '4.0'" },
+    { name = "tornado", version = "6.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '4.0'" },
     { name = "typing-extensions" },
     { name = "watchdog", marker = "sys_platform != 'darwin'" },
 ]
@@ -1242,8 +1243,32 @@ wheels = [
 
 [[package]]
 name = "tornado"
+version = "6.3.2"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '4.0'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/30/f0/6e5d85d422a26fd696a1f2613ab8119495c1ebb8f49e29f428d15daf79cc/tornado-6.3.2.tar.gz", hash = "sha256:4b927c4f19b71e627b13f3db2324e4ae660527143f9e1f2e2fb404f3a187e2ba", size = 508776, upload-time = "2023-05-14T03:41:23.475Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/3c/68e9896ce47dd4acdb7e27945046f139db2862d3b990c655a5c0627c9a05/tornado-6.3.2-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:c367ab6c0393d71171123ca5515c61ff62fe09024fa6bf299cd1339dc9456829", size = 424651, upload-time = "2023-05-14T03:41:04.458Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/56/99038d89642cdee805805cf2e86a28ecdddafb69be9cbb04214abb995082/tornado-6.3.2-cp38-abi3-macosx_10_9_x86_64.whl", hash = "sha256:b46a6ab20f5c7c1cb949c72c1994a4585d2eaa0be4853f50a03b5031e964fc7c", size = 422610, upload-time = "2023-05-14T03:41:06.608Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/e6/9627d4baa9db97b6b8757a42513e89b06410eae82a9bd7e2f298bb38a616/tornado-6.3.2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c2de14066c4a38b4ecbbcd55c5cc4b5340eb04f1c5e81da7451ef555859c833f", size = 427363, upload-time = "2023-05-14T03:41:08.536Z" },
+    { url = "https://files.pythonhosted.org/packages/35/79/3237fab5374abea5473c1a4f850bf24168053d05dba002d4bbf14f86243c/tornado-6.3.2-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:05615096845cf50a895026f749195bf0b10b8909f9be672f50b0fe69cba368e4", size = 426736, upload-time = "2023-05-14T03:41:10.541Z" },
+    { url = "https://files.pythonhosted.org/packages/31/51/894f260c1380853cc268f661fe599a4523a47d07e867386abb58f1f11278/tornado-6.3.2-cp38-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5b17b1cf5f8354efa3d37c6e28fdfd9c1c1e5122f2cb56dac121ac61baa47cbe", size = 426931, upload-time = "2023-05-14T03:41:12.815Z" },
+    { url = "https://files.pythonhosted.org/packages/66/15/a69a97136df081414ffb8e923c8a17c3761e7d8ff665e0a7b428fefe09e3/tornado-6.3.2-cp38-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:29e71c847a35f6e10ca3b5c2990a52ce38b233019d8e858b755ea6ce4dcdd19d", size = 429707, upload-time = "2023-05-14T03:41:14.674Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/84/0227a83ce4b3742f81b85f9f28e5942590ad79adafe5c75cc663267c3df2/tornado-6.3.2-cp38-abi3-musllinux_1_1_i686.whl", hash = "sha256:834ae7540ad3a83199a8da8f9f2d383e3c3d5130a328889e4cc991acc81e87a0", size = 429692, upload-time = "2023-05-14T03:41:16.471Z" },
+    { url = "https://files.pythonhosted.org/packages/30/6c/710fcafd1acbdafd80465a8107a08e88233a3a6588e414716be37236c97a/tornado-6.3.2-cp38-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:6a0848f1aea0d196a7c4f6772197cbe2abc4266f836b0aac76947872cd29b411", size = 429686, upload-time = "2023-05-14T03:41:18.216Z" },
+    { url = "https://files.pythonhosted.org/packages/be/95/a4d0b991b64e910516d856c6c936df9e1f63dcc22eaaabfcef56d3af1a25/tornado-6.3.2-cp38-abi3-win32.whl", hash = "sha256:7efcbcc30b7c654eb6a8c9c9da787a851c18f8ccd4a5a3a95b05c7accfa068d2", size = 427944, upload-time = "2023-05-14T03:41:19.61Z" },
+    { url = "https://files.pythonhosted.org/packages/de/fa/b8b2ee2f528eedd03d98d49c76822f065f18e99f6f58c1e18fe5ed893098/tornado-6.3.2-cp38-abi3-win_amd64.whl", hash = "sha256:0c325e66c8123c606eea33084976c832aa4e766b7dff8aedd7587ea44a604cdf", size = 428429, upload-time = "2023-05-14T03:41:21.432Z" },
+]
+
+[[package]]
+name = "tornado"
 version = "6.4.2"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '4.0'",
+]
 sdist = { url = "https://files.pythonhosted.org/packages/59/45/a0daf161f7d6f36c3ea5fc0c2de619746cc3dd4c76402e9db545bd920f63/tornado-6.4.2.tar.gz", hash = "sha256:92bad5b4746e9879fd7bf1eb21dce4e3fc5128d71601f80005afa39237ad620b", size = 501135, upload-time = "2024-11-22T03:06:38.036Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/26/7e/71f604d8cea1b58f82ba3590290b66da1e72d840aeb37e0d5f7291bd30db/tornado-6.4.2-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:e828cce1123e9e44ae2a50a9de3055497ab1d0aeb440c5ac23064d9e44880da1", size = 436299, upload-time = "2024-11-22T03:06:20.162Z" },
