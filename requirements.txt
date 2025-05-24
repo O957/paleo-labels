@@ -165,7 +165,7 @@ nodeenv==1.9.1 ; python_full_version < '4.0'
     # via
     #   paleo-labels
     #   pre-commit
-numpy==2.2.6
+numpy==2.2.5
     # via
     #   contourpy
     #   matplotlib
