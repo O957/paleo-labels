@@ -4,345 +4,94 @@ altair==5.5.0
     # via
     #   paleo-labels
     #   streamlit
-appnope==0.1.4 ; python_full_version < '4.0' and sys_platform == 'darwin'
-    # via
-    #   ipykernel
-    #   paleo-labels
-asttokens==3.0.0 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   stack-data
-attrs==24.3.0
+attrs==25.3.0
     # via
     #   jsonschema
-    #   paleo-labels
     #   referencing
 blinker==1.9.0
-    # via
-    #   paleo-labels
-    #   streamlit
+    # via streamlit
 cachetools==5.5.2
-    # via
-    #   paleo-labels
-    #   streamlit
+    # via streamlit
 certifi==2025.4.26
-    # via
-    #   paleo-labels
-    #   requests
-cffi==1.17.1 ; python_full_version < '4.0' and implementation_name == 'pypy'
-    # via
-    #   paleo-labels
-    #   pyzmq
-cfgv==3.4.0 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   pre-commit
+    # via requests
 charset-normalizer==3.4.2
-    # via
-    #   paleo-labels
-    #   requests
-click==8.2.0
-    # via
-    #   paleo-labels
-    #   streamlit
+    # via requests
+click==8.2.1
+    # via streamlit
 colorama==0.4.6 ; sys_platform == 'win32'
-    # via
-    #   click
-    #   ipython
-    #   paleo-labels
-comm==0.2.2 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   paleo-labels
-contourpy==1.3.2 ; python_full_version < '4.0'
-    # via
-    #   matplotlib
-    #   paleo-labels
-cycler==0.12.1 ; python_full_version < '4.0'
-    # via
-    #   matplotlib
-    #   paleo-labels
-debugpy==1.8.14 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   paleo-labels
-decorator==5.2.1 ; python_full_version < '4.0'
-    # via
-    #   ipython
-    #   paleo-labels
-distlib==0.3.9 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   virtualenv
-executing==2.2.0 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   stack-data
-filelock==3.16.1 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   virtualenv
-fonttools==4.58.0 ; python_full_version < '4.0'
-    # via
-    #   matplotlib
-    #   paleo-labels
+    # via click
 gitdb==4.0.12
-    # via
-    #   gitpython
-    #   paleo-labels
+    # via gitpython
 gitpython==3.1.44
-    # via
-    #   paleo-labels
-    #   streamlit
-identify==2.6.1 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   pre-commit
+    # via streamlit
 idna==3.10
-    # via
-    #   paleo-labels
-    #   requests
-ipykernel==6.29.5 ; python_full_version < '4.0'
-    # via paleo-labels
-ipython==9.2.0 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   paleo-labels
-ipython-pygments-lexers==1.1.1 ; python_full_version < '4.0'
-    # via
-    #   ipython
-    #   paleo-labels
-jedi==0.19.2 ; python_full_version < '4.0'
-    # via
-    #   ipython
-    #   paleo-labels
+    # via requests
 jinja2==3.1.6
     # via
     #   altair
-    #   paleo-labels
     #   pydeck
 jsonschema==4.23.0
-    # via
-    #   altair
-    #   paleo-labels
+    # via altair
 jsonschema-specifications==2025.4.1
-    # via
-    #   jsonschema
-    #   paleo-labels
-jupyter-client==8.6.3 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   paleo-labels
-jupyter-core==5.7.2 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   jupyter-client
-    #   paleo-labels
-kiwisolver==1.4.8 ; python_full_version < '4.0'
-    # via
-    #   matplotlib
-    #   paleo-labels
+    # via jsonschema
 markupsafe==3.0.2
+    # via jinja2
+narwhals==1.40.0
+    # via altair
+numpy==2.2.6
     # via
-    #   jinja2
-    #   paleo-labels
-matplotlib==3.10.3 ; python_full_version < '4.0'
-    # via paleo-labels
-matplotlib-inline==0.1.7 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   ipython
-    #   paleo-labels
-narwhals==1.39.0
-    # via
-    #   altair
-    #   paleo-labels
-nest-asyncio==1.6.0 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   paleo-labels
-nodeenv==1.9.1 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   pre-commit
-numpy==2.2.5
-    # via
-    #   contourpy
-    #   matplotlib
-    #   paleo-labels
     #   pandas
     #   pydeck
     #   streamlit
 packaging==24.2
     # via
     #   altair
-    #   ipykernel
-    #   matplotlib
-    #   paleo-labels
     #   streamlit
 pandas==2.2.3
-    # via
-    #   paleo-labels
-    #   streamlit
-parso==0.8.4 ; python_full_version < '4.0'
-    # via
-    #   jedi
-    #   paleo-labels
-pexpect==4.9.0 ; python_full_version < '4.0' and sys_platform != 'emscripten' and sys_platform != 'win32'
-    # via
-    #   ipython
-    #   paleo-labels
+    # via streamlit
 pillow==11.2.1
-    # via
-    #   matplotlib
-    #   paleo-labels
-    #   streamlit
-platformdirs==4.3.6 ; python_full_version < '4.0'
-    # via
-    #   jupyter-core
-    #   paleo-labels
-    #   virtualenv
-pre-commit==3.8.0 ; python_full_version < '4.0'
-    # via paleo-labels
-prompt-toolkit==3.0.51 ; python_full_version < '4.0'
-    # via
-    #   ipython
-    #   paleo-labels
-protobuf==6.30.2
-    # via
-    #   paleo-labels
-    #   streamlit
-psutil==7.0.0 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   paleo-labels
-ptyprocess==0.7.0 ; python_full_version < '4.0' and sys_platform != 'emscripten' and sys_platform != 'win32'
-    # via
-    #   paleo-labels
-    #   pexpect
-pure-eval==0.2.3 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   stack-data
+    # via streamlit
+protobuf==6.31.0
+    # via streamlit
 pyarrow==20.0.0
-    # via
-    #   paleo-labels
-    #   streamlit
-pycparser==2.22 ; python_full_version < '4.0' and implementation_name == 'pypy'
-    # via
-    #   cffi
-    #   paleo-labels
+    # via streamlit
 pydeck==0.9.1
-    # via
-    #   paleo-labels
-    #   streamlit
-pygments==2.19.1 ; python_full_version < '4.0'
-    # via
-    #   ipython
-    #   ipython-pygments-lexers
-    #   paleo-labels
-pyparsing==3.2.3 ; python_full_version < '4.0'
-    # via
-    #   matplotlib
-    #   paleo-labels
+    # via streamlit
 python-dateutil==2.9.0.post0
-    # via
-    #   jupyter-client
-    #   matplotlib
-    #   paleo-labels
-    #   pandas
+    # via pandas
 pytz==2025.2
-    # via
-    #   paleo-labels
-    #   pandas
-pywin32==310 ; python_full_version < '4.0' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'
-    # via
-    #   jupyter-core
-    #   paleo-labels
-pyyaml==6.0.2 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   pre-commit
-pyzmq==26.4.0 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   jupyter-client
-    #   paleo-labels
+    # via pandas
 referencing==0.36.2
     # via
     #   jsonschema
     #   jsonschema-specifications
-    #   paleo-labels
 requests==2.32.3
-    # via
-    #   paleo-labels
-    #   streamlit
-rpds-py==0.24.0
+    # via streamlit
+rpds-py==0.25.1
     # via
     #   jsonschema
-    #   paleo-labels
     #   referencing
 six==1.17.0
-    # via
-    #   paleo-labels
-    #   python-dateutil
+    # via python-dateutil
 smmap==5.0.2
-    # via
-    #   gitdb
-    #   paleo-labels
-stack-data==0.6.3 ; python_full_version < '4.0'
-    # via
-    #   ipython
-    #   paleo-labels
+    # via gitdb
 streamlit==1.45.1
     # via paleo-labels
 tenacity==9.1.2
-    # via
-    #   paleo-labels
-    #   streamlit
+    # via streamlit
 toml==0.10.2
     # via
     #   paleo-labels
     #   streamlit
-tornado==6.3.2 ; python_full_version < '4.0'
-    # via
-    #   ipykernel
-    #   jupyter-client
-    #   paleo-labels
-    #   streamlit
-tornado==6.4.2 ; python_full_version >= '4.0'
+tornado==6.5.1
     # via streamlit
-traitlets==5.14.3 ; python_full_version < '4.0'
-    # via
-    #   comm
-    #   ipykernel
-    #   ipython
-    #   jupyter-client
-    #   jupyter-core
-    #   matplotlib-inline
-    #   paleo-labels
 typing-extensions==4.13.2
     # via
     #   altair
-    #   paleo-labels
     #   streamlit
 tzdata==2025.2
-    # via
-    #   paleo-labels
-    #   pandas
+    # via pandas
 urllib3==2.4.0
-    # via
-    #   paleo-labels
-    #   requests
-virtualenv==20.27.0 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   pre-commit
+    # via requests
 watchdog==6.0.0 ; sys_platform != 'darwin'
-    # via
-    #   paleo-labels
-    #   streamlit
-wcwidth==0.2.13 ; python_full_version < '4.0'
-    # via
-    #   paleo-labels
-    #   prompt-toolkit
+    # via streamlit
