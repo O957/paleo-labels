@@ -15,15 +15,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+        # see https://docs.astral.sh/uv/guides/integration/github/
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Set Up Python
         # see https://github.com/actions/setup-python
         uses: actions/setup-python@v5
         with:
           # same version as in .python-version
-          python-version: "3.13"
-      - name: Set Up UV Environment
-        run: |
-          uv sync --all-groups
+          python-version-file: "pyproject.toml"
+      - name: Install Project
+        run: uv sync --locked --all-extras --dev
       - name: Autofix With Pre-Commit
         run: |
           until pre-commit run --all-files; do
