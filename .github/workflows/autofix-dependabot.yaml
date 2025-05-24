@@ -1,0 +1,42 @@
+name: Autofix Dependabot Pull Request
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  # see https://autofix.ci/
+  autofix:
+    # only run if dependabot opened the PR
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Code
+        # see https://github.com/actions/checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+        # see https://docs.astral.sh/uv/guides/integration/github/
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Set Up Python
+        # see https://github.com/actions/setup-python
+        uses: actions/setup-python@v5
+        with:
+          # same version as in .python-version
+          python-version-file: "pyproject.toml"
+      - name: Install Project
+        run: uv sync --locked --all-extras --dev
+      - name: Autofix With Pre-Commit
+        run: |
+          until pre-commit run --all-files; do
+            echo "Re-running pre-commit..."
+          done
+      - name: Commit & Push Fixes As Dependabot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "autofix dependabot pre-commit failures"
+          git push
