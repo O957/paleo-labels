@@ -277,7 +277,7 @@ requests==2.32.3
     # via
     #   paleo-labels
     #   streamlit
-rpds-py==0.24.0
+rpds-py==0.25.1
     # via
     #   jsonschema
     #   paleo-labels
