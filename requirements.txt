@@ -10,7 +10,7 @@ attrs==25.3.0
     #   referencing
 blinker==1.9.0
     # via streamlit
-cachetools==5.5.2
+cachetools==6.0.0
     # via streamlit
 certifi==2025.4.26
     # via requests
