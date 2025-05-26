@@ -99,7 +99,7 @@ repos:
 # PYTHON
 ################################################################################
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.5
+    rev: v0.11.11
     hooks:
     # "currently, the Ruff formatter does not sort imports.
     # In order to both sort imports and format, call
@@ -145,7 +145,7 @@ repos:
 ################################################################################
 -   repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.7.3
+    rev: 0.7.8
     hooks:
     -   id: uv-lock
     -   id: uv-export
@@ -179,7 +179,7 @@ repos:
 # SPELLING
 ################################################################################
 -   repo: https://github.com/crate-ci/typos
-    rev: typos-dict-v0.12.4
+    rev: v1
     hooks:
     -   id: typos
         args: ["--force-exclude"]
@@ -187,7 +187,7 @@ repos:
 # COMMIT MESSAGES
 ################################################################################
 -   repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.2.1
+    rev: v4.8.2
     hooks:
     -   id: commitizen
 -   repo: https://github.com/jorisroovers/gitlint
