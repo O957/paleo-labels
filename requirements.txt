@@ -36,7 +36,7 @@ jsonschema-specifications==2025.4.1
     # via jsonschema
 markupsafe==3.0.2
     # via jinja2
-narwhals==1.40.0
+narwhals==1.41.0
     # via altair
 numpy==2.2.6
     # via
