@@ -252,14 +252,12 @@ name = "paleo-labels"
 version = "0.0.1"
 source = { virtual = "." }
 dependencies = [
-    { name = "altair" },
     { name = "streamlit" },
     { name = "toml" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "altair", specifier = ">=5.5.0" },
     { name = "streamlit", specifier = ">=1.45.1" },
     { name = "toml", specifier = ">=0.10.2" },
 ]
