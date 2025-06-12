@@ -1,6 +1,6 @@
-# Contributing Guidelines
+# Contribution Guidelines
 
-_This document contains some guidelines for your making of contributions in this repository. At present, the author would rather have your contribution than not, if following these guidelines would effectuate you not making a contribution._
+_This document contains some guidelines for external contributions in this repository. At present, I would (on average) rather have you contribute than not, and if following these guidelines would effectuate you not making a contribution, I would rather you ignore them and contribute._
 
 Primarily, aim to follow GitHub's community guidelines:
 
@@ -15,7 +15,7 @@ Primarily, aim to follow GitHub's community guidelines:
 Secondarily, aim to follow these guidelines[^guidelines], as outlined by the author:
 
 - **Use Evidence**: Please attempt to back suggestions, contributions, code changes, and feature requests with evidence, such as relevant documentation, benchmarks, research papers, or conversations, among other things.
-- **Transparency**: Please attempt to maintain transparency in discussions by clearly state your motivations, assumptions, and any limitations in your contributions or suggestions. Be explicit about areas where you are uncertain or where your evidence is incomplete, specifying the degree of uncertainty where possible.
+- **Transparency**: Please attempt to maintain transparency in discussions by clearly stating your motivations and assumptions, along with any limitations in your contributions or suggestions. Be explicit about areas where you are uncertain or where you lack evidence, specifying the degree of uncertainty where possible.
 - **Adherence To Standards**: Please attempt to follow existing standards or best practices relevant to the project, tools, or procedures to ensure consistency and readability.
 - **Prioritize Impact**: Please attempt to consider how your contributions affect the project's broader goals, integration with other tools or workflows, and long-term implications. Focus on improving the project's quality, usability, and performance. Reflect on its role within the context of civilization and strive to minimize harm or wasted effort.
 - **Maintain Integrity**: Do not intentionally misrepresent data, results, or contributions. Please always strive for epistemic rigor, accuracy, and honesty.
