@@ -1,6 +1,6 @@
-# Design Decisions
+# Decisions
 
-_This document explains key architectural and technical decisions made during the development of this repository, including trade-offs and alternative approaches considered._
+_This document contains justification and reasoning for design and other decisions made during the construction of this repository or project._
 
 ## Specimen Label Content
 
