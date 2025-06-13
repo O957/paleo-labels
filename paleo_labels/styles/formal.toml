@@ -1,0 +1,15 @@
+[dimensions]
+width_in = 4.0
+height_in = 2.5
+
+[fonts]
+family = "Monospace"
+size_pt = 12
+color = "black"
+
+[layout]
+padding_top_in = 0.25
+padding_bottom_in = 0.25
+padding_left_in = 0.25
+padding_right_in = 0.25
+line_space_in = 0.1
