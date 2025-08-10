@@ -38,6 +38,10 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
+      - name: Install Paleo-Labels
+        run: uvx sync --all-extras
+        shell: bash
+
       - name: Install & Run ty
         run: |
           uvx ty check
