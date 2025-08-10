@@ -43,4 +43,4 @@ jobs:
 
       - name: Install & Run ty
         run: |
-          uvx run ty check
+          uvx ty check
