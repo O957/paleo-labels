@@ -20,3 +20,6 @@ dependencies = [
 Repository = "https://github.com/AFg6K7h4fhy2/paleo-labels"
 Issues = "https://github.com/AFg6K7h4fhy2/paleo-labels/issues"
 "Author GitHub" = "https://github.com/AFg6K7h4fhy2/"
+
+[tool.ty.environment]
+root = ["./paleo_labels"]
