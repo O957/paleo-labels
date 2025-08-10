@@ -40,4 +40,4 @@ jobs:
 
       - name: Install & Run Pyrefly
         run: |
-          uvx pyrefly check
+          uvx pyrefly check paleo_labels
