@@ -25,8 +25,6 @@ test = [
     "pytest>=8.4.0",
 ]
 
-[tool.ruff.lint.mccabe]
-max-complexity = 15
-
-[tool.deptry]
-pep621_dev_dependency_groups = ["dev", "test"]
+[tool.pyrefly]
+python-interpreter = ".venv/bin/python"
+search-path = ["paleo_labels"]
