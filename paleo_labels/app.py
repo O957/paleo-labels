@@ -88,27 +88,22 @@ def generate_label_pdf(
     width_pt = width_in * 72
     height_pt = height_in * 72
     c = canvas.Canvas(buffer, pagesize=(width_pt, height_pt))
-
     font_name = style.get("font_name", "Helvetica")
     base_font_size = style.get("font_size", 12)
     margin = style.get("margin", 10)
-
     lines = [f"{key}: {value}" for key, value in label_data.items()]
     max_width = width_pt - 2 * margin
     max_text_width = max(
         (c.stringWidth(line, font_name, base_font_size) for line in lines),
         default=0,
     )
-
     font_size = base_font_size
     if max_text_width > max_width:
         scaled = int(base_font_size * max_width / max_text_width)
         font_size = max(scaled, 4)
-
     c.setFont(font_name, font_size)
     line_height = font_size + 2
     y = height_pt - margin
-
     for line in lines:
         if y < margin:
             c.showPage()
@@ -116,7 +111,6 @@ def generate_label_pdf(
             y = height_pt - margin
         c.drawString(margin, y, line)
         y -= line_height
-
     c.showPage()
     c.save()
     pdf_bytes = buffer.getvalue()

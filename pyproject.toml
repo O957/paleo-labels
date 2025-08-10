@@ -20,14 +20,3 @@ dependencies = [
 Repository = "https://github.com/AFg6K7h4fhy2/paleo-labels"
 Issues = "https://github.com/AFg6K7h4fhy2/paleo-labels/issues"
 "Author GitHub" = "https://github.com/AFg6K7h4fhy2/"
-
-[project.optional-dependencies]
-test = [
-    "pytest>=8.4.0",
-]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 15
-
-[tool.deptry]
-pep621_dev_dependency_groups = ["dev", "test"]
