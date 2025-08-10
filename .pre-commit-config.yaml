@@ -141,6 +141,13 @@ repos:
         args: [
           "--line-length=79",
         ]
+-   repo: local
+    hooks:
+    -   id: ty
+        name: ty (python type checking)
+        entry: uvx ty check
+        language: system
+        pass_filenames: false
 ###############################################################################
 # XENON CODE COMPLEXITY
 ###############################################################################
