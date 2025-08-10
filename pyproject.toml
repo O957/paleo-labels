@@ -20,11 +20,6 @@ Repository = "https://github.com/AFg6K7h4fhy2/paleo-labels"
 Issues = "https://github.com/AFg6K7h4fhy2/paleo-labels/issues"
 "Author GitHub" = "https://github.com/AFg6K7h4fhy2/"
 
-[project.optional-dependencies]
-test = [
-    "pytest>=8.4.0",
-]
 
 [tool.pyrefly]
-python-interpreter = ".venv/bin/python"
 search-path = ["paleo_labels"]
