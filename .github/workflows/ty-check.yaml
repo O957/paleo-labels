@@ -5,25 +5,25 @@
 #
 # Description:
 #
-# This runs `pyrefly check` on every push to main and on every pull
-# request. This action fails if pyrefly finds inadequacies with Python types.
+# This runs `ty check` on every push to main and on every pull
+# request. This action fails if ty finds inadequacies with Python types.
 #
 # Links:
 #
-# pyrefly: https://pyrefly.com/
+# ty: https://docs.astral.sh/ty/
 ###############################################################################
 on:
   push:
     branches: [main, master]
   pull_request:
 
-name: pyrefly-check.yaml
+name: ty-check.yaml
 
 permissions: read-all
 
 jobs:
   check:
-    name: pyrefly-check
+    name: ty-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +38,6 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install & Run Pyrefly
+      - name: Install & Run ty
         run: |
-          uvx pyrefly check paleo_labels
+          uvx ty check
