@@ -93,9 +93,6 @@ def generate_label_pdf(
     margin = style.get("margin", 10)
     lines = [f"{key}: {value}" for key, value in label_data.items()]
     max_width = width_pt - 2 * margin
-    max_text_width = max(
-        (c.stringWidth(line, font_name, base_font_size) for line in lines),
-        default=0,
     if not lines:
         max_text_width = 0
     else:
@@ -110,7 +107,8 @@ def generate_label_pdf(
             scaled = int(base_font_size * max_width / max_text_width)
             font_size = max(scaled, 4)
         else:
-            # If max_text_width is zero, keep base_font_size (or set to minimum)
+            # if max_text_width is zero, keep base_font_size (or set to
+            # minimum)
             font_size = max(base_font_size, 4)
     c.setFont(font_name, font_size)
     line_height = font_size + 2
