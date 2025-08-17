@@ -5,12 +5,20 @@ _`paleo-labels` is an application for writing precisely formatted labels singula
 This repository is in the earliest stages of development—there is not currently a minimum viable product yet—so please be patient and return in due course. Any suggestions or ideas would be appreciated, however, and can be provided as an issue in this repository (see [here](https://github.com/AFg6K7h4fhy2/paleo-labels/issues)) or email (see [here](https://github.com/AFg6K7h4fhy2#contact)).
 
 
-## Utility Diagram
+## Utilities Overview
 
-See [here](https://www.mermaidchart.com/play#pako:eNqrVkrOT0lVslJSqgUAFW4DVg) for the live Mermaid diagram editor.
 
 ```mermaid
-%%{init: {"theme": "neutral", "themeVariables": { "fontFamily": "Iosevka", "fontSize": "25px", "lineColor": "#808b96", "arrowheadColor": "#808b96", "edgeStrokeWidth": "10px", "arrowheadLength": "20px"}}}%%
+---
+config:
+  theme: "base"
+  themeVariables:
+    primaryColor: "#acf3b9ff"
+    primaryTextColor: "#0b2244"
+    primaryBorderColor: "#0b2244"
+    edgeLabelBackground: "#daecfaff"
+---
+
 flowchart TD
     A["Label Maker"] --> Z1["File"]
     A["Label Maker"] --> Z2["Folder"]
@@ -36,10 +44,20 @@ flowchart TD
 ```
 
 
-<details markdown=1>
+## License Standard Notice
 
-<summary> A scene of strata of the latest Pliocene of Arizona, USA. </summary>
+Copyright 2025 O957 (Pseudonym)
 
-<img src="./assets/readme_photos/IMG_3764.jpg" width="550" />
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-</details>
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
