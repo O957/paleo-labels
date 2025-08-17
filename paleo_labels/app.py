@@ -96,7 +96,13 @@ def generate_label_pdf(
     max_text_width = max(
         (c.stringWidth(line, font_name, base_font_size) for line in lines),
         default=0,
-    )
+    if not lines:
+        max_text_width = 0
+    else:
+        max_text_width = max(
+            (c.stringWidth(line, font_name, base_font_size) for line in lines),
+            default=0,
+        )
     font_size = base_font_size
     if max_text_width > max_width:
         scaled = int(base_font_size * max_width / max_text_width)
