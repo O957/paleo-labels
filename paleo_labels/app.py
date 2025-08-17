@@ -48,7 +48,7 @@ def load_toml(uploaded_file: UploadedFile) -> dict:
     try:
         text_wrapper = io.TextIOWrapper(uploaded_file, encoding="utf-8")
         config = toml.load(text_wrapper)
-    except Exception as e:
+    except (toml.TomlDecodeError, UnicodeDecodeError) as e:
         st.error(f"Error parsing TOML: {e}")
         st.stop()
     st.success(f"Loaded {uploaded_file.name}")
