@@ -563,14 +563,15 @@ def get_style_config() -> dict:
     return style_config
 
 
-def get_style_config_ui() -> dict:
+def get_style_config_ui() -> tuple[dict, float, float, bool]:
     """
     Render sidebar UI for comprehensive label styling options.
 
     Returns
     -------
-    dict
-        Complete style configuration dictionary.
+    tuple[dict, float, float, bool]
+        Tuple containing style configuration dictionary, width in inches,
+        height in inches, and rotation flag.
     """
     with st.sidebar.expander("Label Styling", expanded=False):
         st.subheader("Dimensions")
