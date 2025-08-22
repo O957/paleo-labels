@@ -60,12 +60,13 @@ def generate_label_pdf(
     style: dict,
     width_in: float = 1.0,
     height_in: float = 2.0,
+    rotate_text: bool = False,
 ) -> bytes:
     """
     Generate a printable PDF for a label from provided
-    data and optional style settings. All text uses a
-    dynamically resized uniform font size so that the
-    widest line fits within the label width.
+    data and optional style settings. The font size is
+    automatically calculated to fit exactly within the
+    specified dimensions with proper padding.
 
     Parameters
     ----------
@@ -73,7 +74,8 @@ def generate_label_pdf(
         Dictionary of header-value pairs for the label.
     style : dict
         Optional style settings (e.g., font_name,
-        font_size, margin) loaded from a TOML.
+        font_size, padding_percent) loaded from a TOML.
+        Note: dimensions take precedence over font_size.
     width_in : float, optional
         Width of the label in inches.
     height_in : float, optional
@@ -85,41 +87,118 @@ def generate_label_pdf(
         Raw bytes of the generated PDF file.
     """
     buffer = BytesIO()
-    width_pt = width_in * 72
-    height_pt = height_in * 72
-    c = canvas.Canvas(buffer, pagesize=(width_pt, height_pt))
+
+    page_width_pt = 8.5 * 72
+    page_height_pt = 11 * 72
+
+    label_width_pt = width_in * 72
+    label_height_pt = height_in * 72
+
+    c = canvas.Canvas(buffer, pagesize=(page_width_pt, page_height_pt))
+
+    label_x_offset = 18
+    label_y_offset = page_height_pt - 18 - label_height_pt
+
     font_name = style.get("font_name", "Helvetica")
-    base_font_size = style.get("font_size", 12)
-    margin = style.get("margin", 10)
-    lines = [f"{key}: {value}" for key, value in label_data.items()]
-    max_width = width_pt - 2 * margin
-    if not lines:
-        max_text_width = 0
+    padding_percent = style.get("padding_percent", 0.05)
+
+    if rotate_text:
+        effective_width = label_height_pt
+        effective_height = label_width_pt
     else:
-        max_text_width = max(
-            (c.stringWidth(line, font_name, base_font_size) for line in lines),
-            default=0,
+        effective_width = label_width_pt
+        effective_height = label_height_pt
+
+    padding_x = effective_width * padding_percent
+    padding_y = effective_height * padding_percent
+
+    available_width = effective_width - 2 * padding_x
+    available_height = effective_height - 2 * padding_y
+
+    lines = [f"{key}: {value}" for key, value in label_data.items()]
+
+    if not lines:
+        c.rect(
+            label_x_offset,
+            label_y_offset,
+            label_width_pt,
+            label_height_pt,
+            stroke=1,
+            fill=0,
         )
-    font_size = base_font_size
-    if max_text_width > max_width:
-        scaled = int(base_font_size * max_width / max_text_width)
-        if max_text_width > 0:
-            scaled = int(base_font_size * max_width / max_text_width)
-            font_size = max(scaled, 4)
+        c.showPage()
+        c.save()
+        pdf_bytes = buffer.getvalue()
+        buffer.close()
+        return pdf_bytes
+
+    min_font_size = 4
+    max_font_size = 72
+    optimal_font_size = min_font_size
+
+    low, high = min_font_size, max_font_size
+
+    while high - low > 0.05:
+        test_font_size = (low + high) / 2
+
+        max_text_width = max(
+            c.stringWidth(line, font_name, test_font_size) for line in lines
+        )
+
+        line_height = test_font_size
+        total_text_height = len(lines) * line_height
+
+        fits_width = max_text_width <= available_width
+        fits_height = total_text_height <= available_height
+
+        if fits_width and fits_height:
+            optimal_font_size = test_font_size
+            low = test_font_size
         else:
-            # if max_text_width is zero, keep base_font_size (or set to
-            # minimum)
-            font_size = max(base_font_size, 4)
+            high = test_font_size
+
+    font_size = max(optimal_font_size, min_font_size)
+
+    c.setStrokeColorRGB(0.8, 0.8, 0.8)
+    c.rect(
+        label_x_offset,
+        label_y_offset,
+        label_width_pt,
+        label_height_pt,
+        stroke=1,
+        fill=0,
+    )
+
     c.setFont(font_name, font_size)
-    line_height = font_size + 2
-    y = height_pt - margin
+    c.setFillColorRGB(0, 0, 0)
+
+    if rotate_text:
+        c.saveState()
+        c.translate(
+            label_x_offset + label_width_pt / 2,
+            label_y_offset + label_height_pt / 2,
+        )
+        c.rotate(90)
+        text_start_x = -effective_width / 2 + padding_x
+        text_start_y = effective_height / 2 - padding_y - font_size
+    else:
+        text_start_x = label_x_offset + padding_x
+        text_start_y = label_y_offset + label_height_pt - padding_y - font_size
+
+    y_position = text_start_y
     for line in lines:
-        if y < margin:
-            c.showPage()
-            c.setFont(font_name, font_size)
-            y = height_pt - margin
-        c.drawString(margin, y, line)
-        y -= line_height
+        if rotate_text:
+            bounds_check = y_position >= -effective_height / 2 + padding_y
+        else:
+            bounds_check = y_position >= label_y_offset + padding_y
+
+        if bounds_check:
+            c.drawString(text_start_x, y_position, line)
+            y_position -= font_size
+
+    if rotate_text:
+        c.restoreState()
+
     c.showPage()
     c.save()
     pdf_bytes = buffer.getvalue()
@@ -207,8 +286,36 @@ def get_style_config() -> dict:
     return style_config
 
 
+def get_dimensions_config() -> tuple[float, float, bool]:
+    """
+    Render sidebar UI to get label dimensions and rotation option.
+
+    Returns
+    -------
+    tuple[float, float, bool]
+        Width, height of the label in inches, and whether to rotate text.
+    """
+    st.sidebar.subheader("Label Dimensions")
+    width_in = st.sidebar.number_input(
+        "Width (inches)", min_value=0.1, max_value=8.0, value=1.0, step=0.05
+    )
+    height_in = st.sidebar.number_input(
+        "Height (inches)", min_value=0.1, max_value=10.0, value=2.0, step=0.05
+    )
+    rotate_text = False
+    if height_in > width_in:
+        rotate_text = st.sidebar.checkbox(
+            "Rotate text to fit better", value=False
+        )
+    return width_in, height_in, rotate_text
+
+
 def display_preview_and_download(
-    label_config: dict, style_config: dict
+    label_config: dict,
+    style_config: dict,
+    width_in: float,
+    height_in: float,
+    rotate_text: bool,
 ) -> None:
     """
     Display label preview in main area and provide a
@@ -220,13 +327,23 @@ def display_preview_and_download(
         Collected label key-value pairs.
     style_config : dict
         Parsed style settings.
+    width_in : float
+        Width of the label in inches.
+    height_in : float
+        Height of the label in inches.
     """
     st.title("Specimen(s) Label Maker")
     if label_config:
         st.subheader("Preview")
         for k, v in label_config.items():
             st.markdown(f"**{k}:** {v}")
-        pdf_bytes = generate_label_pdf(label_config, style_config)
+        pdf_bytes = generate_label_pdf(
+            label_config,
+            style_config,
+            round(width_in, 2),
+            round(height_in, 2),
+            rotate_text,
+        )
         st.download_button(
             label="Download PDF Label",
             data=pdf_bytes,
@@ -251,7 +368,10 @@ def main() -> None:
 
     label_cfg = get_label_config()
     style_cfg = get_style_config()
-    display_preview_and_download(label_cfg, style_cfg)
+    width_in, height_in, rotate_text = get_dimensions_config()
+    display_preview_and_download(
+        label_cfg, style_cfg, width_in, height_in, rotate_text
+    )
 
     duration = time.time() - start
     logger.info(f"Session duration: {duration:.2f}s")
