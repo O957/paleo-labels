@@ -51,6 +51,108 @@ DIMENSION_DECIMAL_PLACES = 2
 BORDER_GRAY_VALUE = 0.8
 
 
+def load_label_style_from_file(style_file_path: str) -> dict:
+    """
+    Load label style configuration from a TOML file.
+
+    Parameters
+    ----------
+    style_file_path : str
+        Path to the style TOML file.
+
+    Returns
+    -------
+    dict
+        Parsed style configuration with defaults applied.
+    """
+    try:
+        with open(style_file_path, encoding="utf-8") as f:
+            style_config = toml.load(f)
+
+        processed_style = apply_style_defaults(style_config)
+        return processed_style
+    except (FileNotFoundError, toml.TomlDecodeError) as e:
+        logging.warning(f"Could not load style file {style_file_path}: {e}")
+        return apply_style_defaults({})
+
+
+def get_font_name(base_font: str, is_bold: bool, is_italic: bool) -> str:
+    """Get the appropriate ReportLab font name based on style flags."""
+    font_variants = {
+        "Helvetica": {
+            (False, False): "Helvetica",
+            (True, False): "Helvetica-Bold",
+            (False, True): "Helvetica-Oblique",
+            (True, True): "Helvetica-BoldOblique",
+        },
+        "Times-Roman": {
+            (False, False): "Times-Roman",
+            (True, False): "Times-Bold",
+            (False, True): "Times-Italic",
+            (True, True): "Times-BoldItalic",
+        },
+        "Courier": {
+            (False, False): "Courier",
+            (True, False): "Courier-Bold",
+            (False, True): "Courier-Oblique",
+            (True, True): "Courier-BoldOblique",
+        },
+    }
+
+    if base_font in font_variants:
+        return font_variants[base_font][(is_bold, is_italic)]
+    else:
+        return base_font
+
+
+def apply_style_defaults(style_config: dict) -> dict:
+    """
+    Apply default values to style configuration and handle font styling.
+
+    Parameters
+    ----------
+    style_config : dict
+        Raw style configuration from TOML.
+
+    Returns
+    -------
+    dict
+        Style configuration with defaults and processed font settings.
+    """
+    processed = style_config.copy()
+
+    processed.setdefault("font_name", "Helvetica")
+    processed.setdefault("font_size", REFERENCE_FONT_SIZE)
+    processed.setdefault("key_color_r", 0.0)
+    processed.setdefault("key_color_g", 0.0)
+    processed.setdefault("key_color_b", 0.0)
+    processed.setdefault("value_color_r", 0.0)
+    processed.setdefault("value_color_g", 0.0)
+    processed.setdefault("value_color_b", 0.0)
+    processed.setdefault("padding_percent", DEFAULT_PADDING_PERCENT)
+    processed.setdefault("width_inches", DEFAULT_WIDTH_IN)
+    processed.setdefault("height_inches", DEFAULT_HEIGHT_IN)
+    processed.setdefault("bold_keys", False)
+    processed.setdefault("bold_values", False)
+    processed.setdefault("italic_keys", False)
+    processed.setdefault("italic_values", False)
+    processed.setdefault("show_keys", True)
+    processed.setdefault("show_values", True)
+
+    base_font = processed["font_name"]
+    bold_keys = processed["bold_keys"]
+    bold_values = processed["bold_values"]
+    italic_keys = processed["italic_keys"]
+    italic_values = processed["italic_values"]
+
+    processed["key_font"] = get_font_name(base_font, bold_keys, italic_keys)
+    processed["value_font"] = get_font_name(
+        base_font, bold_values, italic_values
+    )
+
+    return processed
+
+
 def load_toml(uploaded_file: UploadedFile) -> dict:
     """
     Load a TOML configuration (either a label or a style)
@@ -89,28 +191,50 @@ def load_toml(uploaded_file: UploadedFile) -> dict:
 def calculate_optimal_font_size(
     lines: list[str],
     canvas_obj: canvas.Canvas,
-    font_name: str,
+    key_font: str,
+    value_font: str,
     available_width: float,
     available_height: float,
+    show_keys: bool,
+    show_values: bool,
 ) -> float:
     """
     Calculate the largest font size that fits all text
     within available space using direct mathematical scaling.
+    Handles different fonts for keys and values, and visibility options.
     """
     if not lines:
         return 12
 
     reference_font_size = REFERENCE_FONT_SIZE
+    max_line_width = 0
 
-    max_text_width = max(
-        canvas_obj.stringWidth(line, font_name, reference_font_size)
-        for line in lines
-    )
+    for line in lines:
+        if ": " in line:
+            key_part, value_part = line.split(": ", 1)
+            line_width = 0
+
+            if show_keys:
+                line_width += canvas_obj.stringWidth(
+                    key_part + ": ", key_font, reference_font_size
+                )
+
+            if show_values:
+                line_width += canvas_obj.stringWidth(
+                    value_part, value_font, reference_font_size
+                )
+        else:
+            line_width = canvas_obj.stringWidth(
+                line, key_font, reference_font_size
+            )
+
+        max_line_width = max(max_line_width, line_width)
+
     total_text_height = len(lines) * reference_font_size
 
     width_scale = (
-        available_width / max_text_width
-        if max_text_width > 0
+        available_width / max_line_width
+        if max_line_width > 0
         else float("inf")
     )
     height_scale = (
@@ -128,6 +252,8 @@ def calculate_optimal_font_size(
 def draw_rotated_text(
     canvas_obj: canvas.Canvas,
     lines: list[str],
+    key_font: str,
+    value_font: str,
     font_size: float,
     label_x_offset: float,
     label_y_offset: float,
@@ -137,8 +263,15 @@ def draw_rotated_text(
     effective_height: float,
     padding_x: float,
     padding_y: float,
+    key_color: tuple[float, float, float],
+    value_color: tuple[float, float, float],
+    show_keys: bool,
+    show_values: bool,
 ) -> None:
-    """Draw text rotated 90 degrees clockwise."""
+    """
+    Draw text rotated 90 degrees clockwise with separate
+    key/value fonts and colors.
+    """
     canvas_obj.saveState()
     canvas_obj.translate(
         label_x_offset + label_width_pt / 2,
@@ -151,7 +284,26 @@ def draw_rotated_text(
     y_position = text_start_y
     for line in lines:
         if y_position >= -effective_height / 2 + padding_y:
-            canvas_obj.drawString(text_start_x, y_position, line)
+            if ": " in line:
+                key_part, value_part = line.split(": ", 1)
+                x_pos = text_start_x
+
+                if show_keys:
+                    canvas_obj.setFont(key_font, font_size)
+                    canvas_obj.setFillColorRGB(*key_color)
+                    canvas_obj.drawString(x_pos, y_position, key_part + ": ")
+                    x_pos += canvas_obj.stringWidth(
+                        key_part + ": ", key_font, font_size
+                    )
+
+                if show_values:
+                    canvas_obj.setFont(value_font, font_size)
+                    canvas_obj.setFillColorRGB(*value_color)
+                    canvas_obj.drawString(x_pos, y_position, value_part)
+            else:
+                canvas_obj.setFont(key_font, font_size)
+                canvas_obj.setFillColorRGB(*key_color)
+                canvas_obj.drawString(text_start_x, y_position, line)
             y_position -= font_size
 
     canvas_obj.restoreState()
@@ -160,21 +312,49 @@ def draw_rotated_text(
 def draw_normal_text(
     canvas_obj: canvas.Canvas,
     lines: list[str],
+    key_font: str,
+    value_font: str,
     font_size: float,
     label_x_offset: float,
     label_y_offset: float,
     label_height_pt: float,
     padding_x: float,
     padding_y: float,
+    key_color: tuple[float, float, float],
+    value_color: tuple[float, float, float],
+    show_keys: bool,
+    show_values: bool,
 ) -> None:
-    """Draw text in normal orientation."""
+    """
+    Draw text in normal orientation with separate
+    key/value fonts and colors.
+    """
     text_start_x = label_x_offset + padding_x
     text_start_y = label_y_offset + label_height_pt - padding_y - font_size
 
     y_position = text_start_y
     for line in lines:
         if y_position >= label_y_offset + padding_y:
-            canvas_obj.drawString(text_start_x, y_position, line)
+            if ": " in line:
+                key_part, value_part = line.split(": ", 1)
+                x_pos = text_start_x
+
+                if show_keys:
+                    canvas_obj.setFont(key_font, font_size)
+                    canvas_obj.setFillColorRGB(*key_color)
+                    canvas_obj.drawString(x_pos, y_position, key_part + ": ")
+                    x_pos += canvas_obj.stringWidth(
+                        key_part + ": ", key_font, font_size
+                    )
+
+                if show_values:
+                    canvas_obj.setFont(value_font, font_size)
+                    canvas_obj.setFillColorRGB(*value_color)
+                    canvas_obj.drawString(x_pos, y_position, value_part)
+            else:
+                canvas_obj.setFont(key_font, font_size)
+                canvas_obj.setFillColorRGB(*key_color)
+                canvas_obj.drawString(text_start_x, y_position, line)
             y_position -= font_size
 
 
@@ -231,17 +411,39 @@ def generate_label_pdf(
         buffer.close()
         return pdf_bytes
 
+    key_font = style.get("key_font", font_name)
+    value_font = style.get("value_font", font_name)
+    show_keys = style.get("show_keys", True)
+    show_values = style.get("show_values", True)
+
     font_size = calculate_optimal_font_size(
-        lines, c, font_name, available_width, available_height
+        lines,
+        c,
+        key_font,
+        value_font,
+        available_width,
+        available_height,
+        show_keys,
+        show_values,
     )
 
-    c.setFont(font_name, font_size)
-    c.setFillColorRGB(0, 0, 0)
+    key_color = (
+        style.get("key_color_r", 0.0),
+        style.get("key_color_g", 0.0),
+        style.get("key_color_b", 0.0),
+    )
+    value_color = (
+        style.get("value_color_r", 0.0),
+        style.get("value_color_g", 0.0),
+        style.get("value_color_b", 0.0),
+    )
 
     if rotate_text:
         draw_rotated_text(
             c,
             lines,
+            key_font,
+            value_font,
             font_size,
             label_x_offset,
             label_y_offset,
@@ -251,17 +453,27 @@ def generate_label_pdf(
             effective_height,
             padding_x,
             padding_y,
+            key_color,
+            value_color,
+            show_keys,
+            show_values,
         )
     else:
         draw_normal_text(
             c,
             lines,
+            key_font,
+            value_font,
             font_size,
             label_x_offset,
             label_y_offset,
             label_height_pt,
             padding_x,
             padding_y,
+            key_color,
+            value_color,
+            show_keys,
+            show_values,
         )
 
     c.showPage()
@@ -470,9 +682,22 @@ def main() -> None:
 
     label_cfg = get_label_config()
     style_cfg = get_style_config()
+
+    style_file_path = "label_styles/label_style_01.toml"
+    file_style_cfg = load_label_style_from_file(style_file_path)
+
+    merged_style = {**file_style_cfg, **style_cfg}
+
+    style_width = merged_style.get("width_inches", DEFAULT_WIDTH_IN)
+    style_height = merged_style.get("height_inches", DEFAULT_HEIGHT_IN)
+
     width_in, height_in, rotate_text = get_dimensions_config()
+
+    final_width = width_in if style_cfg else style_width
+    final_height = height_in if style_cfg else style_height
+
     display_preview_and_download(
-        label_cfg, style_cfg, width_in, height_in, rotate_text
+        label_cfg, merged_style, final_width, final_height, rotate_text
     )
 
     duration = time.time() - start
