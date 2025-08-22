@@ -19,6 +19,27 @@ import toml
 from reportlab.pdfgen import canvas
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
+POINTS_PER_INCH = 72
+US_LETTER_WIDTH_IN = 8.5
+US_LETTER_HEIGHT_IN = 11
+PAGE_MARGIN_IN = 0.25
+PAGE_MARGIN_PT = PAGE_MARGIN_IN * POINTS_PER_INCH
+
+MIN_FONT_SIZE = 4
+MAX_FONT_SIZE = 72
+REFERENCE_FONT_SIZE = 12
+DEFAULT_PADDING_PERCENT = 0.05
+
+DIMENSION_MIN = 0.1
+DIMENSION_STEP = 0.05
+MAX_WIDTH_IN = 8.0
+MAX_HEIGHT_IN = 10.0
+DEFAULT_WIDTH_IN = 1.0
+DEFAULT_HEIGHT_IN = 2.0
+
+DIMENSION_DECIMAL_PLACES = 2
+BORDER_GRAY_VALUE = 0.8
+
 
 def load_toml(uploaded_file: UploadedFile) -> dict:
     """
@@ -69,7 +90,7 @@ def calculate_optimal_font_size(
     if not lines:
         return 12
 
-    reference_font_size = 12
+    reference_font_size = REFERENCE_FONT_SIZE
 
     max_text_width = max(
         canvas_obj.stringWidth(line, font_name, reference_font_size)
@@ -91,7 +112,7 @@ def calculate_optimal_font_size(
     optimal_scale = min(width_scale, height_scale)
     optimal_font_size = reference_font_size * optimal_scale
 
-    return max(min(optimal_font_size, 72), 4)
+    return max(min(optimal_font_size, MAX_FONT_SIZE), MIN_FONT_SIZE)
 
 
 def draw_rotated_text(
@@ -159,17 +180,17 @@ def generate_label_pdf(
     font sizing."""
     buffer = BytesIO()
 
-    page_width_pt = 8.5 * 72
-    page_height_pt = 11 * 72
-    label_width_pt = width_in * 72
-    label_height_pt = height_in * 72
+    page_width_pt = US_LETTER_WIDTH_IN * POINTS_PER_INCH
+    page_height_pt = US_LETTER_HEIGHT_IN * POINTS_PER_INCH
+    label_width_pt = width_in * POINTS_PER_INCH
+    label_height_pt = height_in * POINTS_PER_INCH
 
     c = canvas.Canvas(buffer, pagesize=(page_width_pt, page_height_pt))
 
-    label_x_offset = 18
-    label_y_offset = page_height_pt - 18 - label_height_pt
+    label_x_offset = PAGE_MARGIN_PT
+    label_y_offset = page_height_pt - PAGE_MARGIN_PT - label_height_pt
     font_name = style.get("font_name", "Helvetica")
-    padding_percent = style.get("padding_percent", 0.05)
+    padding_percent = style.get("padding_percent", DEFAULT_PADDING_PERCENT)
 
     effective_width = label_height_pt if rotate_text else label_width_pt
     effective_height = label_width_pt if rotate_text else label_height_pt
@@ -181,7 +202,9 @@ def generate_label_pdf(
 
     lines = [f"{key}: {value}" for key, value in label_data.items()]
 
-    c.setStrokeColorRGB(0.8, 0.8, 0.8)
+    c.setStrokeColorRGB(
+        BORDER_GRAY_VALUE, BORDER_GRAY_VALUE, BORDER_GRAY_VALUE
+    )
     c.rect(
         label_x_offset,
         label_y_offset,
@@ -331,10 +354,18 @@ def get_dimensions_config() -> tuple[float, float, bool]:
     """
     st.sidebar.subheader("Label Dimensions")
     width_in = st.sidebar.number_input(
-        "Width (inches)", min_value=0.1, max_value=8.0, value=1.0, step=0.05
+        "Width (inches)",
+        min_value=DIMENSION_MIN,
+        max_value=MAX_WIDTH_IN,
+        value=DEFAULT_WIDTH_IN,
+        step=DIMENSION_STEP,
     )
     height_in = st.sidebar.number_input(
-        "Height (inches)", min_value=0.1, max_value=10.0, value=2.0, step=0.05
+        "Height (inches)",
+        min_value=DIMENSION_MIN,
+        max_value=MAX_HEIGHT_IN,
+        value=DEFAULT_HEIGHT_IN,
+        step=DIMENSION_STEP,
     )
     rotate_text = False
     if height_in > width_in:
@@ -374,8 +405,8 @@ def display_preview_and_download(
         pdf_bytes = generate_label_pdf(
             label_config,
             style_config,
-            round(width_in, 2),
-            round(height_in, 2),
+            round(width_in, DIMENSION_DECIMAL_PLACES),
+            round(height_in, DIMENSION_DECIMAL_PLACES),
             rotate_text,
         )
         st.download_button(
