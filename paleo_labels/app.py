@@ -563,10 +563,163 @@ def get_style_config() -> dict:
     return style_config
 
 
+def get_style_config_ui() -> dict:
+    """
+    Render sidebar UI for comprehensive label styling options.
+
+    Returns
+    -------
+    dict
+        Complete style configuration dictionary.
+    """
+    with st.sidebar.expander("Label Styling", expanded=False):
+        st.subheader("Dimensions")
+
+        unit_system = st.radio(
+            "Units",
+            ["Imperial (inches)", "Metric (cm)"],
+            horizontal=True,
+            key="style_units",
+        )
+
+        is_metric = unit_system == "Metric (cm)"
+
+        if is_metric:
+            width_display = st.number_input(
+                "Width (cm)",
+                min_value=DIMENSION_MIN_CM,
+                max_value=MAX_WIDTH_CM,
+                value=DEFAULT_WIDTH_CM,
+                step=DIMENSION_STEP_CM,
+                key="style_width_cm",
+            )
+            height_display = st.number_input(
+                "Height (cm)",
+                min_value=DIMENSION_MIN_CM,
+                max_value=MAX_HEIGHT_CM,
+                value=DEFAULT_HEIGHT_CM,
+                step=DIMENSION_STEP_CM,
+                key="style_height_cm",
+            )
+            width_in = width_display * CM_TO_INCHES
+            height_in = height_display * CM_TO_INCHES
+        else:
+            width_in = st.number_input(
+                "Width (inches)",
+                min_value=DIMENSION_MIN_IN,
+                max_value=MAX_WIDTH_IN,
+                value=DEFAULT_WIDTH_IN,
+                step=DIMENSION_STEP_IN,
+                key="style_width_in",
+            )
+            height_in = st.number_input(
+                "Height (inches)",
+                min_value=DIMENSION_MIN_IN,
+                max_value=MAX_HEIGHT_IN,
+                value=DEFAULT_HEIGHT_IN,
+                step=DIMENSION_STEP_IN,
+                key="style_height_in",
+            )
+
+        st.subheader("Layout")
+        padding_percent = (
+            st.slider(
+                "Padding %",
+                min_value=0,
+                max_value=20,
+                value=5,
+                step=1,
+                key="style_padding",
+            )
+            / 100.0
+        )
+
+        rotate_text = False
+        if height_in > width_in:
+            rotate_text = st.checkbox(
+                "Rotate Label (For Better Fit)",
+                value=False,
+                key="style_rotate",
+            )
+
+        st.subheader("Typography")
+        font_name = st.selectbox(
+            "Font Family",
+            ["Helvetica", "Times-Roman", "Courier"],
+            index=0,
+            key="style_font",
+        )
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("**Keys**")
+            bold_keys = st.checkbox("Bold", value=False, key="style_bold_keys")
+            italic_keys = st.checkbox(
+                "Italic", value=False, key="style_italic_keys"
+            )
+            show_keys = st.checkbox("Show", value=True, key="style_show_keys")
+
+        with col2:
+            st.write("**Values**")
+            bold_values = st.checkbox(
+                "Bold", value=False, key="style_bold_values"
+            )
+            italic_values = st.checkbox(
+                "Italic", value=False, key="style_italic_values"
+            )
+            show_values = st.checkbox(
+                "Show", value=True, key="style_show_values"
+            )
+
+        st.subheader("Colors")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("**Key Color**")
+            key_color = st.color_picker(
+                "Key Color", value="#000000", key="style_key_color"
+            )
+        with col2:
+            st.write("**Value Color**")
+            value_color = st.color_picker(
+                "Value Color", value="#000000", key="style_value_color"
+            )
+
+        def hex_to_rgb(hex_color):
+            hex_color = hex_color.lstrip("#")
+            return tuple(
+                int(hex_color[i : i + 2], 16) / 255.0 for i in (0, 2, 4)
+            )
+
+        key_color_rgb = hex_to_rgb(key_color)
+        value_color_rgb = hex_to_rgb(value_color)
+
+    style_config = {
+        "font_name": font_name,
+        "padding_percent": padding_percent,
+        "width_inches": width_in,
+        "height_inches": height_in,
+        "bold_keys": bold_keys,
+        "bold_values": bold_values,
+        "italic_keys": italic_keys,
+        "italic_values": italic_values,
+        "show_keys": show_keys,
+        "show_values": show_values,
+        "key_color_r": key_color_rgb[0],
+        "key_color_g": key_color_rgb[1],
+        "key_color_b": key_color_rgb[2],
+        "value_color_r": value_color_rgb[0],
+        "value_color_g": value_color_rgb[1],
+        "value_color_b": value_color_rgb[2],
+    }
+
+    processed_style = apply_style_defaults(style_config)
+    return processed_style, width_in, height_in, rotate_text
+
+
 def get_dimensions_config() -> tuple[float, float, bool]:
     """
     Render sidebar UI to get label dimensions and rotation
-    option.
+    option. Legacy function for backward compatibility.
 
     Returns
     -------
@@ -681,23 +834,19 @@ def main() -> None:
     start = time.time()
 
     label_cfg = get_label_config()
-    style_cfg = get_style_config()
+    uploaded_style_cfg = get_style_config()
+
+    ui_style_cfg, width_in, height_in, rotate_text = get_style_config_ui()
 
     style_file_path = "label_styles/label_style_01.toml"
     file_style_cfg = load_label_style_from_file(style_file_path)
 
-    merged_style = {**file_style_cfg, **style_cfg}
-
-    style_width = merged_style.get("width_inches", DEFAULT_WIDTH_IN)
-    style_height = merged_style.get("height_inches", DEFAULT_HEIGHT_IN)
-
-    width_in, height_in, rotate_text = get_dimensions_config()
-
-    final_width = width_in if style_cfg else style_width
-    final_height = height_in if style_cfg else style_height
+    final_style = {**file_style_cfg, **ui_style_cfg}
+    if uploaded_style_cfg:
+        final_style = {**final_style, **uploaded_style_cfg}
 
     display_preview_and_download(
-        label_cfg, merged_style, final_width, final_height, rotate_text
+        label_cfg, final_style, width_in, height_in, rotate_text
     )
 
     duration = time.time() - start
