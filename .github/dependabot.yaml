@@ -3,11 +3,11 @@
 ###############################################################################
 # The following contains the Dependabot security and version updates
 # configuration for this repository, which likely are derived from the author's
-# (AFg6K7h4fhy2) repository template.
+# (O957) repository template.
 #
 # Links:
 #
-# The author's template: https://github.com/AFg6K7h4fhy2/AFg6K7h4fhy2-Template
+# The author's template: https://github.com/O957/O957-Template
 # UV dependency bots: https://docs.astral.sh/uv/guides/integration/
 # dependency-bots/
 #
@@ -40,9 +40,9 @@ updates:
       time: "10:00"
       timezone: "America/Denver"
     reviewers:
-      - "AFg6K7h4fhy2"
+      - "O957"
     assignees:
-      - "AFg6K7h4fhy2"
+      - "O957"
     # default separator (/) to hyphen (-)
     pull-request-branch-name:
       separator: "-"
@@ -58,9 +58,9 @@ updates:
       time: "10:00"
       timezone: "America/Denver"
     reviewers:
-      - "AFg6K7h4fhy2"
+      - "O957"
     assignees:
-      - "AFg6K7h4fhy2"
+      - "O957"
     # default separator (/) to hyphen (-)
     pull-request-branch-name:
       separator: "-"
