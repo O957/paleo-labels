@@ -30,12 +30,22 @@ MAX_FONT_SIZE = 72
 REFERENCE_FONT_SIZE = 12
 DEFAULT_PADDING_PERCENT = 0.05
 
-DIMENSION_MIN = 0.1
-DIMENSION_STEP = 0.05
+DIMENSION_MIN_IN = 0.1
+DIMENSION_STEP_IN = 0.05
 MAX_WIDTH_IN = 8.0
 MAX_HEIGHT_IN = 10.0
-DEFAULT_WIDTH_IN = 1.0
-DEFAULT_HEIGHT_IN = 2.0
+DEFAULT_WIDTH_IN = 3.25
+DEFAULT_HEIGHT_IN = 2.25
+
+DIMENSION_MIN_CM = 0.3
+DIMENSION_STEP_CM = 0.1
+MAX_WIDTH_CM = 20.3
+MAX_HEIGHT_CM = 25.4
+DEFAULT_WIDTH_CM = 8.3
+DEFAULT_HEIGHT_CM = 5.7
+
+CM_TO_INCHES = 0.393701
+INCHES_TO_CM = 2.54
 
 DIMENSION_DECIMAL_PLACES = 2
 BORDER_GRAY_VALUE = 0.8
@@ -353,20 +363,46 @@ def get_dimensions_config() -> tuple[float, float, bool]:
         to rotate text.
     """
     st.sidebar.subheader("Label Dimensions")
-    width_in = st.sidebar.number_input(
-        "Width (inches)",
-        min_value=DIMENSION_MIN,
-        max_value=MAX_WIDTH_IN,
-        value=DEFAULT_WIDTH_IN,
-        step=DIMENSION_STEP,
+
+    unit_system = st.sidebar.radio(
+        "Units", ["Imperial (inches)", "Metric (cm)"], horizontal=True
     )
-    height_in = st.sidebar.number_input(
-        "Height (inches)",
-        min_value=DIMENSION_MIN,
-        max_value=MAX_HEIGHT_IN,
-        value=DEFAULT_HEIGHT_IN,
-        step=DIMENSION_STEP,
-    )
+
+    is_metric = unit_system == "Metric (cm)"
+
+    if is_metric:
+        width_display = st.sidebar.number_input(
+            "Width (cm)",
+            min_value=DIMENSION_MIN_CM,
+            max_value=MAX_WIDTH_CM,
+            value=DEFAULT_WIDTH_CM,
+            step=DIMENSION_STEP_CM,
+        )
+        height_display = st.sidebar.number_input(
+            "Height (cm)",
+            min_value=DIMENSION_MIN_CM,
+            max_value=MAX_HEIGHT_CM,
+            value=DEFAULT_HEIGHT_CM,
+            step=DIMENSION_STEP_CM,
+        )
+        width_in = width_display * CM_TO_INCHES
+        height_in = height_display * CM_TO_INCHES
+    else:
+        width_in = st.sidebar.number_input(
+            "Width (inches)",
+            min_value=DIMENSION_MIN_IN,
+            max_value=MAX_WIDTH_IN,
+            value=DEFAULT_WIDTH_IN,
+            step=DIMENSION_STEP_IN,
+        )
+        height_in = st.sidebar.number_input(
+            "Height (inches)",
+            min_value=DIMENSION_MIN_IN,
+            max_value=MAX_HEIGHT_IN,
+            value=DEFAULT_HEIGHT_IN,
+            step=DIMENSION_STEP_IN,
+        )
+
     rotate_text = False
     if height_in > width_in:
         rotate_text = st.sidebar.checkbox(
