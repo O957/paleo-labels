@@ -55,6 +55,98 @@ def load_toml(uploaded_file: UploadedFile) -> dict:
     return config
 
 
+def calculate_optimal_font_size(
+    lines: list[str],
+    canvas_obj: canvas.Canvas,
+    font_name: str,
+    available_width: float,
+    available_height: float,
+) -> float:
+    """
+    Calculate the largest font size that fits all text
+    within available space using direct mathematical scaling.
+    """
+    if not lines:
+        return 12
+
+    reference_font_size = 12
+
+    max_text_width = max(
+        canvas_obj.stringWidth(line, font_name, reference_font_size)
+        for line in lines
+    )
+    total_text_height = len(lines) * reference_font_size
+
+    width_scale = (
+        available_width / max_text_width
+        if max_text_width > 0
+        else float("inf")
+    )
+    height_scale = (
+        available_height / total_text_height
+        if total_text_height > 0
+        else float("inf")
+    )
+
+    optimal_scale = min(width_scale, height_scale)
+    optimal_font_size = reference_font_size * optimal_scale
+
+    return max(min(optimal_font_size, 72), 4)
+
+
+def draw_rotated_text(
+    canvas_obj: canvas.Canvas,
+    lines: list[str],
+    font_size: float,
+    label_x_offset: float,
+    label_y_offset: float,
+    label_width_pt: float,
+    label_height_pt: float,
+    effective_width: float,
+    effective_height: float,
+    padding_x: float,
+    padding_y: float,
+) -> None:
+    """Draw text rotated 90 degrees clockwise."""
+    canvas_obj.saveState()
+    canvas_obj.translate(
+        label_x_offset + label_width_pt / 2,
+        label_y_offset + label_height_pt / 2,
+    )
+    canvas_obj.rotate(90)
+    text_start_x = -effective_width / 2 + padding_x
+    text_start_y = effective_height / 2 - padding_y - font_size
+
+    y_position = text_start_y
+    for line in lines:
+        if y_position >= -effective_height / 2 + padding_y:
+            canvas_obj.drawString(text_start_x, y_position, line)
+            y_position -= font_size
+
+    canvas_obj.restoreState()
+
+
+def draw_normal_text(
+    canvas_obj: canvas.Canvas,
+    lines: list[str],
+    font_size: float,
+    label_x_offset: float,
+    label_y_offset: float,
+    label_height_pt: float,
+    padding_x: float,
+    padding_y: float,
+) -> None:
+    """Draw text in normal orientation."""
+    text_start_x = label_x_offset + padding_x
+    text_start_y = label_y_offset + label_height_pt - padding_y - font_size
+
+    y_position = text_start_y
+    for line in lines:
+        if y_position >= label_y_offset + padding_y:
+            canvas_obj.drawString(text_start_x, y_position, line)
+            y_position -= font_size
+
+
 def generate_label_pdf(
     label_data: dict,
     style: dict,
@@ -63,34 +155,12 @@ def generate_label_pdf(
     rotate_text: bool = False,
 ) -> bytes:
     """
-    Generate a printable PDF for a label from provided
-    data and optional style settings. The font size is
-    automatically calculated to fit exactly within the
-    specified dimensions with proper padding.
-
-    Parameters
-    ----------
-    label_data : dict
-        Dictionary of header-value pairs for the label.
-    style : dict
-        Optional style settings (e.g., font_name,
-        font_size, padding_percent) loaded from a TOML.
-        Note: dimensions take precedence over font_size.
-    width_in : float, optional
-        Width of the label in inches.
-    height_in : float, optional
-        Height of the label in inches.
-
-    Returns
-    -------
-    bytes
-        Raw bytes of the generated PDF file.
-    """
+    Generate a printable PDF for a label with automatic
+    font sizing."""
     buffer = BytesIO()
 
     page_width_pt = 8.5 * 72
     page_height_pt = 11 * 72
-
     label_width_pt = width_in * 72
     label_height_pt = height_in * 72
 
@@ -98,66 +168,18 @@ def generate_label_pdf(
 
     label_x_offset = 18
     label_y_offset = page_height_pt - 18 - label_height_pt
-
     font_name = style.get("font_name", "Helvetica")
     padding_percent = style.get("padding_percent", 0.05)
 
-    if rotate_text:
-        effective_width = label_height_pt
-        effective_height = label_width_pt
-    else:
-        effective_width = label_width_pt
-        effective_height = label_height_pt
+    effective_width = label_height_pt if rotate_text else label_width_pt
+    effective_height = label_width_pt if rotate_text else label_height_pt
 
     padding_x = effective_width * padding_percent
     padding_y = effective_height * padding_percent
-
     available_width = effective_width - 2 * padding_x
     available_height = effective_height - 2 * padding_y
 
     lines = [f"{key}: {value}" for key, value in label_data.items()]
-
-    if not lines:
-        c.rect(
-            label_x_offset,
-            label_y_offset,
-            label_width_pt,
-            label_height_pt,
-            stroke=1,
-            fill=0,
-        )
-        c.showPage()
-        c.save()
-        pdf_bytes = buffer.getvalue()
-        buffer.close()
-        return pdf_bytes
-
-    min_font_size = 4
-    max_font_size = 72
-    optimal_font_size = min_font_size
-
-    low, high = min_font_size, max_font_size
-
-    while high - low > 0.05:
-        test_font_size = (low + high) / 2
-
-        max_text_width = max(
-            c.stringWidth(line, font_name, test_font_size) for line in lines
-        )
-
-        line_height = test_font_size
-        total_text_height = len(lines) * line_height
-
-        fits_width = max_text_width <= available_width
-        fits_height = total_text_height <= available_height
-
-        if fits_width and fits_height:
-            optimal_font_size = test_font_size
-            low = test_font_size
-        else:
-            high = test_font_size
-
-    font_size = max(optimal_font_size, min_font_size)
 
     c.setStrokeColorRGB(0.8, 0.8, 0.8)
     c.rect(
@@ -169,35 +191,45 @@ def generate_label_pdf(
         fill=0,
     )
 
+    if not lines:
+        c.showPage()
+        c.save()
+        pdf_bytes = buffer.getvalue()
+        buffer.close()
+        return pdf_bytes
+
+    font_size = calculate_optimal_font_size(
+        lines, c, font_name, available_width, available_height
+    )
+
     c.setFont(font_name, font_size)
     c.setFillColorRGB(0, 0, 0)
 
     if rotate_text:
-        c.saveState()
-        c.translate(
-            label_x_offset + label_width_pt / 2,
-            label_y_offset + label_height_pt / 2,
+        draw_rotated_text(
+            c,
+            lines,
+            font_size,
+            label_x_offset,
+            label_y_offset,
+            label_width_pt,
+            label_height_pt,
+            effective_width,
+            effective_height,
+            padding_x,
+            padding_y,
         )
-        c.rotate(90)
-        text_start_x = -effective_width / 2 + padding_x
-        text_start_y = effective_height / 2 - padding_y - font_size
     else:
-        text_start_x = label_x_offset + padding_x
-        text_start_y = label_y_offset + label_height_pt - padding_y - font_size
-
-    y_position = text_start_y
-    for line in lines:
-        if rotate_text:
-            bounds_check = y_position >= -effective_height / 2 + padding_y
-        else:
-            bounds_check = y_position >= label_y_offset + padding_y
-
-        if bounds_check:
-            c.drawString(text_start_x, y_position, line)
-            y_position -= font_size
-
-    if rotate_text:
-        c.restoreState()
+        draw_normal_text(
+            c,
+            lines,
+            font_size,
+            label_x_offset,
+            label_y_offset,
+            label_height_pt,
+            padding_x,
+            padding_y,
+        )
 
     c.showPage()
     c.save()
@@ -288,12 +320,14 @@ def get_style_config() -> dict:
 
 def get_dimensions_config() -> tuple[float, float, bool]:
     """
-    Render sidebar UI to get label dimensions and rotation option.
+    Render sidebar UI to get label dimensions and rotation
+    option.
 
     Returns
     -------
     tuple[float, float, bool]
-        Width, height of the label in inches, and whether to rotate text.
+        Width, height of the label in inches, and whether
+        to rotate text.
     """
     st.sidebar.subheader("Label Dimensions")
     width_in = st.sidebar.number_input(
@@ -305,7 +339,7 @@ def get_dimensions_config() -> tuple[float, float, bool]:
     rotate_text = False
     if height_in > width_in:
         rotate_text = st.sidebar.checkbox(
-            "Rotate text to fit better", value=False
+            "Rotate Label (For Better Fit)", value=False
         )
     return width_in, height_in, rotate_text
 
@@ -332,7 +366,7 @@ def display_preview_and_download(
     height_in : float
         Height of the label in inches.
     """
-    st.title("Specimen(s) Label Maker")
+    st.title("Label Maker")
     if label_config:
         st.subheader("Preview")
         for k, v in label_config.items():
@@ -352,7 +386,8 @@ def display_preview_and_download(
         )
     else:
         st.info(
-            "Please provide label data via TOML upload or manual entry in "
+            "Please provide label data via TOML upload "
+            "or manual entry in "
             "the sidebar."
         )
 
