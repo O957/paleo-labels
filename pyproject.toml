@@ -2,7 +2,7 @@
 name = "paleo-labels"
 version = "0.0.1"
 authors = [
-  {name = "AFg6K7h4fhy2", email = "127630341+AFg6K7h4fhy2@users.noreply.github.com"},
+  {name = "O957", email = "127630341+O957@users.noreply.github.com"},
 ]
 description = "paleo-labels is a package for writing precisely formatted labels for natural specimens and related items, such as collections and excursions."
 readme = "README.md"
@@ -17,9 +17,9 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/AFg6K7h4fhy2/paleo-labels"
-Issues = "https://github.com/AFg6K7h4fhy2/paleo-labels/issues"
-"Author GitHub" = "https://github.com/AFg6K7h4fhy2/"
+Repository = "https://github.com/O957/paleo-labels"
+Issues = "https://github.com/O957/paleo-labels/issues"
+"Author GitHub" = "https://github.com/O957/"
 
 [tool.ty.environment]
 root = ["./paleo_labels"]
