@@ -151,7 +151,7 @@ repos:
         args: [
             # threshold for the average complexity
             # (across all the codebase).
-            "--max-absolute=C",
+            "--max-absolute=B",
             # threshold for modules complexity.
             "--max-modules=B",
             # absolute threshold for block complexity.
