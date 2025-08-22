@@ -818,8 +818,7 @@ def display_preview_and_download(
         )
     else:
         st.info(
-            "Please provide label data via TOML upload "
-            "or manual entry in "
+            "Please provide label data via TOML upload or manual entry in "
             "the sidebar."
         )
 
