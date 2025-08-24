@@ -496,6 +496,106 @@ def init_logging() -> logging.Logger:
     return logging.getLogger(__name__)
 
 
+def swap_rows(i: int, direction: int) -> None:
+    """Swap row i with row i+direction."""
+    target = i + direction
+    key_temp = st.session_state[f"key_{i}"]
+    value_temp = st.session_state[f"value_{i}"]
+    st.session_state[f"key_{i}"] = st.session_state[f"key_{target}"]
+    st.session_state[f"value_{i}"] = st.session_state[f"value_{target}"]
+    st.session_state[f"key_{target}"] = key_temp
+    st.session_state[f"value_{target}"] = value_temp
+    st.rerun()
+
+
+def render_row_controls(i: int) -> None:
+    """Render up/down arrow controls for row i."""
+    move_cols = st.columns(2)
+    if move_cols[0].button("↑", key=f"up_{i}", help="Move up") and i > 0:
+        swap_rows(i, -1)
+    if (
+        move_cols[1].button("↓", key=f"down_{i}", help="Move down")
+        and i < st.session_state.num_rows - 1
+    ):
+        swap_rows(i, 1)
+
+
+def render_manual_entry_row(i: int) -> None:
+    """Render a single manual entry row."""
+    cols = st.columns([1, 4, 4])
+    st.session_state.setdefault(f"key_{i}", "")
+    st.session_state.setdefault(f"value_{i}", "")
+
+    with cols[0]:
+        render_row_controls(i)
+
+    k = cols[1].text_input(
+        f"Field {i + 1} Key",
+        value=st.session_state[f"key_{i}"],
+        key=f"field_key_{i}",
+    )
+    v = cols[2].text_input(
+        f"Field {i + 1} Value",
+        value=st.session_state[f"value_{i}"],
+        key=f"field_value_{i}",
+    )
+    st.session_state[f"key_{i}"] = k
+    st.session_state[f"value_{i}"] = v
+
+
+def get_label_source_config() -> tuple[dict, dict]:
+    """Handle label source file uploads."""
+    source = st.selectbox(
+        "Upload Type",
+        ["Upload Label File", "Upload Label Folder"],
+        key="label_source_dropdown",
+    )
+
+    label_config: dict = {}
+    combo_style_config: dict = {}
+
+    if source == "Upload Label File":
+        uploaded = st.file_uploader(
+            "Upload Label TOML", type=["toml"], key="label_file"
+        )
+        if uploaded:
+            label_config = load_toml(uploaded)
+    else:
+        st.info("Folder upload functionality coming soon!")
+
+    uploaded_style = st.file_uploader(
+        "Upload Label Style TOML", type=["toml"], key="style_file"
+    )
+    if uploaded_style:
+        combo_style_config = load_toml(uploaded_style)
+
+    return label_config, combo_style_config
+
+
+def get_manual_entry_config() -> dict:
+    """Handle manual entry of label data."""
+    if "num_rows" not in st.session_state:
+        st.session_state.num_rows = 1
+
+    row_cols = st.columns(2)
+    if row_cols[0].button("Add Row"):
+        st.session_state.num_rows += 1
+    if row_cols[1].button("Remove Row") and st.session_state.num_rows > 1:
+        st.session_state.num_rows -= 1
+
+    for i in range(st.session_state.num_rows):
+        render_manual_entry_row(i)
+
+    manual_config: dict = {}
+    for i in range(st.session_state.num_rows):
+        k = st.session_state.get(f"key_{i}", "").strip()
+        v = st.session_state.get(f"value_{i}", "").strip()
+        if k:
+            manual_config[k] = v
+
+    return manual_config
+
+
 def get_label_config() -> tuple[dict, dict]:
     """
     Render sidebar UI to obtain label data either from
@@ -509,60 +609,10 @@ def get_label_config() -> tuple[dict, dict]:
     st.sidebar.title("Options")
 
     with st.sidebar.expander("Label Source", expanded=True):
-        source = st.selectbox(
-            "Upload Type",
-            ["Upload Label File", "Upload Label Folder"],
-            key="label_source_dropdown",
-        )
-
-        label_config: dict = {}
-        combo_style_config: dict = {}
-
-        if source == "Upload Label File":
-            uploaded = st.file_uploader(
-                "Upload Label TOML", type=["toml"], key="label_file"
-            )
-            if uploaded:
-                label_config = load_toml(uploaded)
-        else:  # Upload Label Folder
-            st.info("Folder upload functionality coming soon!")
-
-        uploaded_style = st.file_uploader(
-            "Upload Label Style TOML", type=["toml"], key="style_file"
-        )
-        if uploaded_style:
-            combo_style_config = load_toml(uploaded_style)
+        label_config, combo_style_config = get_label_source_config()
 
     with st.sidebar.expander("Manual Entry", expanded=False):
-        if "num_rows" not in st.session_state:
-            st.session_state.num_rows = 1
-        if st.button("Add Row"):
-            st.session_state.num_rows += 1
-
-        manual_config: dict = {}
-        for i in range(st.session_state.num_rows):
-            cols = st.columns(2)
-            st.session_state.setdefault(f"key_{i}", "")
-            st.session_state.setdefault(f"value_{i}", "")
-            k = cols[0].text_input(
-                f"Field {i + 1} Key",
-                value=st.session_state[f"key_{i}"],
-                key=f"field_key_{i}",
-            )
-            v = cols[1].text_input(
-                f"Field {i + 1} Value",
-                value=st.session_state[f"value_{i}"],
-                key=f"field_value_{i}",
-            )
-            st.session_state[f"key_{i}"] = k
-            st.session_state[f"value_{i}"] = v
-
-        for i in range(st.session_state.num_rows):
-            k = st.session_state.get(f"key_{i}", "").strip()
-            v = st.session_state.get(f"value_{i}", "").strip()
-            if k:
-                manual_config[k] = v
-
+        manual_config = get_manual_entry_config()
         if manual_config:
             label_config.update(manual_config)
 
