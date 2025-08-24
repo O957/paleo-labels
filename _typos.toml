@@ -12,6 +12,7 @@ O957 = "O957"
 dot_acn = ".acn"
 dot_fot = ".fot"
 dot_ist = ".ist"
+MOR = "MOR"
 
 [files]
 extend-exclude = [".gitignore", ".pre-commit-config.yaml", "./.github/ISSUE_TEMPLATE/general_issue.md"]
