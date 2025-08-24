@@ -2,102 +2,24 @@
 name = "paleo-labels"
 version = "0.0.1"
 authors = [
-  {name = "AFg6K7h4fhy2", email = "127630341+AFg6K7h4fhy2@users.noreply.github.com"},
+  {name = "O957", email = "127630341+O957@users.noreply.github.com"},
 ]
-description = "paleo-labels is an application for writing precisely formatted labels singularly or in bulk for use with paleontological specimens, collections, and excursions."
+description = "paleo-labels is a package for writing precisely formatted labels for natural specimens and related items, such as collections and excursions."
 readme = "README.md"
 license = "Apache-2.0"
 keywords = ["python", "geology", "paleontology", "chronostratigraphy", "package"]
 requires-python = ">=3.13"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [
-    "altair==5.5.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "appnope==0.1.4 ; python_full_version >= '3.12' and python_full_version < '4.0' and sys_platform == 'darwin'",
-    "asttokens==3.0.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "attrs==24.3.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "blinker==1.9.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "cachetools==5.5.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "certifi==2025.4.26 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "cffi==1.17.1 ; python_full_version >= '3.12' and python_full_version < '4.0' and implementation_name == 'pypy'",
-    "cfgv==3.4.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "charset-normalizer==3.4.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "click==8.2.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "colorama==0.4.6 ; python_full_version >= '3.12' and python_full_version < '4.0' and sys_platform == 'win32'",
-    "comm==0.2.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "contourpy==1.3.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "cycler==0.12.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "debugpy==1.8.14 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "decorator==5.2.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "distlib==0.3.9 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "executing==2.2.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "filelock==3.16.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "fonttools==4.58.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "gitdb==4.0.12 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "gitpython==3.1.44 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "identify==2.6.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "idna==3.10 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "ipykernel==6.29.5 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "ipython==9.2.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "ipython-pygments-lexers==1.1.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "jedi==0.19.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "jinja2==3.1.6 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "jsonschema==4.23.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "jsonschema-specifications==2025.4.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "jupyter-client==8.6.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "jupyter-core==5.7.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "kiwisolver==1.4.8 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "markupsafe==3.0.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "matplotlib==3.10.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "matplotlib-inline==0.1.7 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "narwhals==1.39.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "nest-asyncio==1.6.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "nodeenv==1.9.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "numpy==2.2.5 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "packaging==24.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pandas==2.2.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "parso==0.8.4 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pexpect==4.9.0 ; python_full_version >= '3.12' and python_full_version < '4.0' and sys_platform != 'emscripten' and sys_platform != 'win32'",
-    "pillow==11.2.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "platformdirs==4.3.6 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pre-commit==3.8.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "prompt-toolkit==3.0.51 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "protobuf==6.30.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "psutil==7.0.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "ptyprocess==0.7.0 ; python_full_version >= '3.12' and python_full_version < '4.0' and sys_platform != 'emscripten' and sys_platform != 'win32'",
-    "pure-eval==0.2.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pyarrow==20.0.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pycparser==2.22 ; python_full_version >= '3.12' and python_full_version < '4.0' and implementation_name == 'pypy'",
-    "pydeck==0.9.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pygments==2.19.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pyparsing==3.2.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "python-dateutil==2.9.0.post0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pytz==2025.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pywin32==310 ; python_full_version >= '3.12' and python_full_version < '4.0' and platform_python_implementation != 'PyPy' and sys_platform == 'win32'",
-    "pyyaml==6.0.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "pyzmq==26.4.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "referencing==0.36.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "requests==2.32.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "rpds-py==0.24.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "six==1.17.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "smmap==5.0.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "stack-data==0.6.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "streamlit==1.45.1 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "tenacity==9.1.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "toml==0.10.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "tornado==6.4.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "traitlets==5.14.3 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "typing-extensions==4.13.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "tzdata==2025.2 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "urllib3==2.4.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "virtualenv==20.27.0 ; python_full_version >= '3.12' and python_full_version < '4.0'",
-    "watchdog==6.0.0 ; python_full_version >= '3.12' and python_full_version < '4.0' and sys_platform != 'darwin'",
-    "wcwidth==0.2.13 ; python_full_version >= '3.12' and python_full_version < '4.0'",
+    "reportlab>=4.4.3",
+    "streamlit>=1.45.1",
+    "toml>=0.10.2",
 ]
 
 [project.urls]
-Repository = "https://github.com/AFg6K7h4fhy2/paleo-labels"
-Issues = "https://github.com/AFg6K7h4fhy2/paleo-labels/issues"
-"Author GitHub" = "https://github.com/AFg6K7h4fhy2/"
+Repository = "https://github.com/O957/paleo-labels"
+Issues = "https://github.com/O957/paleo-labels/issues"
+"Author GitHub" = "https://github.com/O957/"
 
-[tool.ruff.lint.mccabe]
-max-complexity = 15
+[tool.ty.environment]
+root = ["./paleo_labels"]

@@ -1,0 +1,46 @@
+###############################################################################
+# OVERVIEW
+###############################################################################
+# The following indicates if there inadequate Python types.
+#
+# Description:
+#
+# This runs `ty check` on every push to main and on every pull
+# request. This action fails if ty finds inadequacies with Python types.
+#
+# Links:
+#
+# ty: https://docs.astral.sh/ty/
+###############################################################################
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+name: ty-check.yaml
+
+permissions: read-all
+
+jobs:
+  check:
+    name: ty-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install Project Dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Install & Run ty
+        run: |
+          uvx ty check
