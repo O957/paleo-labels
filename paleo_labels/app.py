@@ -619,9 +619,16 @@ def get_label_config() -> tuple[dict, dict]:
     return label_config, combo_style_config
 
 
-def get_style_config_ui() -> tuple[dict, float, float, bool]:
+def get_style_config_ui(
+    uploaded_style: dict = None,
+) -> tuple[dict, float, float, bool]:
     """
     Render sidebar UI for comprehensive label styling options.
+
+    Parameters
+    ----------
+    uploaded_style : dict, optional
+        Uploaded style configuration to use as defaults.
 
     Returns
     -------
@@ -630,7 +637,15 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
         height in inches, and rotation flag.
     """
     with st.sidebar.expander("Manual Label Styling", expanded=False):
+        if uploaded_style is None:
+            uploaded_style = {}
+
         st.subheader("Dimensions")
+
+        default_width_in = uploaded_style.get("width_inches", DEFAULT_WIDTH_IN)
+        default_height_in = uploaded_style.get(
+            "height_inches", DEFAULT_HEIGHT_IN
+        )
 
         unit_system = st.radio(
             "Units",
@@ -646,7 +661,7 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
                 "Width (cm)",
                 min_value=DIMENSION_MIN_CM,
                 max_value=MAX_WIDTH_CM,
-                value=DEFAULT_WIDTH_CM,
+                value=default_width_in * INCHES_TO_CM,
                 step=DIMENSION_STEP_CM,
                 key="style_width_cm",
             )
@@ -654,7 +669,7 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
                 "Height (cm)",
                 min_value=DIMENSION_MIN_CM,
                 max_value=MAX_HEIGHT_CM,
-                value=DEFAULT_HEIGHT_CM,
+                value=default_height_in * INCHES_TO_CM,
                 step=DIMENSION_STEP_CM,
                 key="style_height_cm",
             )
@@ -665,7 +680,7 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
                 "Width (inches)",
                 min_value=DIMENSION_MIN_IN,
                 max_value=MAX_WIDTH_IN,
-                value=DEFAULT_WIDTH_IN,
+                value=default_width_in,
                 step=DIMENSION_STEP_IN,
                 key="style_width_in",
             )
@@ -673,18 +688,22 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
                 "Height (inches)",
                 min_value=DIMENSION_MIN_IN,
                 max_value=MAX_HEIGHT_IN,
-                value=DEFAULT_HEIGHT_IN,
+                value=default_height_in,
                 step=DIMENSION_STEP_IN,
                 key="style_height_in",
             )
 
         st.subheader("Layout")
+        default_padding = int(
+            uploaded_style.get("padding_percent", DEFAULT_PADDING_PERCENT)
+            * 100
+        )
         padding_percent = (
             st.slider(
                 "Padding %",
                 min_value=0,
                 max_value=20,
-                value=5,
+                value=default_padding,
                 step=1,
                 key="style_padding",
             )
@@ -700,45 +719,84 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
             )
 
         st.subheader("Typography")
+        default_font = uploaded_style.get("font_name", "Helvetica")
+        font_options = ["Helvetica", "Times-Roman", "Courier"]
+        font_index = (
+            font_options.index(default_font)
+            if default_font in font_options
+            else 0
+        )
         font_name = st.selectbox(
             "Font Family",
-            ["Helvetica", "Times-Roman", "Courier"],
-            index=0,
+            font_options,
+            index=font_index,
             key="style_font",
         )
 
         col1, col2 = st.columns(2)
         with col1:
             st.write("**Keys**")
-            bold_keys = st.checkbox("Bold", value=False, key="style_bold_keys")
-            italic_keys = st.checkbox(
-                "Italic", value=False, key="style_italic_keys"
+            bold_keys = st.checkbox(
+                "Bold",
+                value=uploaded_style.get("bold_keys", False),
+                key="style_bold_keys",
             )
-            show_keys = st.checkbox("Show", value=True, key="style_show_keys")
+            italic_keys = st.checkbox(
+                "Italic",
+                value=uploaded_style.get("italic_keys", False),
+                key="style_italic_keys",
+            )
+            show_keys = st.checkbox(
+                "Show",
+                value=uploaded_style.get("show_keys", True),
+                key="style_show_keys",
+            )
 
         with col2:
             st.write("**Values**")
             bold_values = st.checkbox(
-                "Bold", value=False, key="style_bold_values"
+                "Bold",
+                value=uploaded_style.get("bold_values", False),
+                key="style_bold_values",
             )
             italic_values = st.checkbox(
-                "Italic", value=False, key="style_italic_values"
+                "Italic",
+                value=uploaded_style.get("italic_values", False),
+                key="style_italic_values",
             )
             show_values = st.checkbox(
-                "Show", value=True, key="style_show_values"
+                "Show",
+                value=uploaded_style.get("show_values", True),
+                key="style_show_values",
             )
+
+        def rgb_to_hex(r, g, b):
+            return f"#{int(r * 255):02x}{int(g * 255):02x}{int(b * 255):02x}"
+
+        default_key_color = rgb_to_hex(
+            uploaded_style.get("key_color_r", 0.0),
+            uploaded_style.get("key_color_g", 0.0),
+            uploaded_style.get("key_color_b", 0.0),
+        )
+        default_value_color = rgb_to_hex(
+            uploaded_style.get("value_color_r", 0.0),
+            uploaded_style.get("value_color_g", 0.0),
+            uploaded_style.get("value_color_b", 0.0),
+        )
 
         st.subheader("Colors")
         col1, col2 = st.columns(2)
         with col1:
             st.write("**Key Color**")
             key_color = st.color_picker(
-                "Key Color", value="#000000", key="style_key_color"
+                "Key Color", value=default_key_color, key="style_key_color"
             )
         with col2:
             st.write("**Value Color**")
             value_color = st.color_picker(
-                "Value Color", value="#000000", key="style_value_color"
+                "Value Color",
+                value=default_value_color,
+                key="style_value_color",
             )
 
         def hex_to_rgb(hex_color):
@@ -891,14 +949,21 @@ def main() -> None:
 
     label_cfg, combo_style_cfg = get_label_config()
 
-    ui_style_cfg, width_in, height_in, rotate_text = get_style_config_ui()
-
     style_file_path = "label_styles/label_style_01.toml"
     file_style_cfg = load_label_style_from_file(style_file_path)
 
-    final_style = {**file_style_cfg, **ui_style_cfg}
+    merged_uploaded_style = {**file_style_cfg}
+    if combo_style_cfg:
+        merged_uploaded_style = {**merged_uploaded_style, **combo_style_cfg}
+
+    ui_style_cfg, width_in, height_in, rotate_text = get_style_config_ui(
+        merged_uploaded_style
+    )
+
+    final_style = {**file_style_cfg}
     if combo_style_cfg:
         final_style = {**final_style, **combo_style_cfg}
+    final_style = {**final_style, **ui_style_cfg}
 
     display_preview_and_download(
         label_cfg, final_style, width_in, height_in, rotate_text
