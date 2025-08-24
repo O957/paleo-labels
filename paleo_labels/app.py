@@ -620,7 +620,7 @@ def get_label_config() -> tuple[dict, dict]:
 
 
 def get_style_config_ui(
-    uploaded_style: dict = None,
+    uploaded_style: dict | None = None,
 ) -> tuple[dict, float, float, bool]:
     """
     Render sidebar UI for comprehensive label styling options.
