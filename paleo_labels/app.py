@@ -496,33 +496,52 @@ def init_logging() -> logging.Logger:
     return logging.getLogger(__name__)
 
 
-def get_label_config() -> dict:
+def get_label_config() -> tuple[dict, dict]:
     """
     Render sidebar UI to obtain label data either from
     a TOML upload or manual entry.
 
     Returns
     -------
-    dict
-        Collected label key-value pairs.
+    tuple[dict, dict]
+        Tuple of (label config, combo style config).
     """
     st.sidebar.title("Options")
-    source = st.sidebar.radio("Label Source", ["Upload TOML", "Manual Entry"])
-    label_config: dict = {}
 
-    if source == "Upload TOML":
-        uploaded = st.sidebar.file_uploader(
-            "Upload Label TOML", type=["toml"], key="label_file"
+    with st.sidebar.expander("Label Source", expanded=True):
+        source = st.selectbox(
+            "Upload Type",
+            ["Upload Label File", "Upload Label Folder"],
+            key="label_source_dropdown",
         )
-        if uploaded:
-            label_config = load_toml(uploaded)
-    else:
+
+        label_config: dict = {}
+        combo_style_config: dict = {}
+
+        if source == "Upload Label File":
+            uploaded = st.file_uploader(
+                "Upload Label TOML", type=["toml"], key="label_file"
+            )
+            if uploaded:
+                label_config = load_toml(uploaded)
+        else:  # Upload Label Folder
+            st.info("Folder upload functionality coming soon!")
+
+        uploaded_style = st.file_uploader(
+            "Upload Label Style TOML", type=["toml"], key="style_file"
+        )
+        if uploaded_style:
+            combo_style_config = load_toml(uploaded_style)
+
+    with st.sidebar.expander("Manual Entry", expanded=False):
         if "num_rows" not in st.session_state:
             st.session_state.num_rows = 1
-        if st.sidebar.button("Add Row"):
+        if st.button("Add Row"):
             st.session_state.num_rows += 1
+
+        manual_config: dict = {}
         for i in range(st.session_state.num_rows):
-            cols = st.sidebar.columns(2)
+            cols = st.columns(2)
             st.session_state.setdefault(f"key_{i}", "")
             st.session_state.setdefault(f"value_{i}", "")
             k = cols[0].text_input(
@@ -537,30 +556,17 @@ def get_label_config() -> dict:
             )
             st.session_state[f"key_{i}"] = k
             st.session_state[f"value_{i}"] = v
+
         for i in range(st.session_state.num_rows):
             k = st.session_state.get(f"key_{i}", "").strip()
             v = st.session_state.get(f"value_{i}", "").strip()
             if k:
-                label_config[k] = v
-    return label_config
+                manual_config[k] = v
 
+        if manual_config:
+            label_config.update(manual_config)
 
-def get_style_config() -> dict:
-    """
-    Render sidebar UI to optionally upload a style TOML.
-
-    Returns
-    -------
-    dict
-        Parsed style configuration or empty.
-    """
-    style_config: dict = {}
-    uploaded = st.sidebar.file_uploader(
-        "Upload Style TOML (Optional)", type=["toml"], key="style_file"
-    )
-    if uploaded:
-        style_config = load_toml(uploaded)
-    return style_config
+    return label_config, combo_style_config
 
 
 def get_style_config_ui() -> tuple[dict, float, float, bool]:
@@ -573,7 +579,7 @@ def get_style_config_ui() -> tuple[dict, float, float, bool]:
         Tuple containing style configuration dictionary, width in inches,
         height in inches, and rotation flag.
     """
-    with st.sidebar.expander("Label Styling", expanded=False):
+    with st.sidebar.expander("Manual Label Styling", expanded=False):
         st.subheader("Dimensions")
 
         unit_system = st.radio(
@@ -833,8 +839,7 @@ def main() -> None:
     logger = init_logging()
     start = time.time()
 
-    label_cfg = get_label_config()
-    uploaded_style_cfg = get_style_config()
+    label_cfg, combo_style_cfg = get_label_config()
 
     ui_style_cfg, width_in, height_in, rotate_text = get_style_config_ui()
 
@@ -842,8 +847,8 @@ def main() -> None:
     file_style_cfg = load_label_style_from_file(style_file_path)
 
     final_style = {**file_style_cfg, **ui_style_cfg}
-    if uploaded_style_cfg:
-        final_style = {**final_style, **uploaded_style_cfg}
+    if combo_style_cfg:
+        final_style = {**final_style, **combo_style_cfg}
 
     display_preview_and_download(
         label_cfg, final_style, width_in, height_in, rotate_text
