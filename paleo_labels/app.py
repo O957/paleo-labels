@@ -20,7 +20,12 @@ from reportlab.pdfgen import canvas
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 try:
-    from .autocomplete import initialize_autocomplete_engine, render_autocomplete_text_input, render_smart_suggestions_panel, show_autocomplete_stats
+    from .autocomplete import (
+        initialize_autocomplete_engine,
+        render_autocomplete_text_input,
+        render_smart_suggestions_panel,
+        show_autocomplete_stats,
+    )
     from .batch import generate_batch_labels_ui
     from .exports import exports_ui
     from .paleobiology import PaleobiologyDatabase
@@ -38,7 +43,12 @@ try:
     from .storage import LabelStorage
     from .templates import templates_ui
 except ImportError:
-    from autocomplete import initialize_autocomplete_engine, render_autocomplete_text_input, render_smart_suggestions_panel, show_autocomplete_stats
+    from autocomplete import (
+        initialize_autocomplete_engine,
+        render_autocomplete_text_input,
+        render_smart_suggestions_panel,
+        show_autocomplete_stats,
+    )
     from batch import generate_batch_labels_ui
     from exports import exports_ui
     from paleobiology import PaleobiologyDatabase
@@ -662,7 +672,7 @@ def render_manual_entry_row(i: int, label_type: str = "General") -> None:
 
     # Initialize auto-completion engine
     autocomplete_engine = initialize_autocomplete_engine()
-    
+
     if field_options and current_key == "":
         k = cols[1].selectbox(
             f"Field {i + 1} Key",
@@ -678,7 +688,7 @@ def render_manual_entry_row(i: int, label_type: str = "General") -> None:
                     value=current_key,
                     key=f"field_key_{i}_v{version}",
                     autocomplete_engine=autocomplete_engine,
-                    field_type="key"
+                    field_type="key",
                 )
         else:
             k = cols[1].text_input(
@@ -696,7 +706,7 @@ def render_manual_entry_row(i: int, label_type: str = "General") -> None:
                 key=f"field_value_{i}_v{version}",
                 autocomplete_engine=autocomplete_engine,
                 field_type="value",
-                related_key=k
+                related_key=k,
             )
     else:
         v = cols[2].text_input(
@@ -900,10 +910,12 @@ def get_manual_entry_config(label_type: str = "General") -> dict:
             v = st.session_state.get(f"value_{i}", "").strip()
             if k and v:
                 current_data[k] = v
-        
+
         if current_data:
             with st.expander("🔮 Smart Suggestions", expanded=False):
-                render_smart_suggestions_panel(current_data, label_type, autocomplete_engine)
+                render_smart_suggestions_panel(
+                    current_data, label_type, autocomplete_engine
+                )
 
     manual_config: dict = {}
     for i in range(st.session_state.num_rows):
@@ -1563,10 +1575,15 @@ def display_preview_and_download(
     with col2:
         app_mode = st.selectbox(
             "Mode:",
-            ["Single Label", "Batch Processing", "Templates", "Advanced Export"],
-            key="app_mode_selector"
+            [
+                "Single Label",
+                "Batch Processing",
+                "Templates",
+                "Advanced Export",
+            ],
+            key="app_mode_selector",
         )
-    
+
     # Handle different modes
     if app_mode == "Batch Processing":
         generate_batch_labels_ui()
@@ -1577,7 +1594,7 @@ def display_preview_and_download(
     elif app_mode == "Advanced Export":
         exports_ui()
         return
-    
+
     # Original single label logic
     if st.session_state.get("show_preview_list"):
         show_database_list(st.session_state.show_preview_list)
@@ -1665,7 +1682,7 @@ def main() -> None:
     if autocomplete_engine:
         with st.sidebar.expander("🤖 Auto-Complete Stats", expanded=False):
             show_autocomplete_stats(autocomplete_engine)
-    
+
     if st.session_state.paleodb.is_available():
         with st.sidebar.expander("Database Info", expanded=False):
             stats = st.session_state.paleodb.get_database_stats()
