@@ -1,0 +1,29 @@
+# Default Label Style Configuration
+# This file sets the default styling for all labels
+
+[dimensions]
+width_inches = 3.25
+height_inches = 2.25
+padding_percent = 0.05
+
+[typography]
+font_name = "Helvetica"
+font_size = 12
+
+[colors]
+# RGB values (0-255)
+key_color_r = 0
+key_color_g = 0
+key_color_b = 0
+
+value_color_r = 0
+value_color_g = 0
+value_color_b = 0
+
+[style]
+bold_keys = true
+italic_keys = false
+bold_values = false
+italic_values = false
+show_keys = true
+show_values = true
