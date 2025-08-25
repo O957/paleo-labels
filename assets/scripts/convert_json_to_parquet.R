@@ -2,7 +2,7 @@
 # the Paleobiology Database into a parquet file.
 #
 # To run:
-# Rscript ./assets/scripts/convert_json_to_parquet.R
+# Rscript convert_json_to_parquet.R (in ./assets/scripts)
 
 library(jsonlite)
 library(arrow)
