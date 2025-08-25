@@ -13,6 +13,7 @@ dot_acn = ".acn"
 dot_fot = ".fot"
 dot_ist = ".ist"
 MOR = "MOR"
+strat = "strat"
 
 [files]
 extend-exclude = [".gitignore", ".pre-commit-config.yaml", "./.github/ISSUE_TEMPLATE/general_issue.md"]
