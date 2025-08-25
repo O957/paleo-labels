@@ -78,7 +78,6 @@ for (i in 1:nrow(time_intervals)) {
     sprintf("pbdb_batch_%02d_%g_%g.json", i, min_ma, max_ma)
   )
 
-
   if (fs::file_exists(batch_file)) {
     message("Batch file exists, loading: ", fs::path_file(batch_file))
     batch_df <- jsonlite::fromJSON(batch_file, flatten = TRUE)
@@ -141,7 +140,6 @@ for (i in 1:nrow(time_intervals)) {
 if (length(all_dfs) > 0) {
   message("Combining ", length(all_dfs), " batches...")
   combined_df <- dplyr::bind_rows(all_dfs)
-
 
   if ("occurrence_no" %in% names(combined_df)) {
     combined_df <- combined_df[!duplicated(combined_df$occurrence_no), ]
