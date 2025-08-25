@@ -895,6 +895,142 @@ def get_dimensions_config() -> tuple[float, float, bool]:
     return width_in, height_in, rotate_text
 
 
+def extract_style_properties(style_config: dict) -> dict:
+    """Extract and convert style properties from config."""
+    font_mapping = {
+        "Helvetica": "Arial, sans-serif",
+        "Times-Roman": "Times, serif",
+        "Courier": "Courier New, monospace",
+    }
+
+    font_name = style_config.get("font_name", "Helvetica")
+    css_font = font_mapping.get(font_name, "Arial, sans-serif")
+
+    # Convert RGB colors to CSS
+    key_r = int(style_config.get("key_color_r", 0.0) * 255)
+    key_g = int(style_config.get("key_color_g", 0.0) * 255)
+    key_b = int(style_config.get("key_color_b", 0.0) * 255)
+    key_color = f"rgb({key_r}, {key_g}, {key_b})"
+
+    value_r = int(style_config.get("value_color_r", 0.0) * 255)
+    value_g = int(style_config.get("value_color_g", 0.0) * 255)
+    value_b = int(style_config.get("value_color_b", 0.0) * 255)
+    value_color = f"rgb({value_r}, {value_g}, {value_b})"
+
+    return {
+        "css_font": css_font,
+        "padding_percent": style_config.get(
+            "padding_percent", DEFAULT_PADDING_PERCENT
+        ),
+        "show_keys": style_config.get("show_keys", True),
+        "show_values": style_config.get("show_values", True),
+        "key_color": key_color,
+        "value_color": value_color,
+        "key_weight": "bold"
+        if style_config.get("bold_keys", False)
+        else "normal",
+        "value_weight": "bold"
+        if style_config.get("bold_values", False)
+        else "normal",
+        "key_style": "italic"
+        if style_config.get("italic_keys", False)
+        else "normal",
+        "value_style": "italic"
+        if style_config.get("italic_values", False)
+        else "normal",
+    }
+
+
+def create_preview_lines(lines: list[str], style_props: dict) -> list[str]:
+    """Create HTML spans for preview lines."""
+    preview_lines = []
+    for line in lines:
+        if ": " in line and (
+            style_props["show_keys"] or style_props["show_values"]
+        ):
+            key_part, value_part = line.split(": ", 1)
+            parts = []
+            if style_props["show_keys"]:
+                key_span = (
+                    f'<span style="color: {style_props["key_color"]}; '
+                    f"font-weight: {style_props['key_weight']}; "
+                    f"font-style: {style_props['key_style']}; "
+                    f'white-space: nowrap;">{key_part}: </span>'
+                )
+                parts.append(key_span)
+            if style_props["show_values"]:
+                value_span = (
+                    f'<span style="color: {style_props["value_color"]}; '
+                    f"font-weight: {style_props['value_weight']}; "
+                    f"font-style: {style_props['value_style']}; "
+                    f'white-space: nowrap;">{value_part}</span>'
+                )
+                parts.append(value_span)
+            preview_lines.append("".join(parts))
+        else:
+            line_span = (
+                f'<span style="color: {style_props["key_color"]}; '
+                f"font-weight: {style_props['key_weight']}; "
+                f'font-style: {style_props["key_style"]};">{line}</span>'
+            )
+            preview_lines.append(line_span)
+    return preview_lines
+
+
+def build_preview_html(
+    preview_lines: list[str],
+    width_in: float,
+    height_in: float,
+    rotate_text: bool,
+    style_props: dict,
+) -> str:
+    """Build the complete preview HTML."""
+    preview_width = width_in * PREVIEW_SCALE
+    preview_height = height_in * PREVIEW_SCALE
+    border_width = max(1, int(PREVIEW_SCALE / POINTS_PER_INCH))
+
+    effective_width = preview_height if rotate_text else preview_width
+    effective_height = preview_width if rotate_text else preview_height
+    padding_x = effective_width * style_props["padding_percent"]
+    padding_y = effective_height * style_props["padding_percent"]
+
+    if rotate_text:
+        transform_style = "transform: rotate(90deg); transform-origin: center;"
+        preview_width, preview_height = preview_height, preview_width
+    else:
+        transform_style = ""
+
+    preview_content = "<br>".join(preview_lines)
+
+    outer_div_style = (
+        f"border: {border_width}px solid #cccccc; "
+        f"width: {preview_width}px; height: {preview_height}px; "
+        f"margin: 20px auto; background-color: white; "
+        f"position: relative; overflow: hidden; box-sizing: border-box; "
+        f"{transform_style}"
+    )
+
+    inner_div_style = (
+        f"position: absolute; top: {padding_y}px; left: {padding_x}px; "
+        f"width: {effective_width - 2 * padding_x}px; "
+        f"height: {effective_height - 2 * padding_y}px; "
+        f"font-family: {style_props['css_font']}; "
+        f"font-size: {PREVIEW_FONT_SIZE}px; "
+        f"line-height: {PREVIEW_LINE_HEIGHT};"
+    )
+
+    rotation_text = "(rotated)" if rotate_text else ""
+    preview_info = (
+        f'Preview (scaled): {width_in:.2f}" × {height_in:.2f}" {rotation_text}'
+    )
+
+    return f"""<div style="{outer_div_style}">
+    <div style="{inner_div_style}">{preview_content}</div>
+</div>
+<p style="text-align: center; color: #666; font-size: 12px;
+   margin-top: 10px;">{preview_info}</p>"""
+
+
 def display_preview_and_download(
     label_config: dict,
     style_config: dict,
@@ -921,129 +1057,12 @@ def display_preview_and_download(
     if label_config:
         st.subheader("Preview")
 
-        # Create a visual preview that matches the PDF styling
         lines = [f"{key}: {value}" for key, value in label_config.items()]
-
-        # Get styling information
-        font_name = style_config.get("font_name", "Helvetica")
-        # Map ReportLab fonts to CSS font families
-        font_mapping = {
-            "Helvetica": "Arial, sans-serif",
-            "Times-Roman": "Times, serif",
-            "Courier": "Courier New, monospace",
-        }
-        css_font = font_mapping.get(font_name, "Arial, sans-serif")
-        padding_percent = style_config.get(
-            "padding_percent", DEFAULT_PADDING_PERCENT
+        style_props = extract_style_properties(style_config)
+        preview_lines = create_preview_lines(lines, style_props)
+        preview_html = build_preview_html(
+            preview_lines, width_in, height_in, rotate_text, style_props
         )
-        show_keys = style_config.get("show_keys", True)
-        show_values = style_config.get("show_values", True)
-
-        # Convert RGB colors to CSS
-        key_r = int(style_config.get("key_color_r", 0.0) * 255)
-        key_g = int(style_config.get("key_color_g", 0.0) * 255)
-        key_b = int(style_config.get("key_color_b", 0.0) * 255)
-        key_color = f"rgb({key_r}, {key_g}, {key_b})"
-
-        value_r = int(style_config.get("value_color_r", 0.0) * 255)
-        value_g = int(style_config.get("value_color_g", 0.0) * 255)
-        value_b = int(style_config.get("value_color_b", 0.0) * 255)
-        value_color = f"rgb({value_r}, {value_g}, {value_b})"
-
-        # Font weight and style
-        key_weight = (
-            "bold" if style_config.get("bold_keys", False) else "normal"
-        )
-        value_weight = (
-            "bold" if style_config.get("bold_values", False) else "normal"
-        )
-        key_style = (
-            "italic" if style_config.get("italic_keys", False) else "normal"
-        )
-        value_style = (
-            "italic" if style_config.get("italic_values", False) else "normal"
-        )
-
-        # Calculate dimensions for preview (scaled down)
-        preview_width = width_in * PREVIEW_SCALE
-        preview_height = height_in * PREVIEW_SCALE
-
-        # Scale border to match preview size (PDF uses 1pt border)
-        border_width = max(1, int(PREVIEW_SCALE / POINTS_PER_INCH))
-
-        # Calculate padding exactly like PDF does it
-        effective_width = preview_height if rotate_text else preview_width
-        effective_height = preview_width if rotate_text else preview_height
-        padding_x = effective_width * padding_percent
-        padding_y = effective_height * padding_percent
-
-        # Create preview HTML
-        preview_lines = []
-        for line in lines:
-            if ": " in line and (show_keys or show_values):
-                key_part, value_part = line.split(": ", 1)
-                parts = []
-                if show_keys:
-                    key_span = (
-                        f'<span style="color: {key_color}; '
-                        f"font-weight: {key_weight}; font-style: {key_style}; "
-                        f'white-space: nowrap;">{key_part}: </span>'
-                    )
-                    parts.append(key_span)
-                if show_values:
-                    value_span = (
-                        f'<span style="color: {value_color}; '
-                        f"font-weight: {value_weight}; font-style: {value_style}; "
-                        f'white-space: nowrap;">{value_part}</span>'
-                    )
-                    parts.append(value_span)
-                preview_lines.append("".join(parts))
-            else:
-                line_span = (
-                    f'<span style="color: {key_color}; '
-                    f'font-weight: {key_weight}; font-style: {key_style};">'
-                    f"{line}</span>"
-                )
-                preview_lines.append(line_span)
-
-        if rotate_text:
-            transform_style = (
-                "transform: rotate(90deg); transform-origin: center;"
-            )
-            # Swap dimensions for rotated text
-            preview_width, preview_height = preview_height, preview_width
-        else:
-            transform_style = ""
-
-        preview_content = "<br>".join(preview_lines)
-
-        # Build the preview HTML with proper line length
-        outer_div_style = (
-            f"border: {border_width}px solid #cccccc; "
-            f"width: {preview_width}px; height: {preview_height}px; "
-            f"margin: 20px auto; background-color: white; "
-            f"position: relative; overflow: hidden; box-sizing: border-box; "
-            f"{transform_style}"
-        )
-
-        inner_div_style = (
-            f"position: absolute; top: {padding_y}px; left: {padding_x}px; "
-            f"width: {effective_width - 2 * padding_x}px; "
-            f"height: {effective_height - 2 * padding_y}px; "
-            f"font-family: {css_font}; font-size: {PREVIEW_FONT_SIZE}px; "
-            f"line-height: {PREVIEW_LINE_HEIGHT};"
-        )
-
-        rotation_text = "(rotated)" if rotate_text else ""
-        preview_info = (
-            f'Preview (scaled): {width_in:.2f}" × {height_in:.2f}" '
-            f"{rotation_text}"
-        )
-
-        preview_html = f"""<div style="{outer_div_style}">
-    <div style="{inner_div_style}">{preview_content}</div>
-</div>
-<p style="text-align: center; color: #666; font-size: 12px; margin-top: 10px;">{preview_info}</p>"""
 
         st.markdown(preview_html, unsafe_allow_html=True)
 
