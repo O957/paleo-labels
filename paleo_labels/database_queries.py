@@ -13,6 +13,11 @@ except ImportError:
     pl = None
 
 try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
     from .paleobiology import PaleobiologyDatabase
 except ImportError:
     from paleobiology import PaleobiologyDatabase
@@ -324,13 +329,13 @@ def import_results_to_multi_session(results):
             
             for db_field, label_field in field_mapping.items():
                 matching_cols = [c for c in results_df.columns if db_field in c.lower()]
-                if matching_cols and pd.notna(row[matching_cols[0]]):
+                if matching_cols and row[matching_cols[0]] is not None and str(row[matching_cols[0]]).strip():
                     label_data[label_field] = str(row[matching_cols[0]])
             
             # Add other relevant fields
             for col in results_df.columns:
                 if any(term in col.lower() for term in ['formation', 'locality', 'age', 'period']):
-                    if pd.notna(row[col]):
+                    if row[col] is not None and str(row[col]).strip():
                         clean_field_name = col.replace('_', ' ').title()
                         label_data[clean_field_name] = str(row[col])
             

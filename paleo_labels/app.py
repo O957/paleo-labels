@@ -22,6 +22,8 @@ from streamlit.runtime.uploaded_file_manager import UploadedFile
 try:
     from .autocomplete import initialize_autocomplete_engine, render_autocomplete_text_input, render_smart_suggestions_panel, show_autocomplete_stats
     from .batch import generate_batch_labels_ui
+    from .collection_manager import collections_ui
+    from .database_queries import advanced_database_queries_ui
     from .exports import exports_ui
     from .paleobiology import PaleobiologyDatabase
     from .relationships import LabelRelationshipManager
@@ -40,6 +42,8 @@ try:
 except ImportError:
     from autocomplete import initialize_autocomplete_engine, render_autocomplete_text_input, render_smart_suggestions_panel, show_autocomplete_stats
     from batch import generate_batch_labels_ui
+    from collection_manager import collections_ui
+    from database_queries import advanced_database_queries_ui
     from exports import exports_ui
     from paleobiology import PaleobiologyDatabase
     from relationships import LabelRelationshipManager
@@ -1563,7 +1567,7 @@ def display_preview_and_download(
     with col2:
         app_mode = st.selectbox(
             "Mode:",
-            ["Single Label", "Batch Processing", "Templates", "Advanced Export"],
+            ["Single Label", "Batch Processing", "Templates", "Advanced Export", "Collections", "Database Queries"],
             key="app_mode_selector"
         )
     
@@ -1576,6 +1580,12 @@ def display_preview_and_download(
         return
     elif app_mode == "Advanced Export":
         exports_ui()
+        return
+    elif app_mode == "Collections":
+        collections_ui()
+        return
+    elif app_mode == "Database Queries":
+        advanced_database_queries_ui()
         return
     
     # Original single label logic
