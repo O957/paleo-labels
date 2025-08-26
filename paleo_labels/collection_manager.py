@@ -58,7 +58,7 @@ class CollectionManager:
         
         return collection_id
     
-    def load_collection(self, collection_id: str) -> Optional[Dict]:
+    def load_collection(self, collection_id: str) -> Optional[dict]:
         """Load a collection by ID."""
         try:
             collection_file = self.collections_dir / f"{collection_id}.json"
@@ -70,7 +70,7 @@ class CollectionManager:
         except Exception:
             return None
     
-    def save_collection(self, collection_data: Dict) -> bool:
+    def save_collection(self, collection_data: dict) -> bool:
         """Save collection data."""
         try:
             collection_id = collection_data['id']
@@ -83,7 +83,7 @@ class CollectionManager:
         except Exception:
             return False
     
-    def list_collections(self, collection_type: str = None) -> List[Dict]:
+    def list_collections(self, collection_type: str = None) -> list[dict]:
         """List all collections, optionally filtered by type."""
         collections = []
         
@@ -125,7 +125,7 @@ class CollectionManager:
         
         return True
     
-    def get_collection_hierarchy(self) -> Dict:
+    def get_collection_hierarchy(self) -> dict:
         """Get the full collection hierarchy."""
         all_collections = self.list_collections()
         hierarchy = {}
@@ -169,7 +169,7 @@ class CollectionManager:
         except Exception:
             return False
     
-    def search_collections(self, query: str) -> List[Dict]:
+    def search_collections(self, query: str) -> list[dict]:
         """Search collections by name or description."""
         query_lower = query.lower()
         matching_collections = []
@@ -432,7 +432,7 @@ def collection_stats_ui(collection_manager: CollectionManager):
         st.write(f"• **{collection['name']}**: {label_count} labels ({collection.get('type', 'project').title()})")
 
 
-def get_labels_by_collection(collection_id: str) -> List[str]:
+def get_labels_by_collection(collection_id: str) -> list[str]:
     """Get all labels in a collection."""
     if 'collection_manager' not in st.session_state:
         return []

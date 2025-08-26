@@ -539,10 +539,10 @@ def print_layouts_ui():
 
 
 def generate_multi_label_sheet(
-    selected_indices: List[int],
-    template: Dict,
-    all_labels: List[Dict],
-    advanced_options: Dict = None,
+    selected_indices: list[int],
+    template: dict,
+    all_labels: list[dict],
+    advanced_options: dict = None,
 ):
     """
     Generate a multi-label PDF sheet with improved formatting.
@@ -800,8 +800,8 @@ def load_style_from_uploaded_file(uploaded_file):
 
 
 def get_font_color_from_style(
-    style_config: Dict, is_key: bool = True
-) -> Tuple[float, float, float]:
+    style_config: dict, is_key: bool = True
+) -> tuple[float, float, float]:
     """Extract RGB color values from style config."""
     if is_key:
         r = style_config.get("key_color_r", 0.0)
@@ -817,12 +817,12 @@ def get_font_color_from_style(
 
 def draw_label_content_with_style(
     c: canvas.Canvas,
-    label_data: Dict,
+    label_data: dict,
     x: float,
     y: float,
     width: float,
     height: float,
-    style_config: Dict = None,
+    style_config: dict = None,
 ):
     """Draw label content with full style support."""
     if not label_data:
@@ -904,12 +904,12 @@ def draw_label_content_with_style(
 
 def draw_label_content(
     c: canvas.Canvas,
-    label_data: Dict,
+    label_data: dict,
     x: float,
     y: float,
     width: float,
     height: float,
-    style_config: Dict = None,
+    style_config: dict = None,
 ):
     """
     Draw label content within the given bounds - simplified for performance.
@@ -961,7 +961,7 @@ def draw_label_content(
         text_y -= line_height
 
 
-def create_template_preview(template: Dict):
+def create_template_preview(template: dict):
     """
     Create a visual preview of the label template layout.
     """
@@ -1021,10 +1021,10 @@ def create_template_preview(template: Dict):
 
 def load_and_filter_labels(
     storage: LabelStorage,
-    label_names: List[str],
+    label_names: list[str],
     search_term: str,
     type_filter: str,
-) -> List[Tuple[str, Dict]]:
+) -> list[tuple[str, dict]]:
     """
     Load and filter labels from storage based on search and type filters.
     """
@@ -1072,7 +1072,7 @@ def load_and_filter_labels(
     return filtered_labels
 
 
-def determine_label_type(label_data: Dict) -> str:
+def determine_label_type(label_data: dict) -> str:
     """
     Determine the most likely label type based on the data fields.
     """
@@ -1107,7 +1107,7 @@ def calculate_optimal_layout(
     max_per_page: int,
     page_width: float = 8.5,
     page_height: float = 11.0,
-) -> Dict:
+) -> dict:
     """
     Calculate optimal label layout for given constraints.
     """
@@ -1170,11 +1170,11 @@ def calculate_optimal_layout(
 
 
 def generate_continuous_stream_pdf(
-    label_data_list: List[Tuple[str, Dict]],
+    label_data_list: list[tuple[str, dict]],
     optimization_mode: str,
     max_per_page: int,
-    template: Dict,
-    style_options: Dict,
+    template: dict,
+    style_options: dict,
 ):
     """
     Generate a continuous stream PDF with style support.
@@ -1373,7 +1373,7 @@ def generate_continuous_stream_pdf(
 
 
 def batch_export_action(
-    label_names: List[str],
+    label_names: list[str],
     export_format: str,
     include_metadata: bool,
     storage: LabelStorage,

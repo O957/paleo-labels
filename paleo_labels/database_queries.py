@@ -365,31 +365,15 @@ def import_results_to_multi_session(results):
             }
 
             for db_field, label_field in field_mapping.items():
-<<<<<<< HEAD
                 matching_cols = [c for c in results_df.columns if db_field in c.lower()]
                 if matching_cols and row[matching_cols[0]] is not None and str(row[matching_cols[0]]).strip():
-=======
-                matching_cols = [
-                    c for c in results_df.columns if db_field in c.lower()
-                ]
-                if matching_cols and pd.notna(row[matching_cols[0]]):
->>>>>>> cfb802680b027920c12884c4542147bd1367ffc4
                     label_data[label_field] = str(row[matching_cols[0]])
 
             # Add other relevant fields
             for col in results_df.columns:
-<<<<<<< HEAD
                 if any(term in col.lower() for term in ['formation', 'locality', 'age', 'period']):
                     if row[col] is not None and str(row[col]).strip():
                         clean_field_name = col.replace('_', ' ').title()
-=======
-                if any(
-                    term in col.lower()
-                    for term in ["formation", "locality", "age", "period"]
-                ):
-                    if pd.notna(row[col]):
-                        clean_field_name = col.replace("_", " ").title()
->>>>>>> cfb802680b027920c12884c4542147bd1367ffc4
                         label_data[clean_field_name] = str(row[col])
 
             if label_data:
