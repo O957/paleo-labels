@@ -1,0 +1,13 @@
+# Taxonomy Label Type
+[label_type]
+name = "Taxonomy"
+description = "Taxonomic classification fields"
+
+[fields]
+phylum = ""
+class = ""
+order = ""
+family = ""
+genus = ""
+species = ""
+author = ""

@@ -1,0 +1,12 @@
+# Locality Label Type
+[label_type]
+name = "Locality"
+description = "Geographic and geological location information"
+
+[fields]
+locality = ""
+province_country = ""
+coordinates = ""
+directions = ""
+formations = ""
+age = ""

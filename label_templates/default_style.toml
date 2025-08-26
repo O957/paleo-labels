@@ -7,7 +7,7 @@ height_inches = 2.25
 padding_percent = 0.05
 
 [typography]
-font_name = "Helvetica"
+font_name = "Times New Roman"
 font_size = 12
 
 [colors]
