@@ -679,178 +679,188 @@ def get_scientific_name_suggestions(partial_value):
     return sorted(list(suggestions))
 
 
+def _process_nested_dimensions(
+    converted_style: dict, style_data: dict, default_style: dict
+) -> None:
+    """Process dimensions section from nested TOML format."""
+    if "dimensions" in style_data:
+        converted_style.update(
+            {
+                "width_inches": style_data["dimensions"].get(
+                    "width_inches", default_style["width_inches"]
+                ),
+                "height_inches": style_data["dimensions"].get(
+                    "height_inches", default_style["height_inches"]
+                ),
+                "padding_percent": style_data["dimensions"].get(
+                    "padding_percent", default_style["padding_percent"]
+                ),
+            }
+        )
+
+
+def _process_nested_typography(
+    converted_style: dict, style_data: dict, default_style: dict
+) -> None:
+    """Process typography section from nested TOML format."""
+    if "typography" in style_data:
+        converted_style.update(
+            {
+                "font_name": style_data["typography"].get(
+                    "font_name", default_style["font_name"]
+                ),
+                "font_size": style_data["typography"].get(
+                    "font_size", default_style["font_size"]
+                ),
+            }
+        )
+
+
+def _process_nested_colors(converted_style: dict, style_data: dict) -> None:
+    """Process colors section from nested TOML format."""
+    if "colors" in style_data:
+        colors_data = style_data["colors"]
+
+        # Process key colors
+        if all(
+            k in colors_data
+            for k in ["key_color_r", "key_color_g", "key_color_b"]
+        ):
+            key_r = int(colors_data["key_color_r"])
+            key_g = int(colors_data["key_color_g"])
+            key_b = int(colors_data["key_color_b"])
+            converted_style["key_color"] = (
+                f"#{key_r:02x}{key_g:02x}{key_b:02x}"
+            )
+
+        # Process value colors
+        if all(
+            k in colors_data
+            for k in ["value_color_r", "value_color_g", "value_color_b"]
+        ):
+            val_r = int(colors_data["value_color_r"])
+            val_g = int(colors_data["value_color_g"])
+            val_b = int(colors_data["value_color_b"])
+            converted_style["value_color"] = (
+                f"#{val_r:02x}{val_g:02x}{val_b:02x}"
+            )
+
+
+def _process_nested_style_options(
+    converted_style: dict, style_data: dict, default_style: dict
+) -> None:
+    """Process style section from nested TOML format."""
+    if "style" in style_data:
+        converted_style.update(
+            {
+                "bold_keys": style_data["style"].get(
+                    "bold_keys", default_style["bold_keys"]
+                ),
+                "bold_values": style_data["style"].get(
+                    "bold_values", default_style["bold_values"]
+                ),
+                "italic_keys": style_data["style"].get(
+                    "italic_keys", default_style["italic_keys"]
+                ),
+                "italic_values": style_data["style"].get(
+                    "italic_values", default_style["italic_values"]
+                ),
+                "show_keys": style_data["style"].get(
+                    "show_keys", default_style["show_keys"]
+                ),
+                "show_values": style_data["style"].get(
+                    "show_values", default_style["show_values"]
+                ),
+            }
+        )
+
+
+def _process_flat_format(converted_style: dict, style_data: dict) -> None:
+    """Process flat format TOML data."""
+    flat_keys = [
+        "font_name",
+        "font_size",
+        "width_inches",
+        "height_inches",
+        "padding_percent",
+        "bold_keys",
+        "bold_values",
+        "italic_keys",
+        "italic_values",
+        "center_text",
+        "show_border",
+    ]
+    for key in flat_keys:
+        if key in style_data:
+            converted_style[key] = style_data[key]
+
+
+def _normalize_color_component(value: float) -> int:
+    """Normalize color component to 0-255 range."""
+    return int(value * 255) if value <= 1 else int(value)
+
+
+def _process_flat_colors(converted_style: dict, style_data: dict) -> None:
+    """Process flat color format from TOML data."""
+    # Process key colors
+    if all(
+        k in style_data for k in ["key_color_r", "key_color_g", "key_color_b"]
+    ):
+        key_r = _normalize_color_component(style_data["key_color_r"])
+        key_g = _normalize_color_component(style_data["key_color_g"])
+        key_b = _normalize_color_component(style_data["key_color_b"])
+        converted_style["key_color"] = f"#{key_r:02x}{key_g:02x}{key_b:02x}"
+
+    # Process value colors
+    if all(
+        k in style_data
+        for k in ["value_color_r", "value_color_g", "value_color_b"]
+    ):
+        val_r = _normalize_color_component(style_data["value_color_r"])
+        val_g = _normalize_color_component(style_data["value_color_g"])
+        val_b = _normalize_color_component(style_data["value_color_b"])
+        converted_style["value_color"] = f"#{val_r:02x}{val_g:02x}{val_b:02x}"
+
+
+def _convert_style_data(style_data: dict, default_style: dict) -> dict:
+    """Convert TOML style data to internal format."""
+    converted_style = default_style.copy()
+
+    # Process nested format sections
+    _process_nested_dimensions(converted_style, style_data, default_style)
+    _process_nested_typography(converted_style, style_data, default_style)
+    _process_nested_colors(converted_style, style_data)
+    _process_nested_style_options(converted_style, style_data, default_style)
+
+    # Process flat format
+    _process_flat_format(converted_style, style_data)
+    _process_flat_colors(converted_style, style_data)
+
+    return converted_style
+
+
 def load_style_files():
     """Load available style files."""
     default_style = load_default_style()
     styles = {"Default Style": default_style}
 
-    if STYLE_DIR.exists():
-        for style_file in STYLE_DIR.glob("*.toml"):
-            if "style" not in style_file.name.lower():
-                continue
+    if not STYLE_DIR.exists():
+        return styles
 
-            try:
-                with open(style_file, "rb") as f:
-                    style_data = tomli.load(f)
+    for style_file in STYLE_DIR.glob("*.toml"):
+        if "style" not in style_file.name.lower():
+            continue
 
-                converted_style = default_style.copy()
+        try:
+            with open(style_file, "rb") as f:
+                style_data = tomli.load(f)
 
-                # Handle different TOML formats
-                if "dimensions" in style_data:
-                    converted_style.update(
-                        {
-                            "width_inches": style_data["dimensions"].get(
-                                "width_inches", default_style["width_inches"]
-                            ),
-                            "height_inches": style_data["dimensions"].get(
-                                "height_inches", default_style["height_inches"]
-                            ),
-                            "padding_percent": style_data["dimensions"].get(
-                                "padding_percent",
-                                default_style["padding_percent"],
-                            ),
-                        }
-                    )
+            converted_style = _convert_style_data(style_data, default_style)
+            styles[style_file.stem.replace("_", " ").title()] = converted_style
 
-                if "typography" in style_data:
-                    converted_style.update(
-                        {
-                            "font_name": style_data["typography"].get(
-                                "font_name", default_style["font_name"]
-                            ),
-                            "font_size": style_data["typography"].get(
-                                "font_size", default_style["font_size"]
-                            ),
-                        }
-                    )
-
-                if "colors" in style_data:
-                    colors_data = style_data["colors"]
-                    if all(
-                        k in colors_data
-                        for k in ["key_color_r", "key_color_g", "key_color_b"]
-                    ):
-                        key_r = int(colors_data["key_color_r"])
-                        key_g = int(colors_data["key_color_g"])
-                        key_b = int(colors_data["key_color_b"])
-                        converted_style["key_color"] = (
-                            f"#{key_r:02x}{key_g:02x}{key_b:02x}"
-                        )
-
-                    if all(
-                        k in colors_data
-                        for k in [
-                            "value_color_r",
-                            "value_color_g",
-                            "value_color_b",
-                        ]
-                    ):
-                        val_r = int(colors_data["value_color_r"])
-                        val_g = int(colors_data["value_color_g"])
-                        val_b = int(colors_data["value_color_b"])
-                        converted_style["value_color"] = (
-                            f"#{val_r:02x}{val_g:02x}{val_b:02x}"
-                        )
-
-                if "style" in style_data:
-                    converted_style.update(
-                        {
-                            "bold_keys": style_data["style"].get(
-                                "bold_keys", default_style["bold_keys"]
-                            ),
-                            "bold_values": style_data["style"].get(
-                                "bold_values", default_style["bold_values"]
-                            ),
-                            "italic_keys": style_data["style"].get(
-                                "italic_keys", default_style["italic_keys"]
-                            ),
-                            "italic_values": style_data["style"].get(
-                                "italic_values", default_style["italic_values"]
-                            ),
-                            "show_keys": style_data["style"].get(
-                                "show_keys", default_style["show_keys"]
-                            ),
-                            "show_values": style_data["style"].get(
-                                "show_values", default_style["show_values"]
-                            ),
-                        }
-                    )
-
-                # Handle flat format
-                for key in [
-                    "font_name",
-                    "font_size",
-                    "width_inches",
-                    "height_inches",
-                    "padding_percent",
-                    "bold_keys",
-                    "bold_values",
-                    "italic_keys",
-                    "italic_values",
-                    "center_text",
-                    "show_border",
-                ]:
-                    if key in style_data:
-                        converted_style[key] = style_data[key]
-
-                # Handle flat color format
-                if all(
-                    k in style_data
-                    for k in ["key_color_r", "key_color_g", "key_color_b"]
-                ):
-                    key_r = (
-                        int(style_data["key_color_r"] * 255)
-                        if style_data["key_color_r"] <= 1
-                        else int(style_data["key_color_r"])
-                    )
-                    key_g = (
-                        int(style_data["key_color_g"] * 255)
-                        if style_data["key_color_g"] <= 1
-                        else int(style_data["key_color_g"])
-                    )
-                    key_b = (
-                        int(style_data["key_color_b"] * 255)
-                        if style_data["key_color_b"] <= 1
-                        else int(style_data["key_color_b"])
-                    )
-                    converted_style["key_color"] = (
-                        f"#{key_r:02x}{key_g:02x}{key_b:02x}"
-                    )
-
-                if all(
-                    k in style_data
-                    for k in [
-                        "value_color_r",
-                        "value_color_g",
-                        "value_color_b",
-                    ]
-                ):
-                    val_r = (
-                        int(style_data["value_color_r"] * 255)
-                        if style_data["value_color_r"] <= 1
-                        else int(style_data["value_color_r"])
-                    )
-                    val_g = (
-                        int(style_data["value_color_g"] * 255)
-                        if style_data["value_color_g"] <= 1
-                        else int(style_data["value_color_g"])
-                    )
-                    val_b = (
-                        int(style_data["value_color_b"] * 255)
-                        if style_data["value_color_b"] <= 1
-                        else int(style_data["value_color_b"])
-                    )
-                    converted_style["value_color"] = (
-                        f"#{val_r:02x}{val_g:02x}{val_b:02x}"
-                    )
-
-                styles[style_file.stem.replace("_", " ").title()] = (
-                    converted_style
-                )
-
-            except Exception as e:
-                print(f"Error loading style {style_file}: {e}")
-                continue
+        except Exception as e:
+            print(f"Error loading style {style_file}: {e}")
+            continue
 
     return styles
 
