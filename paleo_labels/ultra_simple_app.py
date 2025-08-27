@@ -24,17 +24,39 @@ LABELS_DIR.mkdir(parents=True, exist_ok=True)
 # Style configuration paths
 STYLE_DIR = Path(__file__).parent.parent / "label_templates"
 
-# Conversion constants
-INCHES_TO_CM = 2.54
+# Phase 1: Unified measurement system - everything in points (1/72 inch)
 POINTS_PER_INCH = 72
-PREVIEW_SCALE = 100
+INCHES_TO_CM = 2.54
+CM_TO_INCHES = 1 / INCHES_TO_CM
+POINTS_PER_CM = POINTS_PER_INCH * CM_TO_INCHES
 
-# Default style configuration using original app.py format
-REFERENCE_FONT_SIZE = 10
-DEFAULT_PADDING_PERCENT = 0.05
-DEFAULT_WIDTH_IN = 2.625
-DEFAULT_HEIGHT_IN = 1.0
-PREVIEW_LINE_HEIGHT = 1.1
+# Measurement conversion functions
+def inches_to_points(inches: float) -> float:
+    """Convert inches to points (1/72 inch)."""
+    return inches * POINTS_PER_INCH
+
+def cm_to_points(cm: float) -> float:
+    """Convert centimeters to points."""
+    return cm * POINTS_PER_CM
+
+def points_to_inches(points: float) -> float:
+    """Convert points to inches."""
+    return points / POINTS_PER_INCH
+
+def points_to_cm(points: float) -> float:
+    """Convert points to centimeters."""
+    return points / POINTS_PER_CM
+
+def points_to_pixels(points: float, dpi: float = 96) -> float:
+    """Convert points to pixels for HTML preview (default 96 DPI)."""
+    return points * dpi / POINTS_PER_INCH
+
+# Default dimensions in points
+DEFAULT_WIDTH_POINTS = inches_to_points(2.625)
+DEFAULT_HEIGHT_POINTS = inches_to_points(1.0)
+DEFAULT_FONT_SIZE_POINTS = 10
+DEFAULT_PADDING_POINTS = 3.6  # 0.05 inches in points
+DEFAULT_LINE_HEIGHT_RATIO = 1.2
 
 
 def get_font_name(
@@ -129,16 +151,16 @@ def load_default_style() -> dict:
     # Fallback to hardcoded defaults if file doesn't exist or can't be loaded
     return {
         "font_name": "Times-Roman",
-        "font_size": REFERENCE_FONT_SIZE,
+        "font_size": 10,
         "key_color_r": 0,
         "key_color_g": 0,
         "key_color_b": 0,
         "value_color_r": 0,
         "value_color_g": 0,
         "value_color_b": 0,
-        "padding_percent": DEFAULT_PADDING_PERCENT,
-        "width_inches": DEFAULT_WIDTH_IN,
-        "height_inches": DEFAULT_HEIGHT_IN,
+        "padding_percent": 0.05,
+        "width_inches": 3.25,
+        "height_inches": 2.25,
         "bold_keys": True,
         "bold_values": False,
         "italic_keys": False,
@@ -187,16 +209,16 @@ def apply_style_defaults(style_config: dict) -> dict:
 
 
 def calculate_underline_length(
-    key_part: str, available_width: float, font_size: float
+    key_part: str, available_width_points: float, font_size_points: float
 ) -> int:
-    """Calculate number of underscores that fit within available width, aligned to same end position."""
-    # More generous character width estimate for longer underlines
-    char_width = font_size * 0.5  # Less conservative estimate
+    """Calculate number of underscores that fit within available width (in points), aligned to same end position."""
+    # Character width estimate in points (more accurate for points-based system)
+    char_width_points = font_size_points * 0.6
 
     # Calculate how many characters can fit in available width
-    max_chars_in_width = round(available_width / char_width)
+    max_chars_in_width = round(available_width_points / char_width_points)
 
-    # Calculate target position (95% of available character space for longer underlines)
+    # Calculate target position (95% of available character space)
     target_char_position = round(max_chars_in_width * 0.95)
 
     # Calculate underlines needed to reach target position
@@ -205,153 +227,262 @@ def calculate_underline_length(
 
     # Ensure we don't exceed the maximum width
     max_underscores = max_chars_in_width - key_and_colon_length
-    return min(underscore_count, max_underscores, 100)  # Increased cap
+    return min(underscore_count, max_underscores, 100)
 
 
-def extract_style_properties(style_config: dict) -> dict:
-    """Extract and convert style properties from config."""
-    font_mapping = {
-        "Helvetica": "Arial, sans-serif",
-        "Times-Roman": "Times, serif",
-        "Courier": "Courier New, monospace",
-    }
-
-    font_name = style_config.get("font_name", "Helvetica")
-    css_font = font_mapping.get(font_name, "Arial, sans-serif")
-
-    # Convert RGB colors to CSS
-    key_r = int(style_config.get("key_color_r", 0.0) * 255)
-    key_g = int(style_config.get("key_color_g", 0.0) * 255)
-    key_b = int(style_config.get("key_color_b", 0.0) * 255)
-    key_color = f"rgb({key_r}, {key_g}, {key_b})"
-
-    value_r = int(style_config.get("value_color_r", 0.0) * 255)
-    value_g = int(style_config.get("value_color_g", 0.0) * 255)
-    value_b = int(style_config.get("value_color_b", 0.0) * 255)
-    value_color = f"rgb({value_r}, {value_g}, {value_b})"
-
-    return {
-        "css_font": css_font,
-        "font_size": style_config.get("font_size", REFERENCE_FONT_SIZE),
-        "padding_percent": style_config.get(
-            "padding_percent", DEFAULT_PADDING_PERCENT
-        ),
-        "show_keys": style_config.get("show_keys", True),
-        "show_values": style_config.get("show_values", True),
-        "key_color": key_color,
-        "value_color": value_color,
-        "key_weight": "bold"
-        if style_config.get("bold_keys", False)
-        else "normal",
-        "value_weight": "bold"
-        if style_config.get("bold_values", False)
-        else "normal",
-        "key_style": "italic"
-        if style_config.get("italic_keys", False)
-        else "normal",
-        "value_style": "italic"
-        if style_config.get("italic_values", False)
-        else "normal",
-        "center_text": style_config.get("center_text", False),
-    }
-
-
-def create_preview_lines(lines: list[str], style_props: dict) -> list[str]:
-    """Create HTML spans for preview lines."""
-    preview_lines = []
-    for line in lines:
-        if ": " in line and (
-            style_props["show_keys"] or style_props["show_values"]
-        ):
-            key_part, value_part = line.split(": ", 1)
-            parts = []
-            if style_props["show_keys"]:
-                key_span = (
-                    f'<span style="color: {style_props["key_color"]}; '
-                    f"font-weight: {style_props['key_weight']}; "
-                    f"font-style: {style_props['key_style']}; "
-                    f"font-size: {style_props.get('font_size', 12) * (PREVIEW_SCALE / POINTS_PER_INCH)}px; "
-                    f'white-space: nowrap;">{key_part}: </span>'
-                )
-                parts.append(key_span)
-            if style_props["show_values"]:
-                value_span = (
-                    f'<span style="color: {style_props["value_color"]}; '
-                    f"font-weight: {style_props['value_weight']}; "
-                    f"font-style: {style_props['value_style']}; "
-                    f"font-size: {style_props.get('font_size', 12) * (PREVIEW_SCALE / POINTS_PER_INCH)}px; "
-                    f'white-space: nowrap;">{value_part}</span>'
-                )
-                parts.append(value_span)
-            preview_lines.append("".join(parts))
+class LabelRenderer:
+    """Phase 2: Dimension-first label renderer that works in points for both preview and PDF."""
+    
+    def __init__(self, width_inches: float, height_inches: float, style_config: dict):
+        self.width_points = inches_to_points(width_inches)
+        self.height_points = inches_to_points(height_inches)
+        self.style_config = style_config
+        
+        # Calculate padding in points
+        self.padding_points = self.style_config.get('padding_percent', 0.05) * min(self.width_points, self.height_points)
+        
+        # Available text area in points
+        self.text_width_points = self.width_points - (2 * self.padding_points)
+        self.text_height_points = self.height_points - (2 * self.padding_points)
+        
+        # Font configuration
+        self.font_size_points = self.style_config.get('font_size', DEFAULT_FONT_SIZE_POINTS)
+        print(f"DEBUG LabelRenderer: Received font_size={self.style_config.get('font_size')}, using font_size_points={self.font_size_points}")
+        self.line_height_points = self.font_size_points * DEFAULT_LINE_HEIGHT_RATIO
+    
+    def calculate_optimal_font_size(self, lines: list[str]) -> float:
+        """Calculate optimal font size to fit all content within exact dimensions."""
+        if not lines:
+            return self.font_size_points
+            
+        # TEMPORARY: Disable auto-sizing to test if this is the issue
+        # Just return the configured font size directly
+        print(f"DEBUG: Using configured font size directly: {self.font_size_points}")
+        return self.font_size_points
+        
+        # ORIGINAL AUTO-SIZING CODE (commented out for debugging):
+        # # Estimate character width (points)
+        # base_char_width = self.font_size_points * 0.6
+        # 
+        # # Find longest line
+        # max_line_length = max(len(line) for line in lines)
+        # estimated_line_width = max_line_length * base_char_width
+        # 
+        # # Calculate scaling factors
+        # width_scale = self.text_width_points / estimated_line_width if estimated_line_width > 0 else 1.0
+        # 
+        # # Calculate height requirements
+        # total_text_height = len(lines) * self.line_height_points
+        # height_scale = self.text_height_points / total_text_height if total_text_height > 0 else 1.0
+        # 
+        # print(f"DEBUG auto-sizing: text_width={self.text_width_points}, estimated_line_width={estimated_line_width}, width_scale={width_scale}")
+        # print(f"DEBUG auto-sizing: text_height={self.text_height_points}, total_text_height={total_text_height}, height_scale={height_scale}")
+        # 
+        # # Use the more restrictive scaling factor
+        # # Allow font to grow up to 1.5x the configured size if there's space
+        # max_scale = 1.5  # Allow up to 50% larger than configured
+        # scale_factor = min(width_scale, height_scale, max_scale)
+        # 
+        # result = max(self.font_size_points * scale_factor, 6.0)  # Minimum 6pt font
+        # print(f"DEBUG calculate_optimal_font_size: configured={self.font_size_points}, scale_factor={scale_factor}, result={result}")
+        # return result
+    
+    def process_label_data(self, label_data: dict) -> list[str]:
+        """Process label data into lines with underlines for empty values."""
+        lines = []
+        
+        # Handle colon alignment if enabled
+        align_colons = self.style_config.get('align_colons', False)
+        processed_entries = {}
+        
+        if align_colons:
+            max_field_length = max(len(key) for key in label_data.keys() if key) if label_data else 0
+            for key, value in label_data.items():
+                if key:
+                    spaces_needed = max_field_length - len(key)
+                    padded_key = key + (" " * spaces_needed)
+                    processed_entries[padded_key] = value
+                else:
+                    processed_entries[key] = value
         else:
-            line_span = (
-                f'<span style="color: {style_props["key_color"]}; '
-                f"font-weight: {style_props['key_weight']}; "
-                f"font-style: {style_props['key_style']}; "
-                f"font-size: {style_props.get('font_size', 12) * (PREVIEW_SCALE / POINTS_PER_INCH)}px;"
-                f'">{line}</span>'
-            )
-            preview_lines.append(line_span)
-    return preview_lines
-
-
-def build_preview_html(
-    preview_lines: list[str],
-    width_in: float,
-    height_in: float,
-    rotate_text: bool,
-    style_props: dict,
-) -> str:
-    """Build the complete preview HTML."""
-    preview_width = width_in * PREVIEW_SCALE
-    preview_height = height_in * PREVIEW_SCALE
-    border_width = max(1, int(PREVIEW_SCALE / POINTS_PER_INCH))
-
-    effective_width = preview_height if rotate_text else preview_width
-    effective_height = preview_width if rotate_text else preview_height
-    padding_x = effective_width * style_props["padding_percent"]
-    padding_y = effective_height * style_props["padding_percent"]
-
-    if rotate_text:
-        transform_style = "transform: rotate(90deg); transform-origin: center;"
-        preview_width, preview_height = preview_height, preview_width
-    else:
-        transform_style = ""
-
-    preview_content = "<br>".join(preview_lines)
-
-    outer_div_style = (
-        f"border: {border_width}px solid #cccccc; "
-        f"width: {preview_width}px; height: {preview_height}px; "
-        f"margin: 20px auto; background-color: white; "
-        f"position: relative; overflow: hidden; box-sizing: border-box; "
-        f"{transform_style}"
-    )
-
-    # Add center text support
-    text_align = "center" if style_props.get("center_text", False) else "left"
-
-    inner_div_style = (
-        f"position: absolute; top: {padding_y}px; left: {padding_x}px; "
-        f"width: {effective_width - 2 * padding_x}px; "
-        f"height: {effective_height - 2 * padding_y}px; "
-        f"font-family: {style_props['css_font']}; "
-        f"font-size: {style_props['font_size'] * (PREVIEW_SCALE / POINTS_PER_INCH)}px; "
-        f"line-height: {PREVIEW_LINE_HEIGHT}; "
-        f"text-align: {text_align};"
-    )
-
-    rotation_text = "(rotated)" if rotate_text else ""
-    preview_info = (
-        f'Preview (scaled): {width_in:.2f}" × {height_in:.2f}" {rotation_text}'
-    )
-
-    return f"""<div style="{outer_div_style}">
-    <div style="{inner_div_style}">{preview_content}</div>
+            processed_entries = label_data
+        
+        # Create lines with underlines for empty values
+        for key, value in processed_entries.items():
+            if not value or not value.strip():
+                underline_count = calculate_underline_length(key, self.text_width_points, self.font_size_points)
+                underlines = "_" * underline_count
+                lines.append(f"{key}: {underlines}")
+            else:
+                lines.append(f"{key}: {value}")
+        
+        return lines
+    
+    def render_to_html_preview(self, label_data: dict, preview_dpi: float = 96) -> str:
+        """Render label to HTML preview with exact dimensions."""
+        lines = self.process_label_data(label_data)
+        optimal_font_size = self.calculate_optimal_font_size(lines)
+        
+        # Convert points to pixels for HTML
+        preview_width_px = points_to_pixels(self.width_points, preview_dpi)
+        preview_height_px = points_to_pixels(self.height_points, preview_dpi)
+        padding_px = points_to_pixels(self.padding_points, preview_dpi)
+        font_size_px = points_to_pixels(optimal_font_size, preview_dpi)
+        
+        # Build HTML with precise dimensions
+        lines_html = []
+        for line in lines:
+            if ": " in line:
+                key_part, value_part = line.split(": ", 1)
+                key_style = self._get_html_text_style("key", font_size_px)
+                value_style = self._get_html_text_style("value", font_size_px)
+                line_html = f'<span style="{key_style}">{key_part}: </span><span style="{value_style}">{value_part}</span>'
+            else:
+                key_style = self._get_html_text_style("key", font_size_px)
+                line_html = f'<span style="{key_style}">{line}</span>'
+            lines_html.append(line_html)
+        
+        # Calculate line height to match PDF
+        line_height_px = points_to_pixels(optimal_font_size * DEFAULT_LINE_HEIGHT_RATIO, preview_dpi)
+        
+        # Position lines individually to match PDF positioning
+        positioned_lines = []
+        for i, line_html in enumerate(lines_html):
+            top_position = i * line_height_px
+            positioned_line = f'<div style="position: absolute; top: {top_position}px; left: 0; width: 100%; margin: 0; padding: 0; line-height: {line_height_px}px;">{line_html}</div>'
+            positioned_lines.append(positioned_line)
+        
+        content_html = "".join(positioned_lines)
+        text_align = "center" if self.style_config.get("center_text", False) else "left"
+        
+        outer_style = (
+            f"border: 1px solid #cccccc; "
+            f"width: {preview_width_px}px; height: {preview_height_px}px; "
+            f"margin: 20px auto; background-color: white; "
+            f"position: relative; box-sizing: border-box;"
+        )
+        
+        inner_style = (
+            f"position: absolute; top: {padding_px}px; left: {padding_px}px; "
+            f"width: {preview_width_px - 2 * padding_px}px; "
+            f"height: {preview_height_px - 2 * padding_px}px; "
+            f"text-align: {text_align}; position: relative; "
+            f"margin: 0; padding: 0; box-sizing: border-box;"
+        )
+        
+        dimensions_info = f"Exact size: {points_to_inches(self.width_points):.3f}\" × {points_to_inches(self.height_points):.3f}\" ({points_to_cm(self.width_points):.2f}cm × {points_to_cm(self.height_points):.2f}cm)"
+        
+        return f'''<div style="{outer_style}">
+    <div style="{inner_style}">{content_html}</div>
 </div>
-<p style="text-align: center; color: #666; font-size: 12px;
-   margin-top: 10px;">{preview_info}</p>"""
+<p style="text-align: center; color: #666; font-size: 12px; margin-top: 10px;">{dimensions_info}</p>'''
+    
+    def _get_html_text_style(self, text_type: str, font_size_px: float) -> str:
+        """Get HTML text styling for key or value text."""
+        font_mapping = {
+            "Helvetica": "Arial, sans-serif",
+            "Times-Roman": "Times, serif",
+            "Courier": "Courier New, monospace",
+        }
+        
+        font_name = self.style_config.get("font_name", "Times-Roman")
+        css_font = font_mapping.get(font_name, "Times, serif")
+        
+        if text_type == "key":
+            color_r = int(self.style_config.get("key_color_r", 0.0) * 255)
+            color_g = int(self.style_config.get("key_color_g", 0.0) * 255)
+            color_b = int(self.style_config.get("key_color_b", 0.0) * 255)
+            weight = "bold" if self.style_config.get("bold_keys", True) else "normal"
+            style = "italic" if self.style_config.get("italic_keys", False) else "normal"
+        else:  # value
+            color_r = int(self.style_config.get("value_color_r", 0.0) * 255)
+            color_g = int(self.style_config.get("value_color_g", 0.0) * 255)
+            color_b = int(self.style_config.get("value_color_b", 0.0) * 255)
+            weight = "bold" if self.style_config.get("bold_values", False) else "normal"
+            style = "italic" if self.style_config.get("italic_values", False) else "normal"
+        
+        color = f"rgb({color_r}, {color_g}, {color_b})"
+        
+        line_height_px = font_size_px * DEFAULT_LINE_HEIGHT_RATIO
+        
+        return (
+            f"font-family: {css_font}; "
+            f"font-size: {font_size_px}px; "
+            f"line-height: {line_height_px}px; "
+            f"color: {color}; "
+            f"font-weight: {weight}; "
+            f"font-style: {style}; "
+            f"margin: 0; padding: 0; vertical-align: baseline;"
+        )
+    
+    def render_to_pdf_canvas(self, canvas_obj, label_data: dict, x_offset: float, y_offset: float):
+        """Render label to PDF canvas at specified position (in points)."""
+        lines = self.process_label_data(label_data)
+        optimal_font_size = self.calculate_optimal_font_size(lines)
+        
+        # Draw border
+        canvas_obj.setStrokeColor(colors.black)
+        canvas_obj.setLineWidth(0.5)
+        canvas_obj.rect(x_offset, y_offset, self.width_points, self.height_points)
+        
+        # Get fonts
+        base_font = self.style_config.get("font_name", "Times-Roman")
+        key_font = get_font_name(base_font, self.style_config.get("bold_keys", True), self.style_config.get("italic_keys", False))
+        value_font = get_font_name(base_font, self.style_config.get("bold_values", False), self.style_config.get("italic_values", False))
+        
+        # Get colors
+        key_color = (self.style_config.get("key_color_r", 0.0), self.style_config.get("key_color_g", 0.0), self.style_config.get("key_color_b", 0.0))
+        value_color = (self.style_config.get("value_color_r", 0.0), self.style_config.get("value_color_g", 0.0), self.style_config.get("value_color_b", 0.0))
+        
+        # Draw text
+        text_y = y_offset + self.height_points - self.padding_points - optimal_font_size
+        
+        for line in lines:
+            if text_y < y_offset + self.padding_points:
+                break
+            
+            if ": " in line:
+                key_part, value_part = line.split(": ", 1)
+                
+                # Calculate line width for centering
+                key_text = f"{key_part}: "
+                key_width = canvas_obj.stringWidth(key_text, key_font, optimal_font_size)
+                value_width = canvas_obj.stringWidth(value_part, value_font, optimal_font_size)
+                total_width = key_width + value_width
+                
+                # Set x position (centered or left-aligned)
+                if self.style_config.get("center_text", False):
+                    text_x = x_offset + (self.width_points - total_width) / 2
+                else:
+                    text_x = x_offset + self.padding_points
+                
+                # Draw key
+                canvas_obj.setFont(key_font, optimal_font_size)
+                canvas_obj.setFillColorRGB(*key_color)
+                canvas_obj.drawString(text_x, text_y, key_text)
+                
+                # Draw value
+                canvas_obj.setFont(value_font, optimal_font_size)
+                canvas_obj.setFillColorRGB(*value_color)
+                canvas_obj.drawString(text_x + key_width, text_y, value_part)
+            else:
+                # Single line (no colon)
+                canvas_obj.setFont(key_font, optimal_font_size)
+                canvas_obj.setFillColorRGB(*key_color)
+                
+                line_width = canvas_obj.stringWidth(line, key_font, optimal_font_size)
+                if self.style_config.get("center_text", False):
+                    text_x = x_offset + (self.width_points - line_width) / 2
+                else:
+                    text_x = x_offset + self.padding_points
+                
+                canvas_obj.drawString(text_x, text_y, line)
+            
+            text_y -= optimal_font_size * DEFAULT_LINE_HEIGHT_RATIO
+
+
+
+
 
 
 def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
@@ -784,68 +915,30 @@ def convert_to_original_style_format(style_config):
     }
 
 
-def extract_style_properties(style_config):
-    """Extract and convert style properties from config - copied from original app.py."""
-    font_mapping = {
-        "Helvetica": "Arial, sans-serif",
-        "Times-Roman": "Times, serif",
-        "Courier": "Courier New, monospace",
-    }
-
-    font_name = style_config.get("font_name", "Times-Roman")
-    css_font = font_mapping.get(font_name, "Times, serif")
-
-    # Convert RGB colors to CSS
-    key_r = int(style_config.get("key_color_r", 0.0) * 255)
-    key_g = int(style_config.get("key_color_g", 0.0) * 255)
-    key_b = int(style_config.get("key_color_b", 0.0) * 255)
-    key_color = f"rgb({key_r}, {key_g}, {key_b})"
-
-    value_r = int(style_config.get("value_color_r", 0.0) * 255)
-    value_g = int(style_config.get("value_color_g", 0.0) * 255)
-    value_b = int(style_config.get("value_color_b", 0.0) * 255)
-    value_color = f"rgb({value_r}, {value_g}, {value_b})"
-
-    return {
-        "css_font": css_font,
-        "font_size": style_config.get("font_size", 10),
-        "padding_percent": style_config.get("padding_percent", 0.05),
-        "show_keys": style_config.get("show_keys", True),
-        "show_values": style_config.get("show_values", True),
-        "key_color": key_color,
-        "value_color": value_color,
-        "key_weight": "bold"
-        if style_config.get("bold_keys", False)
-        else "normal",
-        "value_weight": "bold"
-        if style_config.get("bold_values", False)
-        else "normal",
-        "key_style": "italic"
-        if style_config.get("italic_keys", False)
-        else "normal",
-        "value_style": "italic"
-        if style_config.get("italic_values", False)
-        else "normal",
-    }
 
 
 def create_pdf_from_labels(labels_data, style_config=None):
-    """Create PDF from labels data using original app.py style system."""
+    """Create PDF from labels data using unified LabelRenderer for precise dimensions."""
     if style_config is None:
         style_config = load_default_style()
 
-    # Process style exactly like preview - use extract_style_properties directly
-    style_props = extract_style_properties(style_config)
+    # Get dimensions from style config
+    width_inches = style_config.get("width_inches", 2.625)
+    height_inches = style_config.get("height_inches", 1.0)
+    
+    # Create unified renderer with exact dimensions
+    renderer = LabelRenderer(width_inches, height_inches, style_config)
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
 
-    label_width = style_config.get("width_inches", 2.625) * inch
-    label_height = style_config.get("height_inches", 1.0) * inch
-    margin_left = 0.1875 * inch
-    margin_top = 0.5 * inch
+    # Calculate layout in points for precise positioning
+    margin_points = inches_to_points(0.1875)
     labels_per_row = 3
     labels_per_col = 10
+    
+    page_width_points = inches_to_points(8.5)  # US Letter width
+    page_height_points = inches_to_points(11)  # US Letter height
 
     current_label = 0
 
@@ -861,150 +954,12 @@ def create_pdf_from_labels(labels_data, style_config=None):
         ) // labels_per_row
         col = current_label % labels_per_row
 
-        x = margin_left + col * label_width
-        y = letter[1] - margin_top - label_height - row * label_height
+        # Calculate exact position in points
+        x = margin_points + col * renderer.width_points
+        y = page_height_points - margin_points - renderer.height_points - row * renderer.height_points
 
-        # Draw border
-        c.setStrokeColor(colors.black)
-        c.setLineWidth(0.5)
-        c.rect(x, y, label_width, label_height)
-
-        # Calculate padding
-        padding_x = label_width * style_props["padding_percent"]
-        padding_y = label_height * style_props["padding_percent"]
-
-        # Create lines exactly like preview, with underlines for empty values
-        lines = []
-
-        # Calculate available width for text (label width minus padding)
-        available_width = label_width * (
-            1 - 2 * style_props["padding_percent"]
-        )
-        font_size_pdf = style_props.get("font_size", 12)
-
-        # First, handle colon alignment if enabled
-        align_colons = st.session_state.get("align_colons", False)
-        processed_entries = {}
-
-        if align_colons:
-            # Find the longest field name
-            max_field_length = (
-                max(len(key) for key in label_data.keys() if key)
-                if label_data
-                else 0
-            )
-            # Create padded entries
-            for key, value in label_data.items():
-                if key:  # Only process entries with keys
-                    spaces_needed = max_field_length - len(key)
-                    padded_key = key + (" " * spaces_needed)
-                    processed_entries[padded_key] = value
-                else:
-                    processed_entries[key] = (
-                        value  # Keep entries without keys as-is
-                    )
-        else:
-            processed_entries = label_data
-
-        # Then, process each entry for underlines
-        for key, value in processed_entries.items():
-            if not key and not value:
-                continue
-            if key:
-                if (
-                    not value or not value.strip()
-                ):  # Empty value, add underlines
-                    underline_count = calculate_underline_length(
-                        key, available_width, font_size_pdf
-                    )
-                    underlines = "_" * underline_count
-                    lines.append(f"{key}: {underlines}")
-                else:
-                    lines.append(f"{key}: {value}")
-            else:
-                lines.append(value)
-
-        # Draw text using style_props like preview
-        font_size = style_props["font_size"]
-        line_height = font_size * 1.2
-        text_y = y + label_height - padding_y - font_size
-
-        # Get the key and value fonts directly from style_config
-        base_font = style_config.get("font_name", "Times-Roman")
-        key_font = get_font_name(
-            base_font,
-            style_config.get("bold_keys", True),
-            style_config.get("italic_keys", False),
-        )
-        value_font = get_font_name(
-            base_font,
-            style_config.get("bold_values", False),
-            style_config.get("italic_values", False),
-        )
-
-        # Get RGB colors from style_config
-        key_r = style_config.get("key_color_r", 0.0)
-        key_g = style_config.get("key_color_g", 0.0)
-        key_b = style_config.get("key_color_b", 0.0)
-        value_r = style_config.get("value_color_r", 0.0)
-        value_g = style_config.get("value_color_g", 0.0)
-        value_b = style_config.get("value_color_b", 0.0)
-
-        for line in lines:
-            if text_y < y + padding_y:  # Don't overflow label
-                break
-
-            if ": " in line and (
-                style_props["show_keys"] or style_props["show_values"]
-            ):
-                key_part, value_part = line.split(": ", 1)
-
-                # Calculate line width for centering
-                line_width = 0
-                key_text = f"{key_part}: " if style_props["show_keys"] else ""
-                value_text = (
-                    (value_part if value_part else "__________")
-                    if style_props["show_values"]
-                    else ""
-                )
-
-                if style_props["show_keys"]:
-                    line_width += c.stringWidth(key_text, key_font, font_size)
-                if style_props["show_values"]:
-                    line_width += c.stringWidth(
-                        value_text, value_font, font_size
-                    )
-
-                # Set starting x position (centered or left-aligned)
-                if style_config.get("center_text", False):
-                    current_x = x + (label_width - line_width) / 2
-                else:
-                    current_x = x + padding_x
-
-                if style_props["show_keys"]:
-                    c.setFont(key_font, font_size)
-                    c.setFillColorRGB(key_r, key_g, key_b)
-                    c.drawString(current_x, text_y, key_text)
-                    current_x += c.stringWidth(key_text, key_font, font_size)
-
-                if style_props["show_values"]:
-                    c.setFont(value_font, font_size)
-                    c.setFillColorRGB(value_r, value_g, value_b)
-                    c.drawString(current_x, text_y, value_text)
-            else:
-                c.setFont(key_font, font_size)
-                c.setFillColorRGB(key_r, key_g, key_b)
-
-                # Center single lines too
-                if style_config.get("center_text", False):
-                    line_width = c.stringWidth(line, key_font, font_size)
-                    text_x = x + (label_width - line_width) / 2
-                else:
-                    text_x = x + padding_x
-
-                c.drawString(text_x, text_y, line)
-
-            text_y -= line_height
+        # Use unified renderer for precise dimensions
+        renderer.render_to_pdf_canvas(c, label_data, x, y)
 
         current_label += 1
 
@@ -1261,36 +1216,6 @@ def main():
             f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" ({width_cm:.1f}cm × {height_cm:.1f}cm)'
         )
 
-        # Calculate preview dimensions using proper scaling
-        preview_width = int(width_in * PREVIEW_SCALE)
-        preview_height = int(height_in * PREVIEW_SCALE)
-        border_width = max(1, int(PREVIEW_SCALE / POINTS_PER_INCH))
-        padding_x = int(
-            preview_width * style_config.get("padding_percent", 0.05)
-        )
-        padding_y = int(
-            preview_height * style_config.get("padding_percent", 0.05)
-        )
-
-        text_align = (
-            "center" if style_config.get("center_text", False) else "left"
-        )
-
-        preview_font_size = int(
-            style_config.get("font_size", 10)
-            * (PREVIEW_SCALE / POINTS_PER_INCH)
-        )
-
-        # Map PDF font names to CSS font families
-        font_name = style_config.get("font_name", "Times-Roman")
-        if "Times" in font_name:
-            css_font_family = "Times, 'Times New Roman', serif"
-        elif "Helvetica" in font_name:
-            css_font_family = "Helvetica, Arial, sans-serif"
-        elif "Courier" in font_name:
-            css_font_family = "'Courier New', Courier, monospace"
-        else:
-            css_font_family = "Times, 'Times New Roman', serif"
 
         # Build style config from current widget values (just like original app.py)
         # Get the dimensions from the style widgets above
@@ -1312,9 +1237,12 @@ def main():
         value_r, value_g, value_b = hex_to_rgb(value_color_hex)
 
         # Build complete style config like original app.py
+        font_size_value = st.session_state.get("style_font_size", 10)
+        st.write(f"DEBUG: Font size from widget: {font_size_value} (type: {type(font_size_value)})")
+        
         style_config = {
             "font_name": st.session_state.get("style_font", "Times-Roman"),
-            "font_size": st.session_state.get("style_font_size", 10),
+            "font_size": font_size_value,
             "width_inches": width_in,
             "height_inches": height_in,
             "padding_percent": st.session_state.get("style_padding", 0.05),
@@ -1335,48 +1263,9 @@ def main():
             "show_values": True,
         }
 
-        # Use exact same process as original app.py, but add underlines for empty values
-        lines = []
-
-        # Calculate available width for text (label width minus padding)
-        padding_percent = style_config.get("padding_percent", 0.05)
-        available_width = width_in * PREVIEW_SCALE * (1 - 2 * padding_percent)
-        font_size_preview = style_config.get("font_size", 12) * (
-            PREVIEW_SCALE / POINTS_PER_INCH
-        )
-
-        # First, handle colon alignment if enabled
-        align_colons = st.session_state.get("align_colons", False)
-        processed_entries = {}
-
-        if align_colons:
-            # Find the longest field name
-            max_field_length = (
-                max(len(key) for key in current_label) if current_label else 0
-            )
-            # Create padded entries
-            for key, value in current_label.items():
-                spaces_needed = max_field_length - len(key)
-                padded_key = key + (" " * spaces_needed)
-                processed_entries[padded_key] = value
-        else:
-            processed_entries = current_label
-
-        # Then, process each entry for underlines
-        for key, value in processed_entries.items():
-            if not value.strip():  # Empty value, add underlines
-                underline_count = calculate_underline_length(
-                    key, available_width, font_size_preview
-                )
-                underlines = "_" * underline_count
-                lines.append(f"{key}: {underlines}")
-            else:
-                lines.append(f"{key}: {value}")
-        style_props = extract_style_properties(style_config)
-        preview_lines = create_preview_lines(lines, style_props)
-        preview_html = build_preview_html(
-            preview_lines, width_in, height_in, False, style_props
-        )
+        # Use unified renderer for precise preview with exact dimensions  
+        renderer = LabelRenderer(width_in, height_in, style_config)
+        preview_html = renderer.render_to_html_preview(current_label)
         st.markdown(preview_html, unsafe_allow_html=True)
 
     # Download PDF section
