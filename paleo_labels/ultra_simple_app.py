@@ -14,7 +14,6 @@ import streamlit as st
 import tomli
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 
 # Initialize storage paths
@@ -30,26 +29,32 @@ INCHES_TO_CM = 2.54
 CM_TO_INCHES = 1 / INCHES_TO_CM
 POINTS_PER_CM = POINTS_PER_INCH * CM_TO_INCHES
 
+
 # Measurement conversion functions
 def inches_to_points(inches: float) -> float:
     """Convert inches to points (1/72 inch)."""
     return inches * POINTS_PER_INCH
 
+
 def cm_to_points(cm: float) -> float:
     """Convert centimeters to points."""
     return cm * POINTS_PER_CM
+
 
 def points_to_inches(points: float) -> float:
     """Convert points to inches."""
     return points / POINTS_PER_INCH
 
+
 def points_to_cm(points: float) -> float:
     """Convert points to centimeters."""
     return points / POINTS_PER_CM
 
+
 def points_to_pixels(points: float, dpi: float = 96) -> float:
     """Convert points to pixels for HTML preview (default 96 DPI)."""
     return points * dpi / POINTS_PER_INCH
+
 
 # Default dimensions in points
 DEFAULT_WIDTH_POINTS = inches_to_points(2.625)
@@ -89,66 +94,8 @@ def get_font_name(
         return base_font
 
 
-def load_default_style() -> dict:
-    """Load default style from default_style.toml file."""
-    default_style_path = STYLE_DIR / "default_style.toml"
-
-    if default_style_path.exists():
-        try:
-            with open(default_style_path, "rb") as f:
-                toml_data = tomli.load(f)
-
-            # Flatten the TOML structure into the format expected by the style system
-            style_config = {}
-
-            # Dimensions
-            if "dimensions" in toml_data:
-                style_config.update(toml_data["dimensions"])
-
-            # Typography
-            if "typography" in toml_data:
-                style_config.update(toml_data["typography"])
-                # Convert font name to ReportLab format
-                font_name = toml_data["typography"].get(
-                    "font_name", "Times New Roman"
-                )
-                if "Times" in font_name:
-                    style_config["font_name"] = "Times-Roman"
-                elif "Helvetica" in font_name or "Arial" in font_name:
-                    style_config["font_name"] = "Helvetica"
-                elif "Courier" in font_name:
-                    style_config["font_name"] = "Courier"
-                else:
-                    style_config["font_name"] = "Times-Roman"
-
-            # Colors (normalize to 0-1 range)
-            if "colors" in toml_data:
-                colors = toml_data["colors"]
-                for color_key in [
-                    "key_color_r",
-                    "key_color_g",
-                    "key_color_b",
-                    "value_color_r",
-                    "value_color_g",
-                    "value_color_b",
-                ]:
-                    if color_key in colors:
-                        # If value is > 1, assume it's 0-255 range and convert to 0-1
-                        value = colors[color_key]
-                        style_config[color_key] = (
-                            value / 255.0 if value > 1 else value
-                        )
-
-            # Style options
-            if "style" in toml_data:
-                style_config.update(toml_data["style"])
-
-            return style_config
-
-        except Exception as e:
-            print(f"Error loading default style: {e}")
-
-    # Fallback to hardcoded defaults if file doesn't exist or can't be loaded
+def _get_hardcoded_defaults() -> dict:
+    """Return hardcoded default style configuration."""
     return {
         "font_name": "Times-Roman",
         "font_size": 10,
@@ -168,6 +115,74 @@ def load_default_style() -> dict:
         "show_keys": True,
         "show_values": True,
     }
+
+
+def _convert_font_name_to_reportlab(font_name: str) -> str:
+    """Convert font name to ReportLab format."""
+    if "Times" in font_name:
+        return "Times-Roman"
+    elif "Helvetica" in font_name or "Arial" in font_name:
+        return "Helvetica"
+    elif "Courier" in font_name:
+        return "Courier"
+    else:
+        return "Times-Roman"
+
+
+def _process_toml_typography(style_config: dict, toml_data: dict) -> None:
+    """Process typography section from TOML data."""
+    if "typography" in toml_data:
+        style_config.update(toml_data["typography"])
+        font_name = toml_data["typography"].get("font_name", "Times New Roman")
+        style_config["font_name"] = _convert_font_name_to_reportlab(font_name)
+
+
+def _process_toml_colors(style_config: dict, toml_data: dict) -> None:
+    """Process colors section from TOML data, normalizing to 0-1 range."""
+    if "colors" in toml_data:
+        colors = toml_data["colors"]
+        color_keys = [
+            "key_color_r",
+            "key_color_g",
+            "key_color_b",
+            "value_color_r",
+            "value_color_g",
+            "value_color_b",
+        ]
+        for color_key in color_keys:
+            if color_key in colors:
+                value = colors[color_key]
+                style_config[color_key] = value / 255.0 if value > 1 else value
+
+
+def load_default_style() -> dict:
+    """Load default style from default_style.toml file."""
+    default_style_path = STYLE_DIR / "default_style.toml"
+
+    if not default_style_path.exists():
+        return _get_hardcoded_defaults()
+
+    try:
+        with open(default_style_path, "rb") as f:
+            toml_data = tomli.load(f)
+
+        style_config = {}
+
+        # Process each section
+        if "dimensions" in toml_data:
+            style_config.update(toml_data["dimensions"])
+
+        _process_toml_typography(style_config, toml_data)
+        _process_toml_colors(style_config, toml_data)
+
+        if "style" in toml_data:
+            style_config.update(toml_data["style"])
+
+        return style_config
+
+    except Exception as e:
+        print(f"Error loading default style: {e}")
+        return _get_hardcoded_defaults()
 
 
 def get_hardcoded_defaults() -> dict:
@@ -232,71 +247,87 @@ def calculate_underline_length(
 
 class LabelRenderer:
     """Phase 2: Dimension-first label renderer that works in points for both preview and PDF."""
-    
-    def __init__(self, width_inches: float, height_inches: float, style_config: dict):
+
+    def __init__(
+        self, width_inches: float, height_inches: float, style_config: dict
+    ):
         self.width_points = inches_to_points(width_inches)
         self.height_points = inches_to_points(height_inches)
         self.style_config = style_config
-        
+
         # Calculate padding in points
-        self.padding_points = self.style_config.get('padding_percent', 0.05) * min(self.width_points, self.height_points)
-        
+        self.padding_points = self.style_config.get(
+            "padding_percent", 0.05
+        ) * min(self.width_points, self.height_points)
+
         # Available text area in points
         self.text_width_points = self.width_points - (2 * self.padding_points)
-        self.text_height_points = self.height_points - (2 * self.padding_points)
-        
+        self.text_height_points = self.height_points - (
+            2 * self.padding_points
+        )
+
         # Font configuration
-        self.font_size_points = self.style_config.get('font_size', DEFAULT_FONT_SIZE_POINTS)
-        print(f"DEBUG LabelRenderer: Received font_size={self.style_config.get('font_size')}, using font_size_points={self.font_size_points}")
-        self.line_height_points = self.font_size_points * DEFAULT_LINE_HEIGHT_RATIO
-    
+        self.font_size_points = self.style_config.get(
+            "font_size", DEFAULT_FONT_SIZE_POINTS
+        )
+        print(
+            f"DEBUG LabelRenderer: Received font_size={self.style_config.get('font_size')}, using font_size_points={self.font_size_points}"
+        )
+        self.line_height_points = (
+            self.font_size_points * DEFAULT_LINE_HEIGHT_RATIO
+        )
+
     def calculate_optimal_font_size(self, lines: list[str]) -> float:
         """Calculate optimal font size to fit all content within exact dimensions."""
         if not lines:
             return self.font_size_points
-            
+
         # TEMPORARY: Disable auto-sizing to test if this is the issue
         # Just return the configured font size directly
-        print(f"DEBUG: Using configured font size directly: {self.font_size_points}")
+        print(
+            f"DEBUG: Using configured font size directly: {self.font_size_points}"
+        )
         return self.font_size_points
-        
+
         # ORIGINAL AUTO-SIZING CODE (commented out for debugging):
         # # Estimate character width (points)
         # base_char_width = self.font_size_points * 0.6
-        # 
+        #
         # # Find longest line
         # max_line_length = max(len(line) for line in lines)
         # estimated_line_width = max_line_length * base_char_width
-        # 
+        #
         # # Calculate scaling factors
         # width_scale = self.text_width_points / estimated_line_width if estimated_line_width > 0 else 1.0
-        # 
+        #
         # # Calculate height requirements
         # total_text_height = len(lines) * self.line_height_points
         # height_scale = self.text_height_points / total_text_height if total_text_height > 0 else 1.0
-        # 
+        #
         # print(f"DEBUG auto-sizing: text_width={self.text_width_points}, estimated_line_width={estimated_line_width}, width_scale={width_scale}")
         # print(f"DEBUG auto-sizing: text_height={self.text_height_points}, total_text_height={total_text_height}, height_scale={height_scale}")
-        # 
+        #
         # # Use the more restrictive scaling factor
         # # Allow font to grow up to 1.5x the configured size if there's space
         # max_scale = 1.5  # Allow up to 50% larger than configured
         # scale_factor = min(width_scale, height_scale, max_scale)
-        # 
+        #
         # result = max(self.font_size_points * scale_factor, 6.0)  # Minimum 6pt font
         # print(f"DEBUG calculate_optimal_font_size: configured={self.font_size_points}, scale_factor={scale_factor}, result={result}")
         # return result
-    
+
     def process_label_data(self, label_data: dict) -> list[str]:
         """Process label data into lines with underlines for empty values."""
         lines = []
-        
+
         # Handle colon alignment if enabled
-        align_colons = self.style_config.get('align_colons', False)
+        align_colons = self.style_config.get("align_colons", False)
         processed_entries = {}
-        
+
         if align_colons:
-            max_field_length = max(len(key) for key in label_data.keys() if key) if label_data else 0
+            max_field_length = (
+                max(len(key) for key in label_data if key) if label_data else 0
+            )
             for key, value in label_data.items():
                 if key:
                     spaces_needed = max_field_length - len(key)
@@ -306,29 +337,33 @@ class LabelRenderer:
                     processed_entries[key] = value
         else:
             processed_entries = label_data
-        
+
         # Create lines with underlines for empty values
         for key, value in processed_entries.items():
             if not value or not value.strip():
-                underline_count = calculate_underline_length(key, self.text_width_points, self.font_size_points)
+                underline_count = calculate_underline_length(
+                    key, self.text_width_points, self.font_size_points
+                )
                 underlines = "_" * underline_count
                 lines.append(f"{key}: {underlines}")
             else:
                 lines.append(f"{key}: {value}")
-        
+
         return lines
-    
-    def render_to_html_preview(self, label_data: dict, preview_dpi: float = 96) -> str:
+
+    def render_to_html_preview(
+        self, label_data: dict, preview_dpi: float = 96
+    ) -> str:
         """Render label to HTML preview with exact dimensions."""
         lines = self.process_label_data(label_data)
         optimal_font_size = self.calculate_optimal_font_size(lines)
-        
+
         # Convert points to pixels for HTML
         preview_width_px = points_to_pixels(self.width_points, preview_dpi)
         preview_height_px = points_to_pixels(self.height_points, preview_dpi)
         padding_px = points_to_pixels(self.padding_points, preview_dpi)
         font_size_px = points_to_pixels(optimal_font_size, preview_dpi)
-        
+
         # Build HTML with precise dimensions
         lines_html = []
         for line in lines:
@@ -341,27 +376,31 @@ class LabelRenderer:
                 key_style = self._get_html_text_style("key", font_size_px)
                 line_html = f'<span style="{key_style}">{line}</span>'
             lines_html.append(line_html)
-        
+
         # Calculate line height to match PDF
-        line_height_px = points_to_pixels(optimal_font_size * DEFAULT_LINE_HEIGHT_RATIO, preview_dpi)
-        
+        line_height_px = points_to_pixels(
+            optimal_font_size * DEFAULT_LINE_HEIGHT_RATIO, preview_dpi
+        )
+
         # Position lines individually to match PDF positioning
         positioned_lines = []
         for i, line_html in enumerate(lines_html):
             top_position = i * line_height_px
             positioned_line = f'<div style="position: absolute; top: {top_position}px; left: 0; width: 100%; margin: 0; padding: 0; line-height: {line_height_px}px;">{line_html}</div>'
             positioned_lines.append(positioned_line)
-        
+
         content_html = "".join(positioned_lines)
-        text_align = "center" if self.style_config.get("center_text", False) else "left"
-        
+        text_align = (
+            "center" if self.style_config.get("center_text", False) else "left"
+        )
+
         outer_style = (
             f"border: 1px solid #cccccc; "
             f"width: {preview_width_px}px; height: {preview_height_px}px; "
             f"margin: 20px auto; background-color: white; "
             f"position: relative; box-sizing: border-box;"
         )
-        
+
         inner_style = (
             f"position: absolute; top: {padding_px}px; left: {padding_px}px; "
             f"width: {preview_width_px - 2 * padding_px}px; "
@@ -369,14 +408,14 @@ class LabelRenderer:
             f"text-align: {text_align}; position: relative; "
             f"margin: 0; padding: 0; box-sizing: border-box;"
         )
-        
-        dimensions_info = f"Exact size: {points_to_inches(self.width_points):.3f}\" × {points_to_inches(self.height_points):.3f}\" ({points_to_cm(self.width_points):.2f}cm × {points_to_cm(self.height_points):.2f}cm)"
-        
+
+        dimensions_info = f'Exact size: {points_to_inches(self.width_points):.3f}" × {points_to_inches(self.height_points):.3f}" ({points_to_cm(self.width_points):.2f}cm × {points_to_cm(self.height_points):.2f}cm)'
+
         return f'''<div style="{outer_style}">
     <div style="{inner_style}">{content_html}</div>
 </div>
 <p style="text-align: center; color: #666; font-size: 12px; margin-top: 10px;">{dimensions_info}</p>'''
-    
+
     def _get_html_text_style(self, text_type: str, font_size_px: float) -> str:
         """Get HTML text styling for key or value text."""
         font_mapping = {
@@ -384,27 +423,43 @@ class LabelRenderer:
             "Times-Roman": "Times, serif",
             "Courier": "Courier New, monospace",
         }
-        
+
         font_name = self.style_config.get("font_name", "Times-Roman")
         css_font = font_mapping.get(font_name, "Times, serif")
-        
+
         if text_type == "key":
             color_r = int(self.style_config.get("key_color_r", 0.0) * 255)
             color_g = int(self.style_config.get("key_color_g", 0.0) * 255)
             color_b = int(self.style_config.get("key_color_b", 0.0) * 255)
-            weight = "bold" if self.style_config.get("bold_keys", True) else "normal"
-            style = "italic" if self.style_config.get("italic_keys", False) else "normal"
+            weight = (
+                "bold"
+                if self.style_config.get("bold_keys", True)
+                else "normal"
+            )
+            style = (
+                "italic"
+                if self.style_config.get("italic_keys", False)
+                else "normal"
+            )
         else:  # value
             color_r = int(self.style_config.get("value_color_r", 0.0) * 255)
             color_g = int(self.style_config.get("value_color_g", 0.0) * 255)
             color_b = int(self.style_config.get("value_color_b", 0.0) * 255)
-            weight = "bold" if self.style_config.get("bold_values", False) else "normal"
-            style = "italic" if self.style_config.get("italic_values", False) else "normal"
-        
+            weight = (
+                "bold"
+                if self.style_config.get("bold_values", False)
+                else "normal"
+            )
+            style = (
+                "italic"
+                if self.style_config.get("italic_values", False)
+                else "normal"
+            )
+
         color = f"rgb({color_r}, {color_g}, {color_b})"
-        
+
         line_height_px = font_size_px * DEFAULT_LINE_HEIGHT_RATIO
-        
+
         return (
             f"font-family: {css_font}; "
             f"font-size: {font_size_px}px; "
@@ -414,53 +469,82 @@ class LabelRenderer:
             f"font-style: {style}; "
             f"margin: 0; padding: 0; vertical-align: baseline;"
         )
-    
-    def render_to_pdf_canvas(self, canvas_obj, label_data: dict, x_offset: float, y_offset: float):
+
+    def render_to_pdf_canvas(
+        self, canvas_obj, label_data: dict, x_offset: float, y_offset: float
+    ):
         """Render label to PDF canvas at specified position (in points)."""
         lines = self.process_label_data(label_data)
         optimal_font_size = self.calculate_optimal_font_size(lines)
-        
+
         # Draw border
         canvas_obj.setStrokeColor(colors.black)
         canvas_obj.setLineWidth(0.5)
-        canvas_obj.rect(x_offset, y_offset, self.width_points, self.height_points)
-        
+        canvas_obj.rect(
+            x_offset, y_offset, self.width_points, self.height_points
+        )
+
         # Get fonts
         base_font = self.style_config.get("font_name", "Times-Roman")
-        key_font = get_font_name(base_font, self.style_config.get("bold_keys", True), self.style_config.get("italic_keys", False))
-        value_font = get_font_name(base_font, self.style_config.get("bold_values", False), self.style_config.get("italic_values", False))
-        
+        key_font = get_font_name(
+            base_font,
+            self.style_config.get("bold_keys", True),
+            self.style_config.get("italic_keys", False),
+        )
+        value_font = get_font_name(
+            base_font,
+            self.style_config.get("bold_values", False),
+            self.style_config.get("italic_values", False),
+        )
+
         # Get colors
-        key_color = (self.style_config.get("key_color_r", 0.0), self.style_config.get("key_color_g", 0.0), self.style_config.get("key_color_b", 0.0))
-        value_color = (self.style_config.get("value_color_r", 0.0), self.style_config.get("value_color_g", 0.0), self.style_config.get("value_color_b", 0.0))
-        
+        key_color = (
+            self.style_config.get("key_color_r", 0.0),
+            self.style_config.get("key_color_g", 0.0),
+            self.style_config.get("key_color_b", 0.0),
+        )
+        value_color = (
+            self.style_config.get("value_color_r", 0.0),
+            self.style_config.get("value_color_g", 0.0),
+            self.style_config.get("value_color_b", 0.0),
+        )
+
         # Draw text
-        text_y = y_offset + self.height_points - self.padding_points - optimal_font_size
-        
+        text_y = (
+            y_offset
+            + self.height_points
+            - self.padding_points
+            - optimal_font_size
+        )
+
         for line in lines:
             if text_y < y_offset + self.padding_points:
                 break
-            
+
             if ": " in line:
                 key_part, value_part = line.split(": ", 1)
-                
+
                 # Calculate line width for centering
                 key_text = f"{key_part}: "
-                key_width = canvas_obj.stringWidth(key_text, key_font, optimal_font_size)
-                value_width = canvas_obj.stringWidth(value_part, value_font, optimal_font_size)
+                key_width = canvas_obj.stringWidth(
+                    key_text, key_font, optimal_font_size
+                )
+                value_width = canvas_obj.stringWidth(
+                    value_part, value_font, optimal_font_size
+                )
                 total_width = key_width + value_width
-                
+
                 # Set x position (centered or left-aligned)
                 if self.style_config.get("center_text", False):
                     text_x = x_offset + (self.width_points - total_width) / 2
                 else:
                     text_x = x_offset + self.padding_points
-                
+
                 # Draw key
                 canvas_obj.setFont(key_font, optimal_font_size)
                 canvas_obj.setFillColorRGB(*key_color)
                 canvas_obj.drawString(text_x, text_y, key_text)
-                
+
                 # Draw value
                 canvas_obj.setFont(value_font, optimal_font_size)
                 canvas_obj.setFillColorRGB(*value_color)
@@ -469,20 +553,18 @@ class LabelRenderer:
                 # Single line (no colon)
                 canvas_obj.setFont(key_font, optimal_font_size)
                 canvas_obj.setFillColorRGB(*key_color)
-                
-                line_width = canvas_obj.stringWidth(line, key_font, optimal_font_size)
+
+                line_width = canvas_obj.stringWidth(
+                    line, key_font, optimal_font_size
+                )
                 if self.style_config.get("center_text", False):
                     text_x = x_offset + (self.width_points - line_width) / 2
                 else:
                     text_x = x_offset + self.padding_points
-                
+
                 canvas_obj.drawString(text_x, text_y, line)
-            
+
             text_y -= optimal_font_size * DEFAULT_LINE_HEIGHT_RATIO
-
-
-
-
 
 
 def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
@@ -773,100 +855,129 @@ def load_style_files():
     return styles
 
 
+def _get_key_options(current_key: str) -> list[str]:
+    """Get available key options from existing labels."""
+    all_keys = set()
+    for label in get_existing_labels():
+        all_keys.update(label["data"].keys())
+
+    key_options = ["New", "Empty"] + sorted(list(all_keys))
+
+    if current_key and current_key not in key_options:
+        key_options.append(current_key)
+
+    return key_options
+
+
+def _render_key_input(index: int, current_key: str) -> str:
+    """Render the key input widget."""
+    key_options = _get_key_options(current_key)
+
+    selected_key = st.selectbox(
+        f"Field {index + 1}:",
+        key_options,
+        index=key_options.index(current_key)
+        if current_key in key_options
+        else 0,
+        key=f"key_select_{index}",
+    )
+
+    if selected_key == "New":
+        return st.text_input(
+            "Enter new field:",
+            value=current_key if current_key != "New" else "",
+            key=f"key_new_{index}",
+        )
+    elif selected_key == "Empty":
+        return ""
+    else:
+        return selected_key
+
+
+def _render_scientific_name_input(
+    index: int, value_label: str, current_value: str
+) -> str:
+    """Render scientific name input with suggestions."""
+    typed_value = st.text_input(
+        value_label + ":",
+        value=current_value,
+        key=f"value_text_{index}",
+        help="Type to search existing labels and paleobiology database",
+    )
+
+    if typed_value and len(typed_value) >= 2:
+        suggestions = get_scientific_name_suggestions(typed_value)
+        if suggestions:
+            st.write("**Suggestions:**")
+            for i, suggestion in enumerate(suggestions[:5]):
+                if st.button(
+                    f"🔍 {suggestion}",
+                    key=f"suggestion_{index}_{i}",
+                ):
+                    st.session_state.manual_entries[index]["value"] = (
+                        suggestion
+                    )
+                    st.rerun()
+
+    return typed_value
+
+
+def _render_standard_value_input(
+    index: int, actual_key: str, value_label: str, current_value: str
+) -> str:
+    """Render standard value input with previous values."""
+    value_options = ["New", "Empty"]
+    prev_values = get_previous_values(actual_key)
+    value_options.extend(prev_values)
+
+    if current_value and current_value not in value_options:
+        value_options.append(current_value)
+
+    selected_value = st.selectbox(
+        value_label + ":",
+        value_options,
+        index=value_options.index(current_value)
+        if current_value in value_options
+        else 0,
+        key=f"value_select_{index}",
+    )
+
+    if selected_value == "New":
+        return st.text_input(
+            "Enter new value:",
+            value=current_value if current_value != "New" else "",
+            key=f"value_new_{index}",
+        )
+    elif selected_value == "Empty":
+        return ""
+    else:
+        return selected_value
+
+
+def _is_scientific_name_field(key: str) -> bool:
+    """Check if a field is for scientific names."""
+    return "scientific" in key.lower() and "name" in key.lower()
+
+
 def render_key_value_input(index, current_key="", current_value=""):
     """Render a key-value input pair with smart suggestions."""
     col1, col2 = st.columns(2)
 
     with col1:
-        all_keys = set()
-        for label in get_existing_labels():
-            all_keys.update(label["data"].keys())
-
-        key_options = ["New", "Empty"] + sorted(list(all_keys))
-
-        if current_key and current_key not in key_options:
-            key_options.append(current_key)
-
-        selected_key = st.selectbox(
-            f"Field {index + 1}:",
-            key_options,
-            index=key_options.index(current_key)
-            if current_key in key_options
-            else 0,
-            key=f"key_select_{index}",
-        )
-
-        if selected_key == "New":
-            actual_key = st.text_input(
-                "Enter new field:",
-                value=current_key if current_key != "New" else "",
-                key=f"key_new_{index}",
-            )
-        elif selected_key == "Empty":
-            actual_key = ""
-        else:
-            actual_key = selected_key
+        actual_key = _render_key_input(index, current_key)
 
     with col2:
         if actual_key:
-            value_label = f"Value {index + 1}"
-            if actual_key:
-                value_label += f" ({actual_key})"
+            value_label = f"Value {index + 1} ({actual_key})"
 
-            if (
-                "scientific" in actual_key.lower()
-                and "name" in actual_key.lower()
-            ):
-                typed_value = st.text_input(
-                    value_label + ":",
-                    value=current_value,
-                    key=f"value_text_{index}",
-                    help="Type to search existing labels and paleobiology database",
+            if _is_scientific_name_field(actual_key):
+                actual_value = _render_scientific_name_input(
+                    index, value_label, current_value
                 )
-
-                if typed_value and len(typed_value) >= 2:
-                    suggestions = get_scientific_name_suggestions(typed_value)
-                    if suggestions:
-                        st.write("**Suggestions:**")
-                        for i, suggestion in enumerate(suggestions[:5]):
-                            if st.button(
-                                f"🔍 {suggestion}",
-                                key=f"suggestion_{index}_{i}",
-                            ):
-                                st.session_state.manual_entries[index][
-                                    "value"
-                                ] = suggestion
-                                st.rerun()
-
-                actual_value = typed_value
-
             else:
-                value_options = ["New", "Empty"]
-                prev_values = get_previous_values(actual_key)
-                value_options.extend(prev_values)
-
-                if current_value and current_value not in value_options:
-                    value_options.append(current_value)
-
-                selected_value = st.selectbox(
-                    value_label + ":",
-                    value_options,
-                    index=value_options.index(current_value)
-                    if current_value in value_options
-                    else 0,
-                    key=f"value_select_{index}",
+                actual_value = _render_standard_value_input(
+                    index, actual_key, value_label, current_value
                 )
-
-                if selected_value == "New":
-                    actual_value = st.text_input(
-                        "Enter new value:",
-                        value=current_value if current_value != "New" else "",
-                        key=f"value_new_{index}",
-                    )
-                elif selected_value == "Empty":
-                    actual_value = ""
-                else:
-                    actual_value = selected_value
         else:
             actual_value = ""
 
@@ -915,8 +1026,6 @@ def convert_to_original_style_format(style_config):
     }
 
 
-
-
 def create_pdf_from_labels(labels_data, style_config=None):
     """Create PDF from labels data using unified LabelRenderer for precise dimensions."""
     if style_config is None:
@@ -925,7 +1034,7 @@ def create_pdf_from_labels(labels_data, style_config=None):
     # Get dimensions from style config
     width_inches = style_config.get("width_inches", 2.625)
     height_inches = style_config.get("height_inches", 1.0)
-    
+
     # Create unified renderer with exact dimensions
     renderer = LabelRenderer(width_inches, height_inches, style_config)
 
@@ -936,7 +1045,7 @@ def create_pdf_from_labels(labels_data, style_config=None):
     margin_points = inches_to_points(0.1875)
     labels_per_row = 3
     labels_per_col = 10
-    
+
     page_width_points = inches_to_points(8.5)  # US Letter width
     page_height_points = inches_to_points(11)  # US Letter height
 
@@ -956,7 +1065,12 @@ def create_pdf_from_labels(labels_data, style_config=None):
 
         # Calculate exact position in points
         x = margin_points + col * renderer.width_points
-        y = page_height_points - margin_points - renderer.height_points - row * renderer.height_points
+        y = (
+            page_height_points
+            - margin_points
+            - renderer.height_points
+            - row * renderer.height_points
+        )
 
         # Use unified renderer for precise dimensions
         renderer.render_to_pdf_canvas(c, label_data, x, y)
@@ -1216,7 +1330,6 @@ def main():
             f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" ({width_cm:.1f}cm × {height_cm:.1f}cm)'
         )
 
-
         # Build style config from current widget values (just like original app.py)
         # Get the dimensions from the style widgets above
         if st.session_state.get("style_units") == "Metric":
@@ -1238,8 +1351,10 @@ def main():
 
         # Build complete style config like original app.py
         font_size_value = st.session_state.get("style_font_size", 10)
-        st.write(f"DEBUG: Font size from widget: {font_size_value} (type: {type(font_size_value)})")
-        
+        st.write(
+            f"DEBUG: Font size from widget: {font_size_value} (type: {type(font_size_value)})"
+        )
+
         style_config = {
             "font_name": st.session_state.get("style_font", "Times-Roman"),
             "font_size": font_size_value,
@@ -1263,7 +1378,7 @@ def main():
             "show_values": True,
         }
 
-        # Use unified renderer for precise preview with exact dimensions  
+        # Use unified renderer for precise preview with exact dimensions
         renderer = LabelRenderer(width_in, height_in, style_config)
         preview_html = renderer.render_to_html_preview(current_label)
         st.markdown(preview_html, unsafe_allow_html=True)
