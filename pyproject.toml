@@ -11,13 +11,11 @@ keywords = ["python", "geology", "paleontology", "chronostratigraphy", "package"
 requires-python = ">=3.13"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [
-    "platformdirs>=4.3.8",
     "polars>=1.32.3",
     "reportlab>=4.4.3",
+    "requests>=2.32.3",
     "streamlit>=1.45.1",
-    "toml>=0.10.2",
     "tomli>=2.2.1",
-    "tomli-w>=1.2.0",
 ]
 
 [project.urls]
