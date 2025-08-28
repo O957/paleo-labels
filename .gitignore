@@ -663,5 +663,5 @@ author_emails.txt
 *.csv
 env
 
-# User labels (ignored)
+# user labels
 labels/

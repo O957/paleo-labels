@@ -1,6 +1,8 @@
 """
-Ultra-Simplified Paleo Labels App
-Single interface following exact user specification for maximum simplicity.
+Paleo-Labels: A Python package for writing and formatting 
+labels for geological, paleontological, and biological 
+specimens and related items, such localities and 
+expeditions.
 """
 
 import json
