@@ -4,10 +4,10 @@ version = "0.0.1"
 authors = [
   {name = "O957", email = "127630341+O957@users.noreply.github.com"},
 ]
-description = "paleo-labels is a package for writing precisely formatted labels for natural specimens and related items, such as collections and excursions."
+description = "Paleo-Labels: A Python package for writing and formatting labels for geological, paleontological, and biological specimens and related items, such localities and expeditions."
 readme = "README.md"
 license = "Apache-2.0"
-keywords = ["python", "geology", "paleontology", "chronostratigraphy", "package"]
+keywords = ["python", "geology", "paleontology", "package", "data-management", "geology", "paleobiology", "reportlab", "streamlit", "research-tools"]
 requires-python = ">=3.13"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [

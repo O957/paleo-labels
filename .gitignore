@@ -665,3 +665,6 @@ env
 
 # user labels
 labels/
+
+# claude / implementation plans
+assets/plans
