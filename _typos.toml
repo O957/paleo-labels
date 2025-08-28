@@ -17,4 +17,8 @@ strat = "strat"
 nam = "nam"
 
 [files]
-extend-exclude = [".gitignore", ".pre-commit-config.yaml", "./.github/ISSUE_TEMPLATE/general_issue.md"]
+extend-exclude = [
+    ".gitignore", 
+    ".pre-commit-config.yaml", 
+    "./.github/ISSUE_TEMPLATE/general_issue.md"
+]
