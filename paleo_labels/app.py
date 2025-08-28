@@ -1,7 +1,7 @@
 """
-Paleo-Labels: A Python package for writing and formatting 
-labels for geological, paleontological, and biological 
-specimens and related items, such localities and 
+Paleo-Labels: A Python package for writing and formatting
+labels for geological, paleontological, and biological
+specimens and related items, such localities and
 expeditions.
 """
 
@@ -23,7 +23,7 @@ LABELS_DIR = Path.home() / ".paleo_labels" / "labels"
 LABELS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Style configuration paths
-STYLE_DIR = Path(__file__).parent.parent / "label_templates"
+STYLE_DIR = Path(__file__).parent.parent / "templates"
 
 # Phase 1: Unified measurement system - everything in points (1/72 inch)
 POINTS_PER_INCH = 72
@@ -581,7 +581,7 @@ def convert_key_name(underscore_key):
 
 
 def load_label_types():
-    """Load label types from TOML files in label_templates directory."""
+    """Load label types from TOML files in templates directory."""
     label_types = {}
 
     if STYLE_DIR.exists():
@@ -1143,7 +1143,7 @@ def main():
                     st.rerun()
             else:
                 st.info(
-                    "No label types found. Please check the label_templates directory."
+                    "No label types found. Please check the templates directory."
                 )
 
         elif fill_option == "Existing Label":
