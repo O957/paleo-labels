@@ -272,9 +272,6 @@ class LabelRenderer:
         self.font_size_points = self.style_config.get(
             "font_size", DEFAULT_FONT_SIZE_POINTS
         )
-        print(
-            f"DEBUG LabelRenderer: Received font_size={self.style_config.get('font_size')}, using font_size_points={self.font_size_points}"
-        )
         self.line_height_points = (
             self.font_size_points * DEFAULT_LINE_HEIGHT_RATIO
         )
@@ -284,39 +281,8 @@ class LabelRenderer:
         if not lines:
             return self.font_size_points
 
-        # TEMPORARY: Disable auto-sizing to test if this is the issue
-        # Just return the configured font size directly
-        print(
-            f"DEBUG: Using configured font size directly: {self.font_size_points}"
-        )
         return self.font_size_points
 
-        # ORIGINAL AUTO-SIZING CODE (commented out for debugging):
-        # # Estimate character width (points)
-        # base_char_width = self.font_size_points * 0.6
-        #
-        # # Find longest line
-        # max_line_length = max(len(line) for line in lines)
-        # estimated_line_width = max_line_length * base_char_width
-        #
-        # # Calculate scaling factors
-        # width_scale = self.text_width_points / estimated_line_width if estimated_line_width > 0 else 1.0
-        #
-        # # Calculate height requirements
-        # total_text_height = len(lines) * self.line_height_points
-        # height_scale = self.text_height_points / total_text_height if total_text_height > 0 else 1.0
-        #
-        # print(f"DEBUG auto-sizing: text_width={self.text_width_points}, estimated_line_width={estimated_line_width}, width_scale={width_scale}")
-        # print(f"DEBUG auto-sizing: text_height={self.text_height_points}, total_text_height={total_text_height}, height_scale={height_scale}")
-        #
-        # # Use the more restrictive scaling factor
-        # # Allow font to grow up to 1.5x the configured size if there's space
-        # max_scale = 1.5  # Allow up to 50% larger than configured
-        # scale_factor = min(width_scale, height_scale, max_scale)
-        #
-        # result = max(self.font_size_points * scale_factor, 6.0)  # Minimum 6pt font
-        # print(f"DEBUG calculate_optimal_font_size: configured={self.font_size_points}, scale_factor={scale_factor}, result={result}")
-        # return result
 
     def process_label_data(self, label_data: dict) -> list[str]:
         """Process label data into lines with underlines for empty values."""
@@ -1363,9 +1329,6 @@ def main():
 
         # Build complete style config like original app.py
         font_size_value = st.session_state.get("style_font_size", 10)
-        st.write(
-            f"DEBUG: Font size from widget: {font_size_value} (type: {type(font_size_value)})"
-        )
 
         style_config = {
             "font_name": st.session_state.get("style_font", "Times-Roman"),
