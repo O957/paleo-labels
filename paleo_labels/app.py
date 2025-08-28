@@ -18,21 +18,21 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-# Initialize storage paths
+# initialize storage paths
 LABELS_DIR = Path.home() / ".paleo_labels" / "labels"
 LABELS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Style configuration paths
+# style configuration paths
 STYLE_DIR = Path(__file__).parent.parent / "templates"
 
-# Phase 1: Unified measurement system - everything in points (1/72 inch)
+# phase 1: unified measurement system - everything in points (1/72 inch)
 POINTS_PER_INCH = 72
 INCHES_TO_CM = 2.54
 CM_TO_INCHES = 1 / INCHES_TO_CM
 POINTS_PER_CM = POINTS_PER_INCH * CM_TO_INCHES
 
 
-# Measurement conversion functions
+# measurement conversion functions
 def inches_to_points(inches: float) -> float:
     """Convert inches to points (1/72 inch)."""
     return inches * POINTS_PER_INCH
@@ -58,7 +58,7 @@ def points_to_pixels(points: float, dpi: float = 96) -> float:
     return points * dpi / POINTS_PER_INCH
 
 
-# Default dimensions in points
+# default dimensions in points
 DEFAULT_WIDTH_POINTS = inches_to_points(2.625)
 DEFAULT_HEIGHT_POINTS = inches_to_points(1.0)
 DEFAULT_FONT_SIZE_POINTS = 10
@@ -170,7 +170,7 @@ def load_default_style() -> dict:
 
         style_config = {}
 
-        # Process each section
+        # process each section
         if "dimensions" in toml_data:
             style_config.update(toml_data["dimensions"])
 
@@ -229,20 +229,20 @@ def calculate_underline_length(
     key_part: str, available_width_points: float, font_size_points: float
 ) -> int:
     """Calculate number of underscores that fit within available width (in points), aligned to same end position."""
-    # Character width estimate in points (more accurate for points-based system)
+    # character width estimate in points (more accurate for points-based system)
     char_width_points = font_size_points * 0.6
 
-    # Calculate how many characters can fit in available width
+    # calculate how many characters can fit in available width
     max_chars_in_width = round(available_width_points / char_width_points)
 
-    # Calculate target position (95% of available character space)
+    # calculate target position (95% of available character space)
     target_char_position = round(max_chars_in_width * 0.95)
 
-    # Calculate underlines needed to reach target position
+    # calculate underlines needed to reach target position
     key_and_colon_length = len(key_part + ": ")
     underscore_count = max(1, target_char_position - key_and_colon_length)
 
-    # Ensure we don't exceed the maximum width
+    # ensure we don't exceed the maximum width
     max_underscores = max_chars_in_width - key_and_colon_length
     return min(underscore_count, max_underscores, 100)
 
@@ -257,18 +257,18 @@ class LabelRenderer:
         self.height_points = inches_to_points(height_inches)
         self.style_config = style_config
 
-        # Calculate padding in points
+        # calculate padding in points
         self.padding_points = self.style_config.get(
             "padding_percent", 0.05
         ) * min(self.width_points, self.height_points)
 
-        # Available text area in points
+        # available text area in points
         self.text_width_points = self.width_points - (2 * self.padding_points)
         self.text_height_points = self.height_points - (
             2 * self.padding_points
         )
 
-        # Font configuration
+        # font configuration
         self.font_size_points = self.style_config.get(
             "font_size", DEFAULT_FONT_SIZE_POINTS
         )
@@ -288,7 +288,7 @@ class LabelRenderer:
         """Process label data into lines with underlines for empty values."""
         lines = []
 
-        # Handle colon alignment if enabled
+        # handle colon alignment if enabled
         align_colons = self.style_config.get("align_colons", False)
         processed_entries = {}
 
@@ -306,7 +306,7 @@ class LabelRenderer:
         else:
             processed_entries = label_data
 
-        # Create lines with underlines for empty values
+        # create lines with underlines for empty values
         for key, value in processed_entries.items():
             if not value or not value.strip():
                 underline_count = calculate_underline_length(
@@ -326,13 +326,13 @@ class LabelRenderer:
         lines = self.process_label_data(label_data)
         optimal_font_size = self.calculate_optimal_font_size(lines)
 
-        # Convert points to pixels for HTML
+        # convert points to pixels for html
         preview_width_px = points_to_pixels(self.width_points, preview_dpi)
         preview_height_px = points_to_pixels(self.height_points, preview_dpi)
         padding_px = points_to_pixels(self.padding_points, preview_dpi)
         font_size_px = points_to_pixels(optimal_font_size, preview_dpi)
 
-        # Build HTML with precise dimensions
+        # build html with precise dimensions
         lines_html = []
         for line in lines:
             if ": " in line:
@@ -345,12 +345,12 @@ class LabelRenderer:
                 line_html = f'<span style="{key_style}">{line}</span>'
             lines_html.append(line_html)
 
-        # Calculate line height to match PDF
+        # calculate line height to match pdf
         line_height_px = points_to_pixels(
             optimal_font_size * DEFAULT_LINE_HEIGHT_RATIO, preview_dpi
         )
 
-        # Position lines individually to match PDF positioning
+        # position lines individually to match pdf positioning
         positioned_lines = []
         for i, line_html in enumerate(lines_html):
             top_position = i * line_height_px
@@ -445,14 +445,14 @@ class LabelRenderer:
         lines = self.process_label_data(label_data)
         optimal_font_size = self.calculate_optimal_font_size(lines)
 
-        # Draw border
+        # draw border
         canvas_obj.setStrokeColor(colors.black)
         canvas_obj.setLineWidth(0.5)
         canvas_obj.rect(
             x_offset, y_offset, self.width_points, self.height_points
         )
 
-        # Get fonts
+        # get fonts
         base_font = self.style_config.get("font_name", "Times-Roman")
         key_font = get_font_name(
             base_font,
@@ -465,7 +465,7 @@ class LabelRenderer:
             self.style_config.get("italic_values", False),
         )
 
-        # Get colors
+        # get colors
         key_color = (
             self.style_config.get("key_color_r", 0.0),
             self.style_config.get("key_color_g", 0.0),
@@ -477,7 +477,7 @@ class LabelRenderer:
             self.style_config.get("value_color_b", 0.0),
         )
 
-        # Draw text
+        # draw text
         text_y = (
             y_offset
             + self.height_points
@@ -492,7 +492,7 @@ class LabelRenderer:
             if ": " in line:
                 key_part, value_part = line.split(": ", 1)
 
-                # Calculate line width for centering
+                # calculate line width for centering
                 key_text = f"{key_part}: "
                 key_width = canvas_obj.stringWidth(
                     key_text, key_font, optimal_font_size
@@ -502,23 +502,23 @@ class LabelRenderer:
                 )
                 total_width = key_width + value_width
 
-                # Set x position (centered or left-aligned)
+                # set x position (centered or left-aligned)
                 if self.style_config.get("center_text", False):
                     text_x = x_offset + (self.width_points - total_width) / 2
                 else:
                     text_x = x_offset + self.padding_points
 
-                # Draw key
+                # draw key
                 canvas_obj.setFont(key_font, optimal_font_size)
                 canvas_obj.setFillColorRGB(*key_color)
                 canvas_obj.drawString(text_x, text_y, key_text)
 
-                # Draw value
+                # draw value
                 canvas_obj.setFont(value_font, optimal_font_size)
                 canvas_obj.setFillColorRGB(*value_color)
                 canvas_obj.drawString(text_x + key_width, text_y, value_part)
             else:
-                # Single line (no colon)
+                # single line (no colon)
                 canvas_obj.setFont(key_font, optimal_font_size)
                 canvas_obj.setFillColorRGB(*key_color)
 
@@ -689,7 +689,7 @@ def _process_nested_colors(converted_style: dict, style_data: dict) -> None:
     if "colors" in style_data:
         colors_data = style_data["colors"]
 
-        # Process key colors
+        # process key colors
         if all(
             k in colors_data
             for k in ["key_color_r", "key_color_g", "key_color_b"]
@@ -701,7 +701,7 @@ def _process_nested_colors(converted_style: dict, style_data: dict) -> None:
                 f"#{key_r:02x}{key_g:02x}{key_b:02x}"
             )
 
-        # Process value colors
+        # process value colors
         if all(
             k in colors_data
             for k in ["value_color_r", "value_color_g", "value_color_b"]
@@ -770,7 +770,7 @@ def _normalize_color_component(value: float) -> int:
 
 def _process_flat_colors(converted_style: dict, style_data: dict) -> None:
     """Process flat color format from TOML data."""
-    # Process key colors
+    # process key colors
     if all(
         k in style_data for k in ["key_color_r", "key_color_g", "key_color_b"]
     ):
@@ -779,7 +779,7 @@ def _process_flat_colors(converted_style: dict, style_data: dict) -> None:
         key_b = _normalize_color_component(style_data["key_color_b"])
         converted_style["key_color"] = f"#{key_r:02x}{key_g:02x}{key_b:02x}"
 
-    # Process value colors
+    # process value colors
     if all(
         k in style_data
         for k in ["value_color_r", "value_color_g", "value_color_b"]
@@ -794,13 +794,13 @@ def _convert_style_data(style_data: dict, default_style: dict) -> dict:
     """Convert TOML style data to internal format."""
     converted_style = default_style.copy()
 
-    # Process nested format sections
+    # process nested format sections
     _process_nested_dimensions(converted_style, style_data, default_style)
     _process_nested_typography(converted_style, style_data, default_style)
     _process_nested_colors(converted_style, style_data)
     _process_nested_style_options(converted_style, style_data, default_style)
 
-    # Process flat format
+    # process flat format
     _process_flat_format(converted_style, style_data)
     _process_flat_colors(converted_style, style_data)
 
@@ -973,7 +973,7 @@ def hex_to_rgb_components(hex_color):
 
 def convert_to_original_style_format(style_config):
     """Convert our hex-based style to the RGB format the original app.py expects."""
-    # Convert hex colors to RGB components
+    # convert hex colors to rgb components
     key_r, key_g, key_b = hex_to_rgb_components(
         style_config.get("key_color", "#000000")
     )
@@ -1009,17 +1009,17 @@ def create_pdf_from_labels(labels_data, style_config=None):
     if style_config is None:
         style_config = load_default_style()
 
-    # Get dimensions from style config
+    # get dimensions from style config
     width_inches = style_config.get("width_inches", 2.625)
     height_inches = style_config.get("height_inches", 1.0)
 
-    # Create unified renderer with exact dimensions
+    # create unified renderer with exact dimensions
     renderer = LabelRenderer(width_inches, height_inches, style_config)
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
 
-    # Calculate layout in points for precise positioning
+    # calculate layout in points for precise positioning
     margin_points = inches_to_points(0.1875)
     labels_per_row = 3
     labels_per_col = 10
@@ -1041,7 +1041,7 @@ def create_pdf_from_labels(labels_data, style_config=None):
         ) // labels_per_row
         col = current_label % labels_per_row
 
-        # Calculate exact position in points
+        # calculate exact position in points
         x = margin_points + col * renderer.width_points
         y = (
             page_height_points
@@ -1050,7 +1050,7 @@ def create_pdf_from_labels(labels_data, style_config=None):
             - row * renderer.height_points
         )
 
-        # Use unified renderer for precise dimensions
+        # use unified renderer for precise dimensions
         renderer.render_to_pdf_canvas(c, label_data, x, y)
 
         current_label += 1
@@ -1063,7 +1063,7 @@ def main():
     st.set_page_config(page_title="Paleo Labels", page_icon="🏷️", layout="wide")
     st.title("🏷️ Paleo Labels")
 
-    # Initialize session state
+    # initialize session state
     if "current_labels" not in st.session_state:
         st.session_state.current_labels = []
     if "manual_entries" not in st.session_state:
@@ -1071,11 +1071,11 @@ def main():
     if "current_style" not in st.session_state:
         st.session_state.current_style = load_default_style()
 
-    # Load label types
+    # load label types
     if "loaded_label_types" not in st.session_state:
         st.session_state.loaded_label_types = load_label_types()
 
-    # Fill With section
+    # fill with section
     st.subheader("Fill With")
     col1, col2 = st.columns(2)
 
@@ -1171,7 +1171,7 @@ def main():
                                 )
                         st.session_state.manual_entries = entries
 
-                    # Track processed files to prevent infinite loops
+                    # track processed files to prevent infinite loops
                     if "processed_files" not in st.session_state:
                         st.session_state.processed_files = set()
                     st.session_state.processed_files.add(uploaded_label.name)
@@ -1182,15 +1182,15 @@ def main():
                 except Exception as e:
                     st.error(f"Error loading TOML: {e}")
 
-    # Manual Entry section
+    # manual entry section
     st.subheader("Manual Entry")
 
-    # Render current entries
+    # render current entries
     for i, entry in enumerate(st.session_state.manual_entries):
         key, value = render_key_value_input(i, entry["key"], entry["value"])
         st.session_state.manual_entries[i] = {"key": key, "value": value}
 
-    # Add/Remove entry buttons
+    # add/remove entry buttons
     col1, col2 = st.columns(2)
     with col1:
         if st.button("➕ Add Field", key="add_field_btn"):
@@ -1204,13 +1204,13 @@ def main():
             st.session_state.manual_entries.pop()
             st.rerun()
 
-    # Style Options section - COMPLETELY REWRITTEN to work like original app.py
+    # style options section - completely rewritten to work like original app.py
     st.subheader("Style Options")
 
-    # Get defaults from TOML
+    # get defaults from toml
     defaults = load_default_style()
 
-    # Style widgets with proper default values
+    # style widgets with proper default values
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
@@ -1284,7 +1284,7 @@ def main():
             "Padding %:", 0.01, 0.2, value=0.05, step=0.01, key="style_padding"
         )
 
-    # Current label preview with styling
+    # current label preview with styling
     if any(
         entry["key"] or entry["value"]
         for entry in st.session_state.manual_entries
@@ -1298,7 +1298,7 @@ def main():
 
         style_config = st.session_state.current_style
 
-        # Display current dimensions
+        # display current dimensions
         width_in = style_config.get("width_inches", 2.625)
         height_in = style_config.get("height_inches", 1.0)
         width_cm = width_in * INCHES_TO_CM
@@ -1308,8 +1308,8 @@ def main():
             f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" ({width_cm:.1f}cm × {height_cm:.1f}cm)'
         )
 
-        # Build style config from current widget values (just like original app.py)
-        # Get the dimensions from the style widgets above
+        # build style config from current widget values (just like original app.py)
+        # get the dimensions from the style widgets above
         if st.session_state.get("style_units") == "Metric":
             width_in = (
                 st.session_state.get("style_width_cm", 6.7) / INCHES_TO_CM
@@ -1321,13 +1321,13 @@ def main():
             width_in = st.session_state.get("style_width_in", 2.625)
             height_in = st.session_state.get("style_height_in", 1.0)
 
-        # Get all style values from widgets
+        # get all style values from widgets
         key_color_hex = st.session_state.get("style_key_color", "#000000")
         value_color_hex = st.session_state.get("style_value_color", "#000000")
         key_r, key_g, key_b = hex_to_rgb(key_color_hex)
         value_r, value_g, value_b = hex_to_rgb(value_color_hex)
 
-        # Build complete style config like original app.py
+        # build complete style config like original app.py
         font_size_value = st.session_state.get("style_font_size", 10)
 
         style_config = {
@@ -1353,12 +1353,12 @@ def main():
             "show_values": True,
         }
 
-        # Use unified renderer for precise preview with exact dimensions
+        # use unified renderer for precise preview with exact dimensions
         renderer = LabelRenderer(width_in, height_in, style_config)
         preview_html = renderer.render_to_html_preview(current_label)
         st.markdown(preview_html, unsafe_allow_html=True)
 
-    # Download PDF section
+    # download pdf section
     current_label = {
         entry["key"]: entry["value"]
         for entry in st.session_state.manual_entries
@@ -1369,7 +1369,7 @@ def main():
         all_labels.append(current_label)
 
     if all_labels:
-        # Use the same style config as preview
+        # use the same style config as preview
         if st.session_state.get("style_units") == "Metric":
             width_in = (
                 st.session_state.get("style_width_cm", 6.7) / INCHES_TO_CM
@@ -1419,7 +1419,7 @@ def main():
             type="primary",
         )
 
-    # Save section
+    # save section
     st.subheader("Save")
 
     current_label = {
@@ -1481,7 +1481,7 @@ def main():
                 st.success(f"Saved {num_copies} label copies!")
                 st.rerun()
 
-    # Make New Label
+    # make new label
     st.subheader("Make New Label")
 
     if st.button("🔄 Reset Everything", type="secondary"):
@@ -1490,7 +1490,7 @@ def main():
         st.success("Session reset!")
         st.rerun()
 
-    # Sidebar with session info
+    # sidebar with session info
     with st.sidebar:
         st.subheader("📊 Session Info")
         st.metric("Labels in Session", len(st.session_state.current_labels))
