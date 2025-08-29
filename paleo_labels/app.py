@@ -34,27 +34,84 @@ POINTS_PER_CM = POINTS_PER_INCH * CM_TO_INCHES
 
 # measurement conversion functions
 def inches_to_points(inches: float) -> float:
-    """Convert inches to points (1/72 inch)."""
+    """Convert inches to points (1/72 inch).
+
+    Parameters
+    ----------
+    inches : float
+        Value in inches to convert.
+
+    Returns
+    -------
+    float
+        Value converted to points.
+    """
     return inches * POINTS_PER_INCH
 
 
 def cm_to_points(cm: float) -> float:
-    """Convert centimeters to points."""
+    """Convert centimeters to points.
+
+    Parameters
+    ----------
+    cm : float
+        Value in centimeters to convert.
+
+    Returns
+    -------
+    float
+        Value converted to points.
+    """
     return cm * POINTS_PER_CM
 
 
 def points_to_inches(points: float) -> float:
-    """Convert points to inches."""
+    """Convert points to inches.
+
+    Parameters
+    ----------
+    points : float
+        Value in points to convert.
+
+    Returns
+    -------
+    float
+        Value converted to inches.
+    """
     return points / POINTS_PER_INCH
 
 
 def points_to_cm(points: float) -> float:
-    """Convert points to centimeters."""
+    """Convert points to centimeters.
+
+    Parameters
+    ----------
+    points : float
+        Value in points to convert.
+
+    Returns
+    -------
+    float
+        Value converted to centimeters.
+    """
     return points / POINTS_PER_CM
 
 
 def points_to_pixels(points: float, dpi: float = 96) -> float:
-    """Convert points to pixels for HTML preview (default 96 DPI)."""
+    """Convert points to pixels for HTML preview.
+
+    Parameters
+    ----------
+    points : float
+        Value in points to convert.
+    dpi : float
+        Dots per inch for conversion (default 96).
+
+    Returns
+    -------
+    float
+        Value converted to pixels.
+    """
     return points * dpi / POINTS_PER_INCH
 
 
@@ -69,7 +126,22 @@ DEFAULT_LINE_HEIGHT_RATIO = 1.2
 def get_font_name(
     base_font: str, is_bold: bool = False, is_italic: bool = False
 ) -> str:
-    """Get the correct font name based on style parameters."""
+    """Get the correct font name based on style parameters.
+
+    Parameters
+    ----------
+    base_font : str
+        Base font name (e.g., 'Helvetica', 'Times-Roman', 'Courier').
+    is_bold : bool
+        Whether the font should be bold (default False).
+    is_italic : bool
+        Whether the font should be italic (default False).
+
+    Returns
+    -------
+    str
+        Font name with appropriate style variant.
+    """
     font_variants = {
         "Helvetica": {
             (False, False): "Helvetica",
@@ -97,7 +169,17 @@ def get_font_name(
 
 
 def _get_hardcoded_defaults() -> dict:
-    """Return hardcoded default style configuration."""
+    """Return hardcoded default style configuration.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    dict
+        Dictionary containing default style configuration values.
+    """
     return {
         "font_name": "Times-Roman",
         "font_size": 10,
@@ -120,7 +202,18 @@ def _get_hardcoded_defaults() -> dict:
 
 
 def _convert_font_name_to_reportlab(font_name: str) -> str:
-    """Convert font name to ReportLab format."""
+    """Convert font name to ReportLab format.
+
+    Parameters
+    ----------
+    font_name : str
+        Font name to convert.
+
+    Returns
+    -------
+    str
+        Font name in ReportLab format.
+    """
     if "Times" in font_name:
         return "Times-Roman"
     elif "Helvetica" in font_name or "Arial" in font_name:
@@ -132,7 +225,19 @@ def _convert_font_name_to_reportlab(font_name: str) -> str:
 
 
 def _process_toml_typography(style_config: dict, toml_data: dict) -> None:
-    """Process typography section from TOML data."""
+    """Process typography section from TOML data.
+
+    Parameters
+    ----------
+    style_config : dict
+        Style configuration dictionary to update.
+    toml_data : dict
+        TOML data containing typography information.
+
+    Returns
+    -------
+    None
+    """
     if "typography" in toml_data:
         style_config.update(toml_data["typography"])
         font_name = toml_data["typography"].get("font_name", "Times New Roman")
@@ -140,7 +245,19 @@ def _process_toml_typography(style_config: dict, toml_data: dict) -> None:
 
 
 def _process_toml_colors(style_config: dict, toml_data: dict) -> None:
-    """Process colors section from TOML data, normalizing to 0-1 range."""
+    """Process colors section from TOML data, normalizing to 0-1 range.
+
+    Parameters
+    ----------
+    style_config : dict
+        Style configuration dictionary to update.
+    toml_data : dict
+        TOML data containing color information.
+
+    Returns
+    -------
+    None
+    """
     if "colors" in toml_data:
         colors = toml_data["colors"]
         color_keys = [
@@ -158,7 +275,17 @@ def _process_toml_colors(style_config: dict, toml_data: dict) -> None:
 
 
 def load_default_style() -> dict:
-    """Load default style from default_style.toml file."""
+    """Load default style from default_style.toml file.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    dict
+        Style configuration dictionary loaded from TOML file.
+    """
     default_style_path = STYLE_DIR / "default_style.toml"
 
     if not default_style_path.exists():
@@ -188,12 +315,33 @@ def load_default_style() -> dict:
 
 
 def get_hardcoded_defaults() -> dict:
-    """Get default values - now loads from TOML file."""
+    """Get default values - now loads from TOML file.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    dict
+        Default style configuration values.
+    """
     return load_default_style()
 
 
 def apply_style_defaults(style_config: dict) -> dict:
-    """Apply default values to style configuration and handle font styling."""
+    """Apply default values to style configuration and handle font styling.
+
+    Parameters
+    ----------
+    style_config : dict
+        Style configuration dictionary to process.
+
+    Returns
+    -------
+    dict
+        Processed style configuration with defaults applied.
+    """
     defaults = load_default_style()
     processed = defaults.copy()
 
@@ -228,8 +376,24 @@ def apply_style_defaults(style_config: dict) -> dict:
 def calculate_underline_length(
     key_part: str, available_width_points: float, font_size_points: float
 ) -> int:
-    """Calculate number of underscores that fit within available width (in points), aligned to same end position."""
-    # character width estimate in points (more accurate for points-based system)
+    """Calculate number of underscores that fit within available width.
+
+    Parameters
+    ----------
+    key_part : str
+        The key text before the underline.
+    available_width_points : float
+        Available width in points.
+    font_size_points : float
+        Font size in points.
+
+    Returns
+    -------
+    int
+        Number of underscore characters to use.
+    """
+    # character width estimate in points
+    # (more accurate for points-based system)
     char_width_points = font_size_points * 0.6
 
     # calculate how many characters can fit in available width
@@ -248,11 +412,29 @@ def calculate_underline_length(
 
 
 class LabelRenderer:
-    """Phase 2: Dimension-first label renderer that works in points for both preview and PDF."""
+    """
+    Dimension-first label renderer that works in points for
+    both preview and PDF.
+    """
 
     def __init__(
         self, width_inches: float, height_inches: float, style_config: dict
-    ):
+    ) -> None:
+        """Initialize label renderer with dimensions and style.
+
+        Parameters
+        ----------
+        width_inches : float
+            Label width in inches.
+        height_inches : float
+            Label height in inches.
+        style_config : dict
+            Style configuration dictionary.
+
+        Returns
+        -------
+        None
+        """
         self.width_points = inches_to_points(width_inches)
         self.height_points = inches_to_points(height_inches)
         self.style_config = style_config
@@ -277,14 +459,36 @@ class LabelRenderer:
         )
 
     def calculate_optimal_font_size(self, lines: list[str]) -> float:
-        """Calculate optimal font size to fit all content within exact dimensions."""
+        """Calculate optimal font size to fit all content within exact dimensions.
+
+        Parameters
+        ----------
+        lines : list[str]
+            List of text lines to fit.
+
+        Returns
+        -------
+        float
+            Optimal font size in points.
+        """
         if not lines:
             return self.font_size_points
 
         return self.font_size_points
 
     def process_label_data(self, label_data: dict) -> list[str]:
-        """Process label data into lines with underlines for empty values."""
+        """Process label data into lines with underlines for empty values.
+
+        Parameters
+        ----------
+        label_data : dict
+            Dictionary of label key-value pairs.
+
+        Returns
+        -------
+        list[str]
+            List of formatted label lines.
+        """
         lines = []
 
         # handle colon alignment if enabled
@@ -321,7 +525,20 @@ class LabelRenderer:
     def render_to_html_preview(
         self, label_data: dict, preview_dpi: float = 96
     ) -> str:
-        """Render label to HTML preview with exact dimensions."""
+        """Render label to HTML preview with exact dimensions.
+
+        Parameters
+        ----------
+        label_data : dict
+            Dictionary of label key-value pairs.
+        preview_dpi : float
+            DPI for preview rendering (default 96).
+
+        Returns
+        -------
+        str
+            HTML string for label preview.
+        """
         lines = self.process_label_data(label_data)
         optimal_font_size = self.calculate_optimal_font_size(lines)
 
@@ -384,7 +601,20 @@ class LabelRenderer:
 <p style="text-align: center; color: #666; font-size: 12px; margin-top: 10px;">{dimensions_info}</p>'''
 
     def _get_html_text_style(self, text_type: str, font_size_px: float) -> str:
-        """Get HTML text styling for key or value text."""
+        """Get HTML text styling for key or value text.
+
+        Parameters
+        ----------
+        text_type : str
+            Type of text ('key' or 'value').
+        font_size_px : float
+            Font size in pixels.
+
+        Returns
+        -------
+        str
+            CSS style string.
+        """
         font_mapping = {
             "Helvetica": "Arial, sans-serif",
             "Times-Roman": "Times, serif",
@@ -439,8 +669,24 @@ class LabelRenderer:
 
     def render_to_pdf_canvas(
         self, canvas_obj, label_data: dict, x_offset: float, y_offset: float
-    ):
-        """Render label to PDF canvas at specified position (in points)."""
+    ) -> None:
+        """Render label to PDF canvas at specified position.
+
+        Parameters
+        ----------
+        canvas_obj : reportlab.pdfgen.canvas.Canvas
+            ReportLab canvas object.
+        label_data : dict
+            Dictionary of label key-value pairs.
+        x_offset : float
+            X position in points.
+        y_offset : float
+            Y position in points.
+
+        Returns
+        -------
+        None
+        """
         lines = self.process_label_data(label_data)
         optimal_font_size = self.calculate_optimal_font_size(lines)
 
@@ -535,18 +781,50 @@ class LabelRenderer:
 
 
 def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
-    """Convert hex color to RGB tuple."""
+    """Convert hex color to RGB tuple.
+
+    Parameters
+    ----------
+    hex_color : str
+        Hex color string (e.g., '#FF0000').
+
+    Returns
+    -------
+    tuple[int, int, int]
+        RGB values as integers (0-255).
+    """
     hex_color = hex_color.lstrip("#")
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
 
-def convert_key_name(underscore_key):
-    """Convert underscore_key to 'Proper Key Name' format."""
+def convert_key_name(underscore_key: str) -> str:
+    """Convert underscore_key to 'Proper Key Name' format.
+
+    Parameters
+    ----------
+    underscore_key : str
+        Key with underscores (e.g., 'field_name').
+
+    Returns
+    -------
+    str
+        Formatted key with spaces and title case.
+    """
     return underscore_key.replace("_", " ").title()
 
 
-def load_label_types():
-    """Load label types from TOML files in templates directory."""
+def load_label_types() -> dict:
+    """Load label types from TOML files in templates directory.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    dict
+        Dictionary of label types with their fields and descriptions.
+    """
     label_types = {}
 
     if STYLE_DIR.exists():
@@ -583,32 +861,64 @@ def load_label_types():
     return label_types
 
 
-def get_existing_labels():
-    """Get list of existing saved labels."""
+def get_existing_labels() -> list[dict]:
+    """Get list of existing saved labels.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    list[dict]
+        List of dictionaries containing label names and data.
+    """
     labels = []
     for label_file in LABELS_DIR.glob("*.json"):
         try:
             with open(label_file) as f:
                 data = json.load(f)
                 labels.append({"name": label_file.stem, "data": data})
-        except:
+        except Exception as e:
             continue
     return labels
 
 
-def get_previous_values(key):
-    """Get previous values used for a specific key."""
+def get_previous_values(key: str) -> list[str]:
+    """Get previous values used for a specific key.
+
+    Parameters
+    ----------
+    key : str
+        Field key to get previous values for.
+
+    Returns
+    -------
+    list[str]
+        Sorted list of unique previous values for the key.
+    """
     values = set()
     for label in get_existing_labels():
-        if key.lower() in [k.lower() for k in label["data"].keys()]:
+        if key.lower() in [k.lower() for k in label["data"]]:
             for k, v in label["data"].items():
                 if k.lower() == key.lower() and v.strip():
                     values.add(v.strip())
     return sorted(list(values))
 
 
-def get_pbdb_suggestions(partial_value):
-    """Get PBDB suggestions for taxonomic fields."""
+def get_pbdb_suggestions(partial_value: str) -> list[str]:
+    """Get PBDB suggestions for taxonomic fields.
+
+    Parameters
+    ----------
+    partial_value : str
+        Partial text to search for in PBDB.
+
+    Returns
+    -------
+    list[str]
+        List of suggested taxonomic names from PBDB.
+    """
     if not partial_value or len(partial_value) < 2:
         return []
 
@@ -624,20 +934,38 @@ def get_pbdb_suggestions(partial_value):
                     for record in data["records"]
                     if "nam" in record
                 ]
-    except:
+    except Exception as e:
         pass
     return []
 
 
-def get_scientific_name_suggestions(partial_value):
-    """Get combined suggestions for Scientific Name from existing labels and PBDB."""
+def get_scientific_name_suggestions(partial_value: str) -> list[str]:
+    """
+    Get combined suggestions for Scientific Name from
+    existing labels and PBDB.
+
+    Parameters
+    ----------
+    partial_value : str
+        Partial scientific name to search for.
+
+    Returns
+    -------
+    list[str]
+        Sorted list of suggested scientific names.
+    """
     suggestions = set()
 
     for label in get_existing_labels():
         for key, value in label["data"].items():
-            if "scientific" in key.lower() and value.strip():
-                if not partial_value or partial_value.lower() in value.lower():
-                    suggestions.add(value.strip())
+            if (
+                "scientific" in key.lower()
+                and value.strip()
+                and (
+                    not partial_value or partial_value.lower() in value.lower()
+                )
+            ):
+                suggestions.add(value.strip())
 
     if partial_value and len(partial_value) >= 2:
         pbdb_suggestions = get_pbdb_suggestions(partial_value)
@@ -649,7 +977,21 @@ def get_scientific_name_suggestions(partial_value):
 def _process_nested_dimensions(
     converted_style: dict, style_data: dict, default_style: dict
 ) -> None:
-    """Process dimensions section from nested TOML format."""
+    """Process dimensions section from nested TOML format.
+
+    Parameters
+    ----------
+    converted_style : dict
+        Style dictionary to update with dimensions.
+    style_data : dict
+        TOML data containing style information.
+    default_style : dict
+        Default style values to use as fallback.
+
+    Returns
+    -------
+    None
+    """
     if "dimensions" in style_data:
         converted_style.update(
             {
@@ -669,7 +1011,21 @@ def _process_nested_dimensions(
 def _process_nested_typography(
     converted_style: dict, style_data: dict, default_style: dict
 ) -> None:
-    """Process typography section from nested TOML format."""
+    """Process typography section from nested TOML format.
+
+    Parameters
+    ----------
+    converted_style : dict
+        Style dictionary to update with typography.
+    style_data : dict
+        TOML data containing style information.
+    default_style : dict
+        Default style values to use as fallback.
+
+    Returns
+    -------
+    None
+    """
     if "typography" in style_data:
         converted_style.update(
             {
@@ -684,7 +1040,19 @@ def _process_nested_typography(
 
 
 def _process_nested_colors(converted_style: dict, style_data: dict) -> None:
-    """Process colors section from nested TOML format."""
+    """Process colors section from nested TOML format.
+
+    Parameters
+    ----------
+    converted_style : dict
+        Style dictionary to update with colors.
+    style_data : dict
+        TOML data containing color information.
+
+    Returns
+    -------
+    None
+    """
     if "colors" in style_data:
         colors_data = style_data["colors"]
 
@@ -716,7 +1084,21 @@ def _process_nested_colors(converted_style: dict, style_data: dict) -> None:
 def _process_nested_style_options(
     converted_style: dict, style_data: dict, default_style: dict
 ) -> None:
-    """Process style section from nested TOML format."""
+    """Process style section from nested TOML format.
+
+    Parameters
+    ----------
+    converted_style : dict
+        Style dictionary to update with style options.
+    style_data : dict
+        TOML data containing style information.
+    default_style : dict
+        Default style values to use as fallback.
+
+    Returns
+    -------
+    None
+    """
     if "style" in style_data:
         converted_style.update(
             {
@@ -743,7 +1125,19 @@ def _process_nested_style_options(
 
 
 def _process_flat_format(converted_style: dict, style_data: dict) -> None:
-    """Process flat format TOML data."""
+    """Process flat format TOML data.
+
+    Parameters
+    ----------
+    converted_style : dict
+        Style dictionary to update.
+    style_data : dict
+        TOML data in flat format.
+
+    Returns
+    -------
+    None
+    """
     flat_keys = [
         "font_name",
         "font_size",
@@ -763,12 +1157,35 @@ def _process_flat_format(converted_style: dict, style_data: dict) -> None:
 
 
 def _normalize_color_component(value: float) -> int:
-    """Normalize color component to 0-255 range."""
+    """Normalize color component to 0-255 range.
+
+    Parameters
+    ----------
+    value : float
+        Color component value (0-1 or 0-255).
+
+    Returns
+    -------
+    int
+        Normalized color value (0-255).
+    """
     return int(value * 255) if value <= 1 else int(value)
 
 
 def _process_flat_colors(converted_style: dict, style_data: dict) -> None:
-    """Process flat color format from TOML data."""
+    """Process flat color format from TOML data.
+
+    Parameters
+    ----------
+    converted_style : dict
+        Style dictionary to update with colors.
+    style_data : dict
+        TOML data containing color information.
+
+    Returns
+    -------
+    None
+    """
     # process key colors
     if all(
         k in style_data for k in ["key_color_r", "key_color_g", "key_color_b"]
@@ -790,7 +1207,20 @@ def _process_flat_colors(converted_style: dict, style_data: dict) -> None:
 
 
 def _convert_style_data(style_data: dict, default_style: dict) -> dict:
-    """Convert TOML style data to internal format."""
+    """Convert TOML style data to internal format.
+
+    Parameters
+    ----------
+    style_data : dict
+        Raw TOML style data.
+    default_style : dict
+        Default style values to use as fallback.
+
+    Returns
+    -------
+    dict
+        Converted style configuration.
+    """
     converted_style = default_style.copy()
 
     # process nested format sections
@@ -806,8 +1236,14 @@ def _convert_style_data(style_data: dict, default_style: dict) -> dict:
     return converted_style
 
 
-def load_style_files():
-    """Load available style files."""
+def load_style_files() -> dict:
+    """Load available style files.
+
+    Returns
+    -------
+    dict
+        Dictionary of available styles keyed by name.
+    """
     default_style = load_default_style()
     styles = {"Default Style": default_style}
 
@@ -833,7 +1269,18 @@ def load_style_files():
 
 
 def _get_key_options(current_key: str) -> list[str]:
-    """Get available key options from existing labels."""
+    """Get available key options from existing labels.
+
+    Parameters
+    ----------
+    current_key : str
+        Current key value to include in options.
+
+    Returns
+    -------
+    list[str]
+        List of available key options.
+    """
     all_keys = set()
     for label in get_existing_labels():
         all_keys.update(label["data"].keys())
@@ -847,7 +1294,20 @@ def _get_key_options(current_key: str) -> list[str]:
 
 
 def _render_key_input(index: int, current_key: str) -> str:
-    """Render the key input widget."""
+    """Render the key input widget.
+
+    Parameters
+    ----------
+    index : int
+        Index of the field in the form.
+    current_key : str
+        Current key value.
+
+    Returns
+    -------
+    str
+        Selected or entered key value.
+    """
     key_options = _get_key_options(current_key)
 
     selected_key = st.selectbox(
@@ -874,7 +1334,22 @@ def _render_key_input(index: int, current_key: str) -> str:
 def _render_scientific_name_input(
     index: int, value_label: str, current_value: str
 ) -> str:
-    """Render scientific name input with suggestions."""
+    """Render scientific name input with suggestions.
+
+    Parameters
+    ----------
+    index : int
+        Index of the field in the form.
+    value_label : str
+        Label for the value input.
+    current_value : str
+        Current value.
+
+    Returns
+    -------
+    str
+        Selected or entered value.
+    """
     typed_value = st.text_input(
         value_label + ":",
         value=current_value,
@@ -902,7 +1377,24 @@ def _render_scientific_name_input(
 def _render_standard_value_input(
     index: int, actual_key: str, value_label: str, current_value: str
 ) -> str:
-    """Render standard value input with previous values."""
+    """Render standard value input with previous values.
+
+    Parameters
+    ----------
+    index : int
+        Index of the field in the form.
+    actual_key : str
+        Key for getting previous values.
+    value_label : str
+        Label for the value input.
+    current_value : str
+        Current value.
+
+    Returns
+    -------
+    str
+        Selected or entered value.
+    """
     value_options = ["New", "Empty"]
     prev_values = get_previous_values(actual_key)
     value_options.extend(prev_values)
@@ -932,12 +1424,40 @@ def _render_standard_value_input(
 
 
 def _is_scientific_name_field(key: str) -> bool:
-    """Check if a field is for scientific names."""
+    """Check if a field is for scientific names.
+
+    Parameters
+    ----------
+    key : str
+        Field key to check.
+
+    Returns
+    -------
+    bool
+        True if field is for scientific names.
+    """
     return "scientific" in key.lower() and "name" in key.lower()
 
 
-def render_key_value_input(index, current_key="", current_value=""):
-    """Render a key-value input pair with smart suggestions."""
+def render_key_value_input(
+    index: int, current_key: str = "", current_value: str = ""
+) -> tuple[str, str]:
+    """Render a key-value input pair with smart suggestions.
+
+    Parameters
+    ----------
+    index : int
+        Index of the field in the form.
+    current_key : str
+        Current key value (default "").
+    current_value : str
+        Current value (default "").
+
+    Returns
+    -------
+    tuple[str, str]
+        Tuple of (key, value) entered by user.
+    """
     col1, col2 = st.columns(2)
 
     with col1:
@@ -961,8 +1481,19 @@ def render_key_value_input(index, current_key="", current_value=""):
     return actual_key, actual_value
 
 
-def hex_to_rgb_components(hex_color):
-    """Convert hex color to separate r,g,b components (0-1 range) like original app.py expects."""
+def hex_to_rgb_components(hex_color: str) -> tuple[float, float, float]:
+    """Convert hex color to separate r,g,b components (0-1 range).
+
+    Parameters
+    ----------
+    hex_color : str
+        Hex color string (e.g., '#FF0000').
+
+    Returns
+    -------
+    tuple[float, float, float]
+        RGB values as floats (0-1 range).
+    """
     hex_color = hex_color.lstrip("#")
     if len(hex_color) == 6:
         r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
@@ -970,8 +1501,19 @@ def hex_to_rgb_components(hex_color):
     return (0.0, 0.0, 0.0)
 
 
-def convert_to_original_style_format(style_config):
-    """Convert our hex-based style to the RGB format the original app.py expects."""
+def convert_to_original_style_format(style_config: dict) -> dict:
+    """Convert hex-based style to RGB format.
+
+    Parameters
+    ----------
+    style_config : dict
+        Style configuration with hex colors.
+
+    Returns
+    -------
+    dict
+        Style configuration with RGB color components.
+    """
     # convert hex colors to rgb components
     key_r, key_g, key_b = hex_to_rgb_components(
         style_config.get("key_color", "#000000")
@@ -1003,8 +1545,23 @@ def convert_to_original_style_format(style_config):
     }
 
 
-def create_pdf_from_labels(labels_data, style_config=None):
-    """Create PDF from labels data using unified LabelRenderer for precise dimensions."""
+def create_pdf_from_labels(
+    labels_data: list[dict], style_config: dict = None
+) -> bytes:
+    """Create PDF from labels data using unified LabelRenderer.
+
+    Parameters
+    ----------
+    labels_data : list[dict]
+        List of label data dictionaries.
+    style_config : dict
+        Style configuration (default None, uses default style).
+
+    Returns
+    -------
+    bytes
+        PDF file content as bytes.
+    """
     if style_config is None:
         style_config = load_default_style()
 
@@ -1023,12 +1580,9 @@ def create_pdf_from_labels(labels_data, style_config=None):
     labels_per_row = 3
     labels_per_col = 10
 
-    page_width_points = inches_to_points(8.5)  # US Letter width
     page_height_points = inches_to_points(11)  # US Letter height
 
-    current_label = 0
-
-    for label_data in labels_data:
+    for current_label, label_data in enumerate(labels_data):
         if (
             current_label > 0
             and current_label % (labels_per_row * labels_per_col) == 0
@@ -1052,13 +1606,17 @@ def create_pdf_from_labels(labels_data, style_config=None):
         # use unified renderer for precise dimensions
         renderer.render_to_pdf_canvas(c, label_data, x, y)
 
-        current_label += 1
-
     c.save()
     return buffer.getvalue()
 
 
-def main():
+def main() -> None:
+    """Run the Paleo Labels Streamlit application.
+
+    Returns
+    -------
+    None
+    """
     st.set_page_config(page_title="Paleo Labels", page_icon="🏷️", layout="wide")
     st.title("🏷️ Paleo Labels")
 
@@ -1108,7 +1666,8 @@ def main():
                     st.rerun()
             else:
                 st.info(
-                    "No label types found. Please check the templates directory."
+                    "No label types found. Please check the "
+                    "templates directory."
                 )
 
         elif fill_option == "Existing Label":
@@ -1176,7 +1735,8 @@ def main():
                     st.session_state.processed_files.add(uploaded_label.name)
 
                     st.success(
-                        f"Loaded {len(st.session_state.manual_entries)} fields from TOML!"
+                        f"Loaded {len(st.session_state.manual_entries)} "
+                        "fields from TOML!"
                     )
                 except Exception as e:
                     st.error(f"Error loading TOML: {e}")
@@ -1307,7 +1867,8 @@ def main():
             f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" ({width_cm:.1f}cm × {height_cm:.1f}cm)'
         )
 
-        # build style config from current widget values (just like original app.py)
+        # build style config from current widget values
+        # (just like original app.py)
         # get the dimensions from the style widgets above
         if st.session_state.get("style_units") == "Metric":
             width_in = (
