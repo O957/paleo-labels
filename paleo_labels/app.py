@@ -283,7 +283,6 @@ class LabelRenderer:
 
         return self.font_size_points
 
-
     def process_label_data(self, label_data: dict) -> list[str]:
         """Process label data into lines with underlines for empty values."""
         lines = []
