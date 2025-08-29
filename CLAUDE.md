@@ -2,6 +2,7 @@
 - GitHub handle: O957
 - Name: O957
 - When writing a function in Python, please write Numpy docstrings with type hints in the arguments. There should be one sentence summarizing the function, then an underlined Parameters section and an underline Returns section. Each argument should look like: "arg : type".
+- Use type-hints in python. Where applicable, do not use the `typing` library, e.g. use `dict` over `Dict` in a type-hint.
 - Please search for possible solutions before implementing anything.
 - All comments should begin with lowercase letters.
 - Please take into account code complexity of the functions you write. Functions should readily make use of helper functions.
