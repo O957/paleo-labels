@@ -94,7 +94,7 @@ repos:
 # PYTHON
 ###############################################################################
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.11
+    rev: v0.12.12
     hooks:
     # "currently, the Ruff formatter does not sort imports.
     # In order to both sort imports and format, call
@@ -162,7 +162,7 @@ repos:
 ###############################################################################
 -   repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.8.14
+    rev: 0.8.15
     hooks:
     -   id: uv-lock
 ###############################################################################
@@ -202,7 +202,7 @@ repos:
 # COMMIT MESSAGES
 ###############################################################################
 -   repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.8.3
+    rev: v4.8.4
     hooks:
     -   id: commitizen
 -   repo: https://github.com/jorisroovers/gitlint
