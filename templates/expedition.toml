@@ -1,0 +1,13 @@
+# Expedition Label Type
+[label_type]
+name = "Expedition"
+description = "Field expedition details"
+
+[fields]
+name = ""
+start_date = ""
+end_date = ""
+duration = ""
+purpose = ""
+members = ""
+localities = ""
