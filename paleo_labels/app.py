@@ -1610,29 +1610,30 @@ def create_pdf_from_labels(
     return buffer.getvalue()
 
 
-def main() -> None:
-    """Run the Paleo Labels Streamlit application.
+def _initialize_session_state() -> None:
+    """Initialize Streamlit session state variables.
 
     Returns
     -------
     None
     """
-    st.set_page_config(page_title="Paleo Labels", page_icon="🏷️", layout="wide")
-    st.title("🏷️ Paleo Labels")
-
-    # initialize session state
     if "current_labels" not in st.session_state:
         st.session_state.current_labels = []
     if "manual_entries" not in st.session_state:
         st.session_state.manual_entries = [{"key": "", "value": ""}]
     if "current_style" not in st.session_state:
         st.session_state.current_style = load_default_style()
-
-    # load label types
     if "loaded_label_types" not in st.session_state:
         st.session_state.loaded_label_types = load_label_types()
 
-    # fill with section
+
+def fill_with_ui() -> None:
+    """Render the 'Fill With' section of the UI.
+
+    Returns
+    -------
+    None
+    """
     st.subheader("Fill With")
     col1, col2 = st.columns(2)
 
@@ -1741,7 +1742,14 @@ def main() -> None:
                 except Exception as e:
                     st.error(f"Error loading TOML: {e}")
 
-    # manual entry section
+
+def manual_entry_ui() -> None:
+    """Render the manual entry section of the UI.
+
+    Returns
+    -------
+    None
+    """
     st.subheader("Manual Entry")
 
     # render current entries
@@ -1763,7 +1771,14 @@ def main() -> None:
             st.session_state.manual_entries.pop()
             st.rerun()
 
-    # style options section - completely rewritten to work like original app.py
+
+def style_options_ui() -> None:
+    """Render the style options section of the UI.
+
+    Returns
+    -------
+    None
+    """
     st.subheader("Style Options")
 
     # get defaults from toml
@@ -1843,7 +1858,58 @@ def main() -> None:
             "Padding %:", 0.01, 0.2, value=0.05, step=0.01, key="style_padding"
         )
 
-    # current label preview with styling
+
+def _build_style_config() -> dict:
+    """Build style configuration from current widget values.
+
+    Returns
+    -------
+    dict
+        Complete style configuration dictionary.
+    """
+    # get dimensions from widgets
+    if st.session_state.get("style_units") == "Metric":
+        width_in = st.session_state.get("style_width_cm", 6.7) / INCHES_TO_CM
+        height_in = st.session_state.get("style_height_cm", 2.5) / INCHES_TO_CM
+    else:
+        width_in = st.session_state.get("style_width_in", 2.625)
+        height_in = st.session_state.get("style_height_in", 1.0)
+
+    # get color values
+    key_color_hex = st.session_state.get("style_key_color", "#000000")
+    value_color_hex = st.session_state.get("style_value_color", "#000000")
+    key_r, key_g, key_b = hex_to_rgb(key_color_hex)
+    value_r, value_g, value_b = hex_to_rgb(value_color_hex)
+
+    return {
+        "font_name": st.session_state.get("style_font", "Times-Roman"),
+        "font_size": st.session_state.get("style_font_size", 10),
+        "width_inches": width_in,
+        "height_inches": height_in,
+        "padding_percent": st.session_state.get("style_padding", 0.05),
+        "key_color_r": key_r / 255.0,
+        "key_color_g": key_g / 255.0,
+        "key_color_b": key_b / 255.0,
+        "value_color_r": value_r / 255.0,
+        "value_color_g": value_g / 255.0,
+        "value_color_b": value_b / 255.0,
+        "bold_keys": st.session_state.get("style_bold_keys", True),
+        "bold_values": st.session_state.get("style_bold_values", False),
+        "italic_keys": st.session_state.get("style_italic_keys", False),
+        "italic_values": st.session_state.get("style_italic_values", False),
+        "center_text": st.session_state.get("style_center_text", False),
+        "show_keys": st.session_state.get("style_show_keys", True),
+        "show_values": True,
+    }
+
+
+def preview_ui() -> None:
+    """Render the current label preview section.
+
+    Returns
+    -------
+    None
+    """
     if any(
         entry["key"] or entry["value"]
         for entry in st.session_state.manual_entries
@@ -1855,7 +1921,7 @@ def main() -> None:
             if entry["key"] or entry["value"]
         }
 
-        style_config = st.session_state.current_style
+        style_config = _build_style_config()
 
         # display current dimensions
         width_in = style_config.get("width_inches", 2.625)
@@ -1867,58 +1933,19 @@ def main() -> None:
             f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" ({width_cm:.1f}cm × {height_cm:.1f}cm)'
         )
 
-        # build style config from current widget values
-        # (just like original app.py)
-        # get the dimensions from the style widgets above
-        if st.session_state.get("style_units") == "Metric":
-            width_in = (
-                st.session_state.get("style_width_cm", 6.7) / INCHES_TO_CM
-            )
-            height_in = (
-                st.session_state.get("style_height_cm", 2.5) / INCHES_TO_CM
-            )
-        else:
-            width_in = st.session_state.get("style_width_in", 2.625)
-            height_in = st.session_state.get("style_height_in", 1.0)
-
-        # get all style values from widgets
-        key_color_hex = st.session_state.get("style_key_color", "#000000")
-        value_color_hex = st.session_state.get("style_value_color", "#000000")
-        key_r, key_g, key_b = hex_to_rgb(key_color_hex)
-        value_r, value_g, value_b = hex_to_rgb(value_color_hex)
-
-        # build complete style config like original app.py
-        font_size_value = st.session_state.get("style_font_size", 10)
-
-        style_config = {
-            "font_name": st.session_state.get("style_font", "Times-Roman"),
-            "font_size": font_size_value,
-            "width_inches": width_in,
-            "height_inches": height_in,
-            "padding_percent": st.session_state.get("style_padding", 0.05),
-            "key_color_r": key_r / 255.0,
-            "key_color_g": key_g / 255.0,
-            "key_color_b": key_b / 255.0,
-            "value_color_r": value_r / 255.0,
-            "value_color_g": value_g / 255.0,
-            "value_color_b": value_b / 255.0,
-            "bold_keys": st.session_state.get("style_bold_keys", True),
-            "bold_values": st.session_state.get("style_bold_values", False),
-            "italic_keys": st.session_state.get("style_italic_keys", False),
-            "italic_values": st.session_state.get(
-                "style_italic_values", False
-            ),
-            "center_text": st.session_state.get("style_center_text", False),
-            "show_keys": st.session_state.get("style_show_keys", True),
-            "show_values": True,
-        }
-
         # use unified renderer for precise preview with exact dimensions
         renderer = LabelRenderer(width_in, height_in, style_config)
         preview_html = renderer.render_to_html_preview(current_label)
         st.markdown(preview_html, unsafe_allow_html=True)
 
-    # download pdf section
+
+def download_pdf_ui() -> None:
+    """Render the PDF download section.
+
+    Returns
+    -------
+    None
+    """
     current_label = {
         entry["key"]: entry["value"]
         for entry in st.session_state.manual_entries
@@ -1929,47 +1956,8 @@ def main() -> None:
         all_labels.append(current_label)
 
     if all_labels:
-        # use the same style config as preview
-        if st.session_state.get("style_units") == "Metric":
-            width_in = (
-                st.session_state.get("style_width_cm", 6.7) / INCHES_TO_CM
-            )
-            height_in = (
-                st.session_state.get("style_height_cm", 2.5) / INCHES_TO_CM
-            )
-        else:
-            width_in = st.session_state.get("style_width_in", 2.625)
-            height_in = st.session_state.get("style_height_in", 1.0)
-
-        key_color_hex = st.session_state.get("style_key_color", "#000000")
-        value_color_hex = st.session_state.get("style_value_color", "#000000")
-        key_r, key_g, key_b = hex_to_rgb(key_color_hex)
-        value_r, value_g, value_b = hex_to_rgb(value_color_hex)
-
-        pdf_style_config = {
-            "font_name": st.session_state.get("style_font", "Times-Roman"),
-            "font_size": st.session_state.get("style_font_size", 10),
-            "width_inches": width_in,
-            "height_inches": height_in,
-            "padding_percent": st.session_state.get("style_padding", 0.05),
-            "key_color_r": key_r / 255.0,
-            "key_color_g": key_g / 255.0,
-            "key_color_b": key_b / 255.0,
-            "value_color_r": value_r / 255.0,
-            "value_color_g": value_g / 255.0,
-            "value_color_b": value_b / 255.0,
-            "bold_keys": st.session_state.get("style_bold_keys", True),
-            "bold_values": st.session_state.get("style_bold_values", False),
-            "italic_keys": st.session_state.get("style_italic_keys", False),
-            "italic_values": st.session_state.get(
-                "style_italic_values", False
-            ),
-            "center_text": st.session_state.get("style_center_text", False),
-            "show_keys": st.session_state.get("style_show_keys", True),
-            "show_values": True,
-        }
-
-        pdf_bytes = create_pdf_from_labels(all_labels, pdf_style_config)
+        style_config = _build_style_config()
+        pdf_bytes = create_pdf_from_labels(all_labels, style_config)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         st.download_button(
             "📥 Download PDF",
@@ -1979,7 +1967,14 @@ def main() -> None:
             type="primary",
         )
 
-    # save section
+
+def save_labels_ui() -> None:
+    """Render the save labels section.
+
+    Returns
+    -------
+    None
+    """
     st.subheader("Save")
 
     current_label = {
@@ -2041,7 +2036,14 @@ def main() -> None:
                 st.success(f"Saved {num_copies} label copies!")
                 st.rerun()
 
-    # make new label
+
+def new_label_ui() -> None:
+    """Render the new label section.
+
+    Returns
+    -------
+    None
+    """
     st.subheader("Make New Label")
 
     if st.button("🔄 Reset Everything", type="secondary"):
@@ -2050,7 +2052,14 @@ def main() -> None:
         st.success("Session reset!")
         st.rerun()
 
-    # sidebar with session info
+
+def sidebar_ui() -> None:
+    """Render the sidebar with session information.
+
+    Returns
+    -------
+    None
+    """
     with st.sidebar:
         st.subheader("📊 Session Info")
         st.metric("Labels in Session", len(st.session_state.current_labels))
@@ -2062,6 +2071,35 @@ def main() -> None:
                 with st.expander(f"Label {i + 1}"):
                     for key, value in label.items():
                         st.write(f"**{key}**: {value}")
+
+
+def main() -> None:
+    """Run the Paleo Labels Streamlit application.
+
+    Returns
+    -------
+    None
+    """
+    st.set_page_config(page_title="Paleo Labels", page_icon="🏷️", layout="wide")
+    st.title("🏷️ Paleo Labels")
+
+    # initialize session state
+    _initialize_session_state()
+
+    # render UI sections
+    fill_with_ui()
+    manual_entry_ui()
+    style_options_ui()
+
+    preview_ui()
+
+    download_pdf_ui()
+
+    save_labels_ui()
+
+    new_label_ui()
+
+    sidebar_ui()
 
 
 if __name__ == "__main__":
