@@ -459,7 +459,7 @@ class LabelRenderer:
         )
 
     def calculate_optimal_font_size(self, lines: list[str]) -> float:
-        """Calculate optimal font size to fit all content within exact dimensions.
+        """Calculate optimal font size to fit content within dimensions.
 
         Parameters
         ----------
@@ -555,7 +555,10 @@ class LabelRenderer:
                 key_part, value_part = line.split(": ", 1)
                 key_style = self._get_html_text_style("key", font_size_px)
                 value_style = self._get_html_text_style("value", font_size_px)
-                line_html = f'<span style="{key_style}">{key_part}: </span><span style="{value_style}">{value_part}</span>'
+                line_html = (
+                    f'<span style="{key_style}">{key_part}: </span>'
+                    f'<span style="{value_style}">{value_part}</span>'
+                )
             else:
                 key_style = self._get_html_text_style("key", font_size_px)
                 line_html = f'<span style="{key_style}">{line}</span>'
@@ -570,7 +573,13 @@ class LabelRenderer:
         positioned_lines = []
         for i, line_html in enumerate(lines_html):
             top_position = i * line_height_px
-            positioned_line = f'<div style="position: absolute; top: {top_position}px; left: 0; width: 100%; margin: 0; padding: 0; line-height: {line_height_px}px;">{line_html}</div>'
+            positioned_line = (
+                f'<div style="position: absolute; '
+                f"top: {top_position}px; left: 0; width: 100%; "
+                f"margin: 0; padding: 0; "
+                f'line-height: {line_height_px}px;">'
+                f"{line_html}</div>"
+            )
             positioned_lines.append(positioned_line)
 
         content_html = "".join(positioned_lines)
@@ -586,19 +595,28 @@ class LabelRenderer:
         )
 
         inner_style = (
-            f"position: absolute; top: {padding_px}px; left: {padding_px}px; "
+            f"position: absolute; "
+            f"top: {padding_px}px; left: {padding_px}px; "
             f"width: {preview_width_px - 2 * padding_px}px; "
             f"height: {preview_height_px - 2 * padding_px}px; "
             f"text-align: {text_align}; position: relative; "
             f"margin: 0; padding: 0; box-sizing: border-box;"
         )
 
-        dimensions_info = f'Exact size: {points_to_inches(self.width_points):.3f}" × {points_to_inches(self.height_points):.3f}" ({points_to_cm(self.width_points):.2f}cm × {points_to_cm(self.height_points):.2f}cm)'
+        width_in = points_to_inches(self.width_points)
+        height_in = points_to_inches(self.height_points)
+        width_cm = points_to_cm(self.width_points)
+        height_cm = points_to_cm(self.height_points)
+        dimensions_info = (
+            f'Exact size: {width_in:.3f}" × {height_in:.3f}" '
+            f"({width_cm:.2f}cm × {height_cm:.2f}cm)"
+        )
 
         return f'''<div style="{outer_style}">
     <div style="{inner_style}">{content_html}</div>
 </div>
-<p style="text-align: center; color: #666; font-size: 12px; margin-top: 10px;">{dimensions_info}</p>'''
+<p style="text-align: center; color: #666; font-size: 12px; "
+   "margin-top: 10px;">{dimensions_info}</p>'''
 
     def _get_html_text_style(self, text_type: str, font_size_px: float) -> str:
         """Get HTML text styling for key or value text.
@@ -1546,7 +1564,7 @@ def convert_to_original_style_format(style_config: dict) -> dict:
 
 
 def create_pdf_from_labels(
-    labels_data: list[dict], style_config: dict = None
+    labels_data: list[dict], style_config: dict | None = None
 ) -> bytes:
     """Create PDF from labels data using unified LabelRenderer.
 
@@ -1930,7 +1948,8 @@ def preview_ui() -> None:
         height_cm = height_in * INCHES_TO_CM
 
         st.write(
-            f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" ({width_cm:.1f}cm × {height_cm:.1f}cm)'
+            f'**Label Size**: {width_in:.3f}" × {height_in:.3f}" '
+            f"({width_cm:.1f}cm × {height_cm:.1f}cm)"
         )
 
         # use unified renderer for precise preview with exact dimensions
