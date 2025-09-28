@@ -1,0 +1,13 @@
+# Specimen Label Type
+[label_type]
+name = "Specimen"
+description = "Individual specimen information"
+
+[fields]
+scientific_name = ""
+catalog_number = ""
+institution = ""
+element = ""
+locality = ""
+date_collected = ""
+collector = ""

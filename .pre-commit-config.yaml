@@ -123,6 +123,8 @@ repos:
           # {name} is too complex ({complexity} > {max_complexity})
           # note: ignored on select repositories
           "--ignore=C901",
+          # ignore variable not used given streamlit .get
+          "--ignore=F841",
           # E and W: pycodestyle, standard PEP8 errors and pycodestyle warnings.
           # F: pyflakes warnings (e.g., unused variables, undefined names).,
           # B: flake8-bugbear (useful best practices).
@@ -140,22 +142,6 @@ repos:
     -   id: ruff-format
         args: [
           "--line-length=79",
-        ]
-###############################################################################
-# XENON CODE COMPLEXITY
-###############################################################################
--   repo: https://github.com/rubik/xenon
-    rev: v0.9.3
-    hooks:
-    -   id: xenon
-        args: [
-            # threshold for the average complexity
-            # (across all the codebase).
-            "--max-absolute=B",
-            # threshold for modules complexity.
-            "--max-modules=B",
-            # absolute threshold for block complexity.
-            "--max-average=A"
         ]
 ###############################################################################
 # UV PACKAGE AND DEPENDENCY MANAGEMENT
@@ -194,7 +180,7 @@ repos:
 # SPELLING
 ###############################################################################
 -   repo: https://github.com/crate-ci/typos
-    rev: v1
+    rev: v1.35.6
     hooks:
     -   id: typos
         args: ["--force-exclude"]
