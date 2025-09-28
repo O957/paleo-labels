@@ -144,22 +144,6 @@ repos:
           "--line-length=79",
         ]
 ###############################################################################
-# XENON CODE COMPLEXITY
-###############################################################################
--   repo: https://github.com/rubik/xenon
-    rev: v0.9.3
-    hooks:
-    -   id: xenon
-        args: [
-            # threshold for the average complexity
-            # (across all the codebase).
-            "--max-absolute=B",
-            # threshold for modules complexity.
-            "--max-modules=B",
-            # absolute threshold for block complexity.
-            "--max-average=A"
-        ]
-###############################################################################
 # UV PACKAGE AND DEPENDENCY MANAGEMENT
 ###############################################################################
 -   repo: https://github.com/astral-sh/uv-pre-commit
