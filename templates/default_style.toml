@@ -7,8 +7,12 @@ height_inches = 2.25
 padding_percent = 0.05
 
 [typography]
-font_name = "Times New Roman"
+font_name = "Courier"
 font_size = 12
+
+[layout]
+border_thickness = 1.5
+label_spacing = 0.125
 
 [colors]
 # RGB values (0-255)
