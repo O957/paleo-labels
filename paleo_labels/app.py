@@ -414,7 +414,10 @@ def calculate_underline_length(
 
 
 def wrap_text_to_width(
-    text: str, width_points: float, font_size: float, font_name: str = "Courier"
+    text: str,
+    width_points: float,
+    font_size: float,
+    font_name: str = "Courier",
 ) -> list[str]:
     """Wrap text to fit within specified width.
 
@@ -484,18 +487,16 @@ def _get_label_dimensions(
     height_points = inches_to_points(height_inches)
 
     # calculate padding in points
-    padding_points = style_config.get(
-        "padding_percent", 0.05
-    ) * min(width_points, height_points)
+    padding_points = style_config.get("padding_percent", 0.05) * min(
+        width_points, height_points
+    )
 
     # available text area in points
     text_width_points = width_points - (2 * padding_points)
     text_height_points = height_points - (2 * padding_points)
 
     # font configuration
-    font_size_points = style_config.get(
-        "font_size", DEFAULT_FONT_SIZE_POINTS
-    )
+    font_size_points = style_config.get("font_size", DEFAULT_FONT_SIZE_POINTS)
     line_height_points = font_size_points * DEFAULT_LINE_HEIGHT_RATIO
 
     return {
@@ -568,6 +569,7 @@ def calculate_optimal_font_size(
     # ensure we don't exceed the original font size
     return min(test_size, font_size_points)
 
+
 def process_label_data(
     label_data: dict, style_config: dict, dimensions: dict
 ) -> list[str]:
@@ -597,7 +599,7 @@ def process_label_data(
             text,
             dimensions["text_width_points"],
             dimensions["font_size_points"],
-            font_name
+            font_name,
         )
 
         # calculate optimal font size for these lines
@@ -606,16 +608,13 @@ def process_label_data(
             dimensions["font_size_points"],
             dimensions["text_width_points"],
             dimensions["text_height_points"],
-            font_name
+            font_name,
         )
 
         # rewrap with optimal font size if it changed
         if abs(optimal_size - dimensions["font_size_points"]) > 0.1:
             return wrap_text_to_width(
-                text,
-                dimensions["text_width_points"],
-                optimal_size,
-                font_name
+                text, dimensions["text_width_points"], optimal_size, font_name
             )
         return initial_lines
 
@@ -645,7 +644,7 @@ def process_label_data(
             underline_count = calculate_underline_length(
                 key,
                 dimensions["text_width_points"],
-                dimensions["font_size_points"]
+                dimensions["font_size_points"],
             )
             underlines = "_" * underline_count
             lines.append(f"{key}: {underlines}")
@@ -653,6 +652,7 @@ def process_label_data(
             lines.append(f"{key}: {value}")
 
     return lines
+
 
 def render_to_html_preview(
     label_data: dict,
@@ -681,7 +681,9 @@ def render_to_html_preview(
     str
         HTML string for label preview.
     """
-    dimensions = _get_label_dimensions(width_inches, height_inches, style_config)
+    dimensions = _get_label_dimensions(
+        width_inches, height_inches, style_config
+    )
     lines = process_label_data(label_data, style_config, dimensions)
     optimal_font_size = calculate_optimal_font_size(
         lines,
@@ -692,8 +694,12 @@ def render_to_html_preview(
     )
 
     # convert points to pixels for html
-    preview_width_px = points_to_pixels(dimensions["width_points"], preview_dpi)
-    preview_height_px = points_to_pixels(dimensions["height_points"], preview_dpi)
+    preview_width_px = points_to_pixels(
+        dimensions["width_points"], preview_dpi
+    )
+    preview_height_px = points_to_pixels(
+        dimensions["height_points"], preview_dpi
+    )
     padding_px = points_to_pixels(dimensions["padding_points"], preview_dpi)
     font_size_px = points_to_pixels(optimal_font_size, preview_dpi)
 
@@ -704,12 +710,16 @@ def render_to_html_preview(
     for line in lines:
         if is_blank_label:
             # for blank labels, use value style for all text
-            value_style = _get_html_text_style("value", font_size_px, style_config)
+            value_style = _get_html_text_style(
+                "value", font_size_px, style_config
+            )
             line_html = f'<span style="{value_style}">{line}</span>'
         elif ": " in line:
             key_part, value_part = line.split(": ", 1)
             key_style = _get_html_text_style("key", font_size_px, style_config)
-            value_style = _get_html_text_style("value", font_size_px, style_config)
+            value_style = _get_html_text_style(
+                "value", font_size_px, style_config
+            )
             line_html = (
                 f'<span style="{key_style}">{key_part}: </span>'
                 f'<span style="{value_style}">{value_part}</span>'
@@ -738,9 +748,7 @@ def render_to_html_preview(
         positioned_lines.append(positioned_line)
 
     content_html = "".join(positioned_lines)
-    text_align = (
-        "center" if style_config.get("center_text", False) else "left"
-    )
+    text_align = "center" if style_config.get("center_text", False) else "left"
 
     # convert border thickness from points to pixels for preview
     border_thickness_px = points_to_pixels(
@@ -810,29 +818,17 @@ def _get_html_text_style(
         color_r = int(style_config.get("key_color_r", 0.0) * 255)
         color_g = int(style_config.get("key_color_g", 0.0) * 255)
         color_b = int(style_config.get("key_color_b", 0.0) * 255)
-        weight = (
-            "bold"
-            if style_config.get("bold_keys", True)
-            else "normal"
-        )
+        weight = "bold" if style_config.get("bold_keys", True) else "normal"
         style = (
-            "italic"
-            if style_config.get("italic_keys", False)
-            else "normal"
+            "italic" if style_config.get("italic_keys", False) else "normal"
         )
     else:  # value
         color_r = int(style_config.get("value_color_r", 0.0) * 255)
         color_g = int(style_config.get("value_color_g", 0.0) * 255)
         color_b = int(style_config.get("value_color_b", 0.0) * 255)
-        weight = (
-            "bold"
-            if style_config.get("bold_values", False)
-            else "normal"
-        )
+        weight = "bold" if style_config.get("bold_values", False) else "normal"
         style = (
-            "italic"
-            if style_config.get("italic_values", False)
-            else "normal"
+            "italic" if style_config.get("italic_values", False) else "normal"
         )
 
     color = f"rgb({color_r}, {color_g}, {color_b})"
@@ -882,7 +878,9 @@ def render_to_pdf_canvas(
     -------
     None
     """
-    dimensions = _get_label_dimensions(width_inches, height_inches, style_config)
+    dimensions = _get_label_dimensions(
+        width_inches, height_inches, style_config
+    )
     lines = process_label_data(label_data, style_config, dimensions)
     optimal_font_size = calculate_optimal_font_size(
         lines,
@@ -897,7 +895,10 @@ def render_to_pdf_canvas(
     border_thickness = style_config.get("border_thickness", 1.5)
     canvas_obj.setLineWidth(border_thickness)
     canvas_obj.rect(
-        x_offset, y_offset, dimensions["width_points"], dimensions["height_points"]
+        x_offset,
+        y_offset,
+        dimensions["width_points"],
+        dimensions["height_points"],
     )
 
     # get fonts
@@ -949,7 +950,9 @@ def render_to_pdf_canvas(
                 line, value_font, optimal_font_size
             )
             if style_config.get("center_text", False):
-                text_x = x_offset + (dimensions["width_points"] - line_width) / 2
+                text_x = (
+                    x_offset + (dimensions["width_points"] - line_width) / 2
+                )
             else:
                 text_x = x_offset + dimensions["padding_points"]
 
@@ -969,7 +972,9 @@ def render_to_pdf_canvas(
 
             # set x position (centered or left-aligned)
             if style_config.get("center_text", False):
-                text_x = x_offset + (dimensions["width_points"] - total_width) / 2
+                text_x = (
+                    x_offset + (dimensions["width_points"] - total_width) / 2
+                )
             else:
                 text_x = x_offset + dimensions["padding_points"]
 
@@ -991,7 +996,9 @@ def render_to_pdf_canvas(
                 line, key_font, optimal_font_size
             )
             if style_config.get("center_text", False):
-                text_x = x_offset + (dimensions["width_points"] - line_width) / 2
+                text_x = (
+                    x_offset + (dimensions["width_points"] - line_width) / 2
+                )
             else:
                 text_x = x_offset + dimensions["padding_points"]
 
@@ -1790,7 +1797,9 @@ def create_pdf_from_labels(
     height_inches = style_config.get("height_inches", 1.0)
 
     # get dimensions for layout calculations
-    dimensions = _get_label_dimensions(width_inches, height_inches, style_config)
+    dimensions = _get_label_dimensions(
+        width_inches, height_inches, style_config
+    )
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
@@ -1808,8 +1817,12 @@ def create_pdf_from_labels(
     usable_height = page_height_points - (2 * margin_points)
 
     # include spacing in calculations
-    label_width_with_spacing = dimensions["width_points"] + label_spacing_points
-    label_height_with_spacing = dimensions["height_points"] + label_spacing_points
+    label_width_with_spacing = (
+        dimensions["width_points"] + label_spacing_points
+    )
+    label_height_with_spacing = (
+        dimensions["height_points"] + label_spacing_points
+    )
 
     labels_per_row = int(usable_width // label_width_with_spacing)
     labels_per_col = int(usable_height // label_height_with_spacing)
@@ -2027,7 +2040,7 @@ def blank_label_ui() -> None:
         "Enter your text:",
         height=100,
         help="Enter text that will wrap automatically within the label border.",
-        key="blank_text_input"
+        key="blank_text_input",
     )
 
     col1, col2 = st.columns(2)
@@ -2146,7 +2159,7 @@ def style_options_ui() -> None:
             value=1.5,
             step=0.25,
             key="style_border_thickness",
-            help="Border thickness in points"
+            help="Border thickness in points",
         )
         label_spacing = st.slider(
             "Label Spacing:",
@@ -2155,7 +2168,7 @@ def style_options_ui() -> None:
             value=0.125,
             step=0.025,
             key="style_label_spacing",
-            help="Space between labels in inches"
+            help="Space between labels in inches",
         )
 
 
@@ -2187,7 +2200,9 @@ def _build_style_config() -> dict:
         "width_inches": width_in,
         "height_inches": height_in,
         "padding_percent": st.session_state.get("style_padding", 0.05),
-        "border_thickness": st.session_state.get("style_border_thickness", 1.5),
+        "border_thickness": st.session_state.get(
+            "style_border_thickness", 1.5
+        ),
         "label_spacing": st.session_state.get("style_label_spacing", 0.125),
         "key_color_r": key_r / 255.0,
         "key_color_g": key_g / 255.0,
@@ -2254,9 +2269,9 @@ def preview_ui() -> None:
         # show up to 3 labels as preview
         for i, label in enumerate(st.session_state.current_labels[:3]):
             if "__blank_label__" in label:
-                st.write(f"**Label {i+1}** (Blank Text)")
+                st.write(f"**Label {i + 1}** (Blank Text)")
             else:
-                st.write(f"**Label {i+1}**")
+                st.write(f"**Label {i + 1}**")
 
             preview_html = render_to_html_preview(
                 label, width_in, height_in, style_config
@@ -2264,7 +2279,9 @@ def preview_ui() -> None:
             st.markdown(preview_html, unsafe_allow_html=True)
 
         if len(st.session_state.current_labels) > 3:
-            st.info(f"... and {len(st.session_state.current_labels) - 3} more labels in session")
+            st.info(
+                f"... and {len(st.session_state.current_labels) - 3} more labels in session"
+            )
 
 
 def download_pdf_ui() -> None:
